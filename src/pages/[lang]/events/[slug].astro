@@ -1,0 +1,167 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import i18next from "i18next";
+import { eventItems } from "../../../data/content";
+
+export function getStaticPaths() {
+  const langs = ["ru", "en"];
+  return langs.flatMap((lang) =>
+    eventItems.map((event) => ({
+      params: { lang, slug: event.slug },
+      props: { event },
+    }))
+  );
+}
+
+const { lang } = Astro.params;
+const { event } = Astro.props;
+
+i18next.changeLanguage(lang as string);
+---
+
+<Layout title={`${event.title[lang as "ru" | "en"]} | Egg Culture`} lang={lang as string}>
+  <div class="container event-container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <a href={`/${lang}/events`} class="back-link">
+      ← {lang === "ru" ? "Назад к Афише" : "Back to Events"}
+    </a>
+
+    <article class="event-detail">
+      <div class="event-image-wrapper">
+        <img
+          src={event.image}
+          alt={event.title[lang as "ru" | "en"]}
+          loading="eager"
+        />
+      </div>
+      <header class="event-header">
+        <h1 class="event-title">{event.title[lang as "ru" | "en"]}</h1>
+        <p class="event-date">{event.date}</p>
+        <p class="event-location">📍 {event.location[lang as "ru" | "en"]}</p>
+      </header>
+
+      <div class="event-content" set:html={event.description[lang as "ru" | "en"]} />
+
+      <div class="event-action">
+        <a href="https://t.me/+QIepC6ildbdmMDBi" target="_blank" rel="noopener noreferrer" class="btn">
+          {lang === "ru" ? "Подписаться на канал" : "Subscribe to Channel"}
+        </a>
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .event-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-color);
+    opacity: 0.6;
+    transition: opacity 0.3s ease, color 0.3s ease;
+    text-decoration: none;
+  }
+
+  .back-link:hover {
+    opacity: 1;
+    color: var(--accent-color);
+  }
+
+  .event-detail {
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 3rem;
+  }
+
+  .event-image-wrapper {
+    width: calc(100% + 6rem); /* Adjust for padding on sides */
+    margin: -3rem -3rem 3rem -3rem; /* Negative margins to fill the width */
+    height: 350px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .event-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.1) brightness(0.9);
+  }
+
+  .event-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 2rem;
+    text-align: center;
+  }
+
+  .event-title {
+    font-size: 3rem;
+    color: var(--accent-color);
+    line-height: 1.2;
+    margin: 0 0 1rem 0;
+  }
+
+  .event-date {
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .event-location {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    opacity: 0.8;
+    margin: 0;
+  }
+
+  .event-content {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+  }
+
+  .event-content :global(p) {
+    margin-bottom: 1.5rem;
+  }
+
+  .event-content :global(ul) {
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+  }
+
+  .event-content :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .event-content :global(strong) {
+    font-weight: 600;
+    color: var(--accent-color);
+  }
+
+  .event-action {
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .event-detail {
+      padding: 2rem;
+    }
+    .event-image-wrapper {
+      width: calc(100% + 4rem);
+      margin: -2rem -2rem 2rem -2rem;
+      height: 250px;
+    }
+    .event-title {
+      font-size: 2.2rem;
+    }
+  }
+</style>

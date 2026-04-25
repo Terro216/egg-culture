@@ -1,0 +1,162 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import i18next from "i18next";
+import { blogPosts } from "../../data/content";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+i18next.changeLanguage(lang as string);
+---
+
+<Layout title={i18next.t("blog.pageTitle")} lang={lang as string}>
+  <div
+    class="container flex-col gap-2xl"
+    style="padding-top: 4rem; padding-bottom: 6rem;"
+  >
+    <div class="text-center flex-col gap-sm">
+      <h1 class="page-title">{i18next.t("blog.title")}</h1>
+    </div>
+
+    <div class="blog-list flex-col gap-xl">
+      {
+        blogPosts.map((post) => (
+          <a href={`/${lang}/blog/${post.slug}`} class="blog-post-row">
+            <div class="post-image-wrapper">
+              <img
+                src={post.image}
+                alt={post.title[lang as "ru" | "en"]}
+                loading="lazy"
+              />
+            </div>
+            <div class="post-content-wrapper flex-col">
+              <span class="post-date">{post.date}</span>
+              <h2 class="post-title">{post.title[lang as "ru" | "en"]}</h2>
+              <p class="post-excerpt">{post.excerpt[lang as "ru" | "en"]}</p>
+              <span class="read-more">
+                {lang === "ru" ? "Читать полностью →" : "Read fully →"}
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+  }
+
+  .blog-list {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .blog-post-row {
+    display: flex;
+    gap: 3rem;
+    text-decoration: none;
+    color: inherit;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: opacity 0.3s ease;
+  }
+
+  .blog-post-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .blog-post-row:hover {
+    opacity: 0.8;
+  }
+
+  .post-image-wrapper {
+    flex: 0 0 400px; /* Fixed width for the image */
+    height: 250px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .post-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.2) contrast(1.1);
+    transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  .blog-post-row:hover .post-image-wrapper img {
+    transform: scale(1.05);
+  }
+
+  .post-content-wrapper {
+    justify-content: center;
+    gap: 1rem;
+    flex: 1; /* Take remaining space */
+  }
+
+  .post-date {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
+  }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    margin: 0;
+    line-height: 1.1;
+    color: var(--text-color); /* Use text-color for titles in blog list */
+  }
+
+  .post-excerpt {
+    font-family: var(--font-serif); /* Use the new main serif font */
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0.7;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .read-more {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-color);
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .blog-post-row {
+      flex-direction: column;
+      gap: 1.5rem;
+      padding-bottom: 2rem;
+    }
+    .post-image-wrapper {
+      flex: none;
+      width: 100%;
+      height: 200px;
+    }
+    .post-title {
+      font-size: 1.8rem;
+    }
+    .post-content-wrapper {
+      padding-left: 0;
+    }
+  }
+</style>

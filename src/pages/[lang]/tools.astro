@@ -1,0 +1,39 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import EggCalculator from "../../components/EggCalculator";
+import i18next from "i18next";
+import { Suspense } from "react";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+i18next.changeLanguage(lang as string);
+---
+
+<Layout title={i18next.t("tools.pageTitle")} lang={lang as string}>
+  <div
+    class="container flex-col gap-2xl"
+    style="padding-top: 3rem; padding-bottom: 3rem;"
+  >
+    <div class="text-center flex-col gap-sm">
+      <h1>{i18next.t("tools.title")}</h1>
+      <p class="text-lead">{i18next.t("tools.subtitle")}</p>
+    </div>
+
+    <div>
+      <Suspense fallback="loading">
+        <EggCalculator client:only />
+      </Suspense>
+    </div>
+
+    <div class="text-center flex-col gap-md" style="opacity: 0.6;">
+      <h2>{i18next.t("tools.wheelTitle")}</h2>
+      <p>
+        {i18next.t("tools.wheelDesc")}
+      </p>
+      <p class="text-italic">{i18next.t("tools.inDev")}</p>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,123 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import i18next from "i18next";
+import { eventItems } from "../../data/content";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+i18next.changeLanguage(lang as string);
+---
+
+<Layout title={i18next.t("nav.events", "Афиша")} lang={lang as string}>
+  <div
+    class="container flex-col gap-2xl"
+    style="padding-top: 3rem; padding-bottom: 3rem;"
+  >
+    <div class="text-center flex-col gap-sm">
+      <h1>{i18next.t("nav.events", "Афиша")}</h1>
+    </div>
+
+    <div class="events-grid">
+      {
+        eventItems.map((event) => (
+          <div class="event-card">
+            <div class="event-card-content">
+              <span class="event-date">{event.date}</span>
+              <h2 class="event-title">{event.title[lang as "ru" | "en"]}</h2>
+              <p class="event-location">📍 {event.location[lang as "ru" | "en"]}</p>
+              <p class="event-desc">
+                {event.shortDescription[lang as "ru" | "en"]}
+              </p>
+              <a href={`/${lang}/events/${event.slug}`} class="btn-sm">
+                {lang === "ru" ? "Подробнее" : "Details"}
+              </a>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .event-card {
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .event-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-color);
+  }
+
+  .event-card-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .event-date {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .event-title {
+    font-size: 1.8rem;
+    margin: 0 0 1rem 0;
+    line-height: 1.3;
+  }
+
+  .event-location {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    opacity: 0.8;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .event-desc {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    margin: 0 0 2rem 0;
+    flex-grow: 1;
+    line-height: 1.6;
+  }
+
+  .btn-sm {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--accent-color);
+    color: var(--text-color);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+
+  .btn-sm:hover {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+  }
+</style>

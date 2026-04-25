@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    labels:
+      caddy: egg.${DOMAIN}
+      caddy.reverse_proxy: "{{upstreams 4321}}"
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true

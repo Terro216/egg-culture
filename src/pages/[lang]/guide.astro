@@ -1,0 +1,187 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import i18next from "i18next";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+i18next.changeLanguage(lang as string);
+
+const guideContent = {
+  ru: {
+    title: "Справочник Адепта",
+    intro:
+      "Глоссарий терминов и классификация, необходимые для точного описания вашего гастрономического опыта.",
+    termsTitle: "Каталог дескрипторов",
+    terms: [
+      {
+        name: "Яй Ци (Egg Qi)",
+        desc: "Энергия и воздействие продукта на состояние ума и тела. Невидимая, но ощутимая составляющая, которая отличает великое яйцо от просто хорошего.",
+      },
+      {
+        name: "Бульонность",
+        desc: "Глубокая, насыщенная умами нота в желтке, напоминающая концентрированный мясной или грибной бульон. Часто встречается у фермерских яиц.",
+      },
+      {
+        name: "Меловое послевкусие",
+        desc: "Деликатный, суховатый минеральный след, который оставляет правильно сваренный белок на нёбе.",
+      },
+      {
+        name: "Пастозность",
+        desc: "Текстура желтка, достигаемая при варке «в мешочек», напоминающая густую, обволакивающую теплую пасту.",
+      },
+      {
+        name: "Зернистость",
+        desc: "Фактура желтка, сваренного вкрутую. Признак качества — когда зерно мелкое, рассыпчатое и тающее, а не резиновое.",
+      },
+    ],
+    classesTitle: "Классификация",
+    classes: [
+      {
+        name: "По происхождению",
+        desc: "Индустриальные (массовый маркет), фермерские (свободный выгул), дворовые (локальные хозяйства) и микролотовые (ограниченные партии от конкретных птиц с уникальным рационом).",
+      },
+      {
+        name: "Светлые и Темные",
+        desc: "Вопреки мифам, цвет скорлупы обусловлен исключительно генетикой птицы и не влияет на вкус. Однако выбор белого яйца в эпоху культа коричневого — это осознанный эстетический жест.",
+      },
+      {
+        name: "Столетние яйца",
+        desc: "Китайская традиция ферментации, превращающая белок в полупрозрачное желе, а желток — в кремовую субстанцию с аммиачно-сырным профилем.",
+      },
+    ],
+  },
+  en: {
+    title: "Adept's Guide",
+    intro:
+      "A glossary of terms and classifications necessary to accurately describe your gastronomic experience.",
+    termsTitle: "Catalog of Descriptors",
+    terms: [
+      {
+        name: "Egg Qi",
+        desc: "The energy and impact of the product on the state of mind and body. An invisible but palpable component that distinguishes a great egg from merely a good one.",
+      },
+      {
+        name: "Brothiness",
+        desc: "A deep, rich umami note in the yolk, reminiscent of concentrated meat or mushroom broth. Often found in farm eggs.",
+      },
+      {
+        name: "Chalky Aftertaste",
+        desc: "A delicate, dry mineral trail left by a properly boiled egg white on the palate.",
+      },
+      {
+        name: "Pastiness",
+        desc: "The texture of the yolk achieved when soft-boiled, reminiscent of a thick, enveloping warm paste.",
+      },
+      {
+        name: "Graininess",
+        desc: "The texture of a hard-boiled yolk. A sign of quality is when the grain is fine, crumbly, and melting, rather than rubbery.",
+      },
+    ],
+    classesTitle: "Classification",
+    classes: [
+      {
+        name: "By Origin",
+        desc: "Industrial (mass market), farm (free-range), backyard (local farms), and microlot (limited batches from specific birds with unique diets).",
+      },
+      {
+        name: "Light and Dark",
+        desc: "Contrary to myths, shell color is determined solely by the bird's genetics and does not affect taste. However, choosing a white egg in an era of brown egg cult is a conscious aesthetic gesture.",
+      },
+      {
+        name: "Century Eggs",
+        desc: "A Chinese fermentation tradition that turns the white into a translucent jelly and the yolk into a creamy substance with an ammonia-cheese profile.",
+      },
+    ],
+  },
+};
+
+const content = guideContent[lang as "ru" | "en"];
+---
+
+<Layout title={`${content.title} | Egg Culture`} lang={lang as string}>
+  <div
+    class="container guide-container"
+    style="padding-top: 3rem; padding-bottom: 4rem;"
+  >
+    <header class="text-center flex-col gap-sm" style="margin-bottom: 4rem;">
+      <h1>{content.title}</h1>
+      <p class="text-lead" style="max-width: 600px; margin: 0 auto;">
+        {content.intro}
+      </p>
+    </header>
+
+    <article class="guide-content">
+      <h2>{content.termsTitle}</h2>
+      <dl class="term-list">
+        {
+          content.terms.map((term) => (
+            <div class="term-item">
+              <dt>{term.name}</dt>
+              <dd>{term.desc}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <h2 style="margin-top: 4rem;">{content.classesTitle}</h2>
+      <dl class="term-list">
+        {
+          content.classes.map((cls) => (
+            <div class="term-item">
+              <dt>{cls.name}</dt>
+              <dd>{cls.desc}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .guide-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .guide-content h2 {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    font-family: var(--font-display);
+  }
+
+  .term-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 0;
+  }
+
+  .term-item {
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+
+  .term-item dt {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 0.75rem;
+  }
+
+  .term-item dd {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    opacity: 0.9;
+  }
+</style>

@@ -1,0 +1,307 @@
+---
+import i18next from "i18next";
+import "../i18n"; // initialize i18next
+
+interface Props {
+  title: string;
+  lang?: string;
+}
+
+const { title, lang = "ru" } = Astro.props;
+i18next.changeLanguage(lang);
+
+const currentPath = Astro.url.pathname;
+const ruUrl = currentPath.replace(new RegExp(`^/${lang}`), "/ru");
+const enUrl = currentPath.replace(new RegExp(`^/${lang}`), "/en");
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Подключение шрифтов -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-container">
+        <a href={`/${lang}/`} class="logo">Яичная Культура</a>
+        <nav class="main-nav">
+          <a href={`/${lang}/manifesto`}>{i18next.t("nav.manifesto")}</a>
+          <a href={`/${lang}/guide`}>{i18next.t("nav.guide")}</a>
+          <a href={`/${lang}/tools`}>{i18next.t("nav.tools")}</a>
+          <a href={`/${lang}/merch`}>{i18next.t("nav.merch")}</a>
+          <a href={`/${lang}/blog`}>{i18next.t("nav.blog")}</a>
+          <a href={`/${lang}/events`}>{i18next.t("nav.events", "Афиша")}</a>
+          <div class="lang-switcher">
+            <a href={ruUrl} class={lang === "ru" ? "active" : ""}>🇷🇺</a>
+            <a href={enUrl} class={lang === "en" ? "active" : ""}>🇬🇧</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-container">
+        <p>
+          &copy; {new Date().getFullYear()}
+          {i18next.t("footer.rights")}
+        </p>
+        <div class="social-links">
+          <a
+            href="https://t.me/+QIepC6ildbdmMDBi"
+            target="_blank"
+            rel="noopener noreferrer">{i18next.t("footer.socials.telegram")}</a
+          >
+          <a
+            href="https://t.me/+QIepC6ildbdmMDBi"
+            target="_blank"
+            rel="noopener noreferrer">{i18next.t("footer.socials.twitter")}</a
+          >
+          <a
+            href="https://t.me/+QIepC6ildbdmMDBi"
+            target="_blank"
+            rel="noopener noreferrer">{i18next.t("footer.socials.instagram")}</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    /* Базовая дизайн-система */
+    --bg-color: #f0ead6; /* Яичная скорлупа / пергамент */
+    --text-color: #2b2b2b; /* Темно-серый для мягкого контраста */
+    --accent-color: #d4af37; /* Золотой акцент (желток) */
+    --border-color: rgba(43, 43, 43, 0.1);
+
+    --font-serif: "Lora", serif;
+    --font-display: "Playfair Display", serif;
+    --font-sans:
+      system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+
+    --text-caps-transform: uppercase;
+    --text-caps-spacing: 0.1em;
+
+    /* Spacing system */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    --spacing-2xl: 4rem;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  main {
+    flex: 1;
+    width: 100%;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Typography */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    margin-top: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  a:hover {
+    color: var(--accent-color);
+  }
+
+  /* Typography Utilities */
+  .text-bold {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .text-italic {
+    font-style: italic;
+    color: var(--accent-color);
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .text-caps {
+    text-transform: var(--text-caps-transform);
+    letter-spacing: var(--text-caps-spacing);
+  }
+
+  .text-lead {
+    font-size: 1.75rem;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  /* UI Components */
+  .btn {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: 1px solid var(--accent-color);
+    color: var(--text-color);
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    text-transform: var(--text-caps-transform);
+    letter-spacing: var(--text-caps-spacing);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .btn:hover {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+  }
+
+  /* Layout Utilities */
+  .flex-col {
+    display: flex;
+    flex-direction: column;
+  }
+  .gap-sm {
+    gap: var(--spacing-sm);
+  }
+  .gap-md {
+    gap: var(--spacing-md);
+  }
+  .gap-lg {
+    gap: var(--spacing-lg);
+  }
+  .gap-xl {
+    gap: var(--spacing-xl);
+  }
+  .gap-2xl {
+    gap: var(--spacing-2xl);
+  }
+
+  /* Header */
+  .site-header {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .main-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .main-nav a {
+    font-size: 1.1rem;
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+  }
+
+  .lang-switcher a {
+    font-size: 1.2rem;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .lang-switcher a.active,
+  .lang-switcher a:hover {
+    opacity: 1;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 3rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: auto;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .social-links {
+    display: flex;
+    gap: var(--spacing-lg);
+  }
+</style>

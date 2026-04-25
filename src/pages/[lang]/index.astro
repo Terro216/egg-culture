@@ -1,0 +1,48 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import i18next from "i18next";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+i18next.changeLanguage(lang as string);
+---
+
+<Layout title={i18next.t("home.pageTitle")} lang={lang as string}>
+  <div class="container hero text-center">
+    <div class="hero-content flex-col gap-lg">
+      <h1>{i18next.t("home.heroTitle")}</h1>
+      <p>{i18next.t("home.heroSubtitle")}</p>
+      <div>
+        <a href={`/${lang}/manifesto`} class="btn"
+          >{i18next.t("home.readManifesto")}</a
+        >
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-content {
+    max-width: 600px;
+  }
+
+  h1 {
+    font-size: 4rem;
+    color: var(--accent-color);
+  }
+
+  p {
+    font-size: 1.5rem;
+    opacity: 0.9;
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import i18next from "i18next";
+import { merchItems } from "../../../data/content";
+
+export function getStaticPaths() {
+  const langs = ["ru", "en"];
+  return langs.flatMap((lang) =>
+    merchItems.map((item) => ({
+      params: { lang, slug: item.slug },
+      props: { item },
+    }))
+  );
+}
+
+const { lang } = Astro.params;
+const { item } = Astro.props;
+
+i18next.changeLanguage(lang as string);
+---
+
+<Layout title={`${item.title[lang as "ru" | "en"]} | Egg Culture`} lang={lang as string}>
+  <div class="container merch-container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <a href={`/${lang}/merch`} class="back-link">
+      ← {lang === "ru" ? "Назад в Бутик" : "Back to Boutique"}
+    </a>
+
+    <article class="merch-detail">
+      <header class="merch-header">
+        <h1 class="merch-title">{item.title[lang as "ru" | "en"]}</h1>
+        <p class="merch-price">{item.price}</p>
+      </header>
+
+      <div class="merch-content">
+        <p>{item.description[lang as "ru" | "en"]}</p>
+      </div>
+
+      <div class="merch-action">
+        <a href="https://t.me/+QIepC6ildbdmMDBi" target="_blank" rel="noopener noreferrer" class="btn">
+          {lang === "ru" ? "Заказать в Telegram" : "Order via Telegram"}
+        </a>
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .merch-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-color);
+    opacity: 0.6;
+    transition: opacity 0.3s ease, color 0.3s ease;
+    text-decoration: none;
+  }
+
+  .back-link:hover {
+    opacity: 1;
+    color: var(--accent-color);
+  }
+
+  .merch-detail {
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 3rem;
+  }
+
+  .merch-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 2rem;
+    text-align: center;
+  }
+
+  .merch-title {
+    font-size: 3rem;
+    color: var(--accent-color);
+    line-height: 1.2;
+    margin: 0 0 1rem 0;
+  }
+
+  .merch-price {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .merch-content {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+  }
+
+  .merch-action {
+    text-align: center;
+  }
+</style>

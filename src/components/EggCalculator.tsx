@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import "../i18n.ts";
+import i18n from "../i18n";
+
 type Size = "S" | "M" | "L";
 type Temp = "fridge" | "room";
 type Doneness = "soft" | "medium" | "hard";
 
 export default function EggCalculator() {
-  const { t, i18n, ready } = useTranslation();
+  const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (ready && typeof document !== "undefined") {
+    if (typeof document !== "undefined") {
       i18n.changeLanguage(document.documentElement.lang || "ru");
+      setMounted(true);
     }
-  }, [i18n, ready]);
+  }, []);
+
   const [size, setSize] = useState<Size>("M");
   const [temp, setTemp] = useState<Temp>("fridge");
   const [doneness, setDoneness] = useState<Doneness>("soft");
@@ -51,6 +55,8 @@ export default function EggCalculator() {
     fontFamily: "var(--font-sans)",
     transition: "all 0.3s ease",
   });
+
+  if (!mounted) return null;
 
   return (
     <div

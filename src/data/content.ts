@@ -11,6 +11,7 @@ export type MerchItem = {
   description: TranslationString;
   price: string;
   image: string;
+  detailedImage?: string;
 };
 
 export type BlogPost = {
@@ -21,6 +22,7 @@ export type BlogPost = {
   content: TranslationString;
   date: string;
   image: string;
+  detailedImage?: string;
 };
 
 export type EventItem = {
@@ -32,6 +34,7 @@ export type EventItem = {
   shortDescription: TranslationString;
   description: TranslationString;
   image: string;
+  detailedImage?: string;
 };
 
 export const merchItems: MerchItem[] = [
@@ -102,7 +105,7 @@ export const blogPosts: BlogPost[] = [
       ru: "Дихотомия цвета: Фарфор против Терракоты",
       en: "Color Dichotomy: Porcelain vs Terracotta",
     },
-    date: "15.10.23",
+    date: "15.10.26",
     image:
       "https://images.unsplash.com/photo-1587486913049-53fe8953f1d2?q=80&w=1200&auto=format&fit=crop",
     excerpt: {
@@ -127,7 +130,7 @@ export const blogPosts: BlogPost[] = [
       ru: "Текстура как текст: От жидкого к пастообразному",
       en: "Texture as Text: From Liquid to Pasty",
     },
-    date: "02.11.23",
+    date: "02.11.26",
     image:
       "https://images.unsplash.com/photo-1598965402089-897ce52e8355?q=80&w=1200&auto=format&fit=crop",
     excerpt: {
@@ -149,7 +152,7 @@ export const eventItems: EventItem[] = [
       ru: "Яичная Школа. Поток II",
       en: "Egg School. Flow II",
     },
-    date: "15.11.23",
+    date: "15.11.26",
     image:
       "https://images.unsplash.com/photo-1498654077810-12c21d4d6dc3?q=80&w=1200&auto=format&fit=crop",
     location: {
@@ -172,7 +175,7 @@ export const eventItems: EventItem[] = [
       ru: "Grand Degustation",
       en: "Grand Degustation",
     },
-    date: "05.12.23",
+    date: "05.12.26",
     image:
       "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1200&auto=format&fit=crop",
     location: {

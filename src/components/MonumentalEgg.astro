@@ -1,0 +1,123 @@
+---
+// MonumentalEgg.astro
+---
+
+<div class="egg-container" id="monumental-egg-container"></div>
+
+<style>
+  .egg-container {
+    width: 100%;
+    height: 35vh;
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  import * as THREE from "three";
+
+  function init() {
+    const container = document.getElementById("monumental-egg-container");
+    if (!container) return;
+
+    // Remove any existing canvas if script re-runs (HMR)
+    container.innerHTML = "";
+
+    const scene = new THREE.Scene();
+
+    // Setup camera
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      100,
+    );
+    camera.position.z = 12;
+
+    // Setup renderer with transparent background to blend into the site's palette
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Create Egg Geometry
+    // We start with a sphere and deform its vertices to form an elegant egg shape
+    const geometry = new THREE.SphereGeometry(2, 64, 64);
+    const positions = geometry.attributes.position;
+    for (let i = 0; i < positions.count; i++) {
+      const y = positions.getY(i);
+      // Deform the sphere: narrower at the top, wider at the bottom
+      // The y value ranges from -2 to 2
+      const scale = 1 - y * 0.12;
+      positions.setX(i, positions.getX(i) * scale);
+      positions.setZ(i, positions.getZ(i) * scale);
+      positions.setY(i, y * 1.55); // stretch it vertically to look like a real egg
+    }
+    geometry.computeVertexNormals(); // Fix lighting after deformation
+
+    // Create a physical, porcelain-like material
+    const material = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff, // Pure white for that pristine porcelain minimal look
+      roughness: 0.15,
+      metalness: 0.05,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1,
+    });
+
+    const egg = new THREE.Mesh(geometry, material);
+    scene.add(egg);
+
+    // Dramatic "Monumental" Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft fill
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2);
+    mainLight.position.set(5, 10, 7);
+    scene.add(mainLight);
+
+    // Subtle golden accent light reflecting the project's accent color (#d4af37)
+    const goldLight = new THREE.PointLight(0xd4af37, 100, 50);
+    goldLight.position.set(-5, -3, -5);
+    scene.add(goldLight);
+
+    // Resize handler
+    const onWindowResize = () => {
+      if (!container) return;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    };
+    window.addEventListener("resize", onWindowResize);
+
+    // Animation loop
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      // Slow, majestic rotation (the Kubrick monolith feel)
+      // Slight tilt on X and Z makes the rotation around Y much more visible
+      egg.rotation.y = elapsedTime * 0.2;
+      egg.rotation.z = 0.15;
+      egg.rotation.x = 0.1;
+
+      // Extremely subtle levitation
+      egg.position.y = Math.sin(elapsedTime * 0.5) * 0.15;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  }
+
+  // Initialize on mount
+  init();
+
+  // Re-initialize if Astro view transitions are used
+  document.addEventListener("astro:page-load", init);
+</script>

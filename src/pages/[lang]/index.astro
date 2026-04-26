@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import MonumentalEgg from "../../components/MonumentalEgg.astro";
 import i18next from "i18next";
 
 export function getStaticPaths() {
@@ -14,8 +15,9 @@ i18next.changeLanguage(lang as string);
   <div class="container hero text-center">
     <div class="hero-content flex-col gap-lg">
       <h1>{i18next.t("home.heroTitle")}</h1>
+      <MonumentalEgg />
       <p>{i18next.t("home.heroSubtitle")}</p>
-      <div>
+      <div style="margin-bottom: 2rem;">
         <a href={`/${lang}/manifesto`} class="btn"
           >{i18next.t("home.readManifesto")}</a
         >

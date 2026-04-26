@@ -10,6 +10,7 @@ const resources = {
         tools: "Tools",
         merch: "Boutique",
         blog: "Blog",
+        events: "Events",
       },
       home: {
         pageTitle: "Home | Egg Culture",
@@ -112,6 +113,10 @@ const resources = {
         title: "Blog",
         inDev: "In development...",
       },
+      events: {
+        pageTitle: "Events | Egg Culture",
+        title: "Events",
+      },
     },
   },
   ru: {
@@ -122,6 +127,7 @@ const resources = {
         tools: "Инструментарий",
         merch: "Бутик",
         blog: "Блог",
+        events: "Афиша",
       },
       home: {
         pageTitle: "Главная | Яичная Культура",
@@ -222,6 +228,10 @@ const resources = {
         pageTitle: "Блог | Яичная Культура",
         title: "Блог",
         inDev: "В разработке...",
+      },
+      events: {
+        pageTitle: "Афиша | Яичная Культура",
+        title: "Афиша",
       },
     },
   },

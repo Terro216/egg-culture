@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import EggCalculator from "../../components/EggCalculator";
+import EggOracle from "../../components/EggOracle";
 import i18next from "i18next";
 import { Suspense } from "react";
 
@@ -18,13 +19,19 @@ i18next.changeLanguage(lang as string);
     style="padding-top: 3rem; padding-bottom: 3rem;"
   >
     <div class="text-center flex-col gap-sm">
-      <h1>{i18next.t("tools.title")}</h1>
+      <h1 class="page-title">{i18next.t("tools.title")}</h1>
       <p class="text-lead">{i18next.t("tools.subtitle")}</p>
     </div>
 
     <div>
       <Suspense fallback="loading">
         <EggCalculator client:only />
+      </Suspense>
+    </div>
+
+    <div>
+      <Suspense fallback="loading">
+        <EggOracle client:only />
       </Suspense>
     </div>
 
@@ -37,3 +44,12 @@ i18next.changeLanguage(lang as string);
     </div>
   </div>
 </Layout>
+
+<style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--accent-color);
+    padding-bottom: 2rem;
+    margin: 0;
+  }
+</style>

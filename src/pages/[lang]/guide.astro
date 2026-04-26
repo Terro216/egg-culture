@@ -107,7 +107,7 @@ const content = guideContent[lang as "ru" | "en"];
     style="padding-top: 3rem; padding-bottom: 4rem;"
   >
     <header class="text-center flex-col gap-sm" style="padding-bottom: 4rem;">
-      <h1>{content.title}</h1>
+      <h1 class="page-title">{content.title}</h1>
       <p class="text-lead" style="max-width: 600px; margin: 0 auto;">
         {content.intro}
       </p>
@@ -142,6 +142,13 @@ const content = guideContent[lang as "ru" | "en"];
 </Layout>
 
 <style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--accent-color);
+    padding-bottom: 2rem;
+    margin: 0;
+  }
+
   .guide-container {
     max-width: 800px;
     margin: 0 auto;

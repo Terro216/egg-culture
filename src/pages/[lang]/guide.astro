@@ -106,7 +106,7 @@ const content = guideContent[lang as "ru" | "en"];
     class="container guide-container"
     style="padding-top: 3rem; padding-bottom: 4rem;"
   >
-    <header class="text-center flex-col gap-sm" style="margin-bottom: 4rem;">
+    <header class="text-center flex-col gap-sm" style="padding-bottom: 4rem;">
       <h1>{content.title}</h1>
       <p class="text-lead" style="max-width: 600px; margin: 0 auto;">
         {content.intro}
@@ -126,7 +126,7 @@ const content = guideContent[lang as "ru" | "en"];
         }
       </dl>
 
-      <h2 style="margin-top: 4rem;">{content.classesTitle}</h2>
+      <h2 style="padding-top: 4rem;">{content.classesTitle}</h2>
       <dl class="term-list">
         {
           content.classes.map((cls) => (
@@ -150,7 +150,7 @@ const content = guideContent[lang as "ru" | "en"];
   .guide-content h2 {
     font-size: 2.5rem;
     color: var(--accent-color);
-    margin-bottom: 2rem;
+    padding-bottom: 2rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
     font-family: var(--font-display);
@@ -175,7 +175,7 @@ const content = guideContent[lang as "ru" | "en"];
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--accent-color);
-    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
   }
 
   .term-item dd {

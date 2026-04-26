@@ -11,13 +11,13 @@ const { lang } = Astro.params;
 i18next.changeLanguage(lang as string);
 ---
 
-<Layout title={i18next.t("nav.events", "Афиша")} lang={lang as string}>
+<Layout title={i18next.t("events.pageTitle")} lang={lang as string}>
   <div
     class="container flex-col gap-2xl"
-    style="padding-top: 3rem; padding-bottom: 3rem;"
+    style="padding-top: 4rem; padding-bottom: 6rem;"
   >
     <div class="text-center flex-col gap-sm">
-      <h1>{i18next.t("nav.events", "Афиша")}</h1>
+      <h1 class="page-title">{i18next.t("events.title")}</h1>
     </div>
 
     <div class="events-grid">
@@ -27,7 +27,9 @@ i18next.changeLanguage(lang as string);
             <div class="event-card-content">
               <span class="event-date">{event.date}</span>
               <h2 class="event-title">{event.title[lang as "ru" | "en"]}</h2>
-              <p class="event-location">📍 {event.location[lang as "ru" | "en"]}</p>
+              <p class="event-location">
+                📍 {event.location[lang as "ru" | "en"]}
+              </p>
               <p class="event-desc">
                 {event.shortDescription[lang as "ru" | "en"]}
               </p>
@@ -43,6 +45,12 @@ i18next.changeLanguage(lang as string);
 </Layout>
 
 <style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+  }
+
   .events-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -55,7 +63,9 @@ i18next.changeLanguage(lang as string);
     display: flex;
     flex-direction: column;
     height: 100%;
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      border-color 0.3s ease;
   }
 
   .event-card:hover {

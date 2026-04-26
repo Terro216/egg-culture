@@ -7,15 +7,13 @@ type Temp = "fridge" | "room";
 type Doneness = "soft" | "medium" | "hard";
 
 export default function EggCalculator() {
-  const { t } = useTranslation();
-  const [mounted, setMounted] = useState(false);
+  const { t, ready } = useTranslation("translation", { i18n });
 
   useEffect(() => {
-    if (typeof document !== "undefined") {
+    if (ready && typeof document !== "undefined") {
       i18n.changeLanguage(document.documentElement.lang || "ru");
-      setMounted(true);
     }
-  }, []);
+  }, [ready]);
 
   const [size, setSize] = useState<Size>("M");
   const [temp, setTemp] = useState<Temp>("fridge");
@@ -56,7 +54,7 @@ export default function EggCalculator() {
     transition: "all 0.3s ease",
   });
 
-  if (!mounted) return null;
+  if (!ready) return null;
 
   return (
     <div

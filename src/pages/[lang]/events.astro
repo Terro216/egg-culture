@@ -1,6 +1,6 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from '@app/layouts/Layout.astro';
 import { eventItems } from "../../data/content";
 
 export function getStaticPaths() {
@@ -8,16 +8,16 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={i18next.t("events.pageTitle")} lang={lang as string}>
+<Layout title={t("events.pageTitle")} lang={lang as string}>
   <div
     class="container flex-col gap-2xl"
     style="padding-top: 4rem; padding-bottom: 6rem;"
   >
     <div class="text-center flex-col gap-sm">
-      <h1 class="page-title">{i18next.t("events.title")}</h1>
+      <h1 class="page-title">{t("events.title")}</h1>
     </div>
 
     <div class="events-grid">
@@ -47,7 +47,7 @@ i18next.changeLanguage(lang as string);
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     padding-bottom: 2rem;
     margin: 0;
   }
@@ -59,7 +59,7 @@ i18next.changeLanguage(lang as string);
   }
 
   .event-card {
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(43, 43, 43, 0.1);
     background-color: rgba(255, 255, 255, 0.5);
     display: flex;
     flex-direction: column;
@@ -71,7 +71,7 @@ i18next.changeLanguage(lang as string);
 
   .event-card:hover {
     transform: translateY(-4px);
-    border-color: var(--accent-color);
+    border-color: var(--color-yolk);
   }
 
   .event-card-content {
@@ -83,10 +83,10 @@ i18next.changeLanguage(lang as string);
   }
 
   .event-date {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding-bottom: 1rem;
@@ -99,7 +99,7 @@ i18next.changeLanguage(lang as string);
   }
 
   .event-location {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 0.95rem;
     opacity: 0.8;
     padding: 0 0 1.5rem 0;
@@ -116,9 +116,9 @@ i18next.changeLanguage(lang as string);
   .btn-sm {
     display: inline-block;
     padding: 0.5rem 1rem;
-    border: 1px solid var(--accent-color);
-    color: var(--text-color);
-    font-family: var(--font-sans);
+    border: 1px solid var(--color-yolk);
+    color: var(--color-text);
+    font-family: var(--font-sans-ui);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -128,7 +128,7 @@ i18next.changeLanguage(lang as string);
   }
 
   .btn-sm:hover {
-    background-color: var(--accent-color);
-    color: var(--bg-color);
+    background-color: var(--color-yolk);
+    color: var(--color-shell);
   }
 </style>

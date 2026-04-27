@@ -1,6 +1,6 @@
 ---
-import Layout from "../../../layouts/Layout.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from "@app/layouts/Layout.astro";
 import { blogPosts } from "../../../data/content";
 
 export function getStaticPaths() {
@@ -16,7 +16,7 @@ export function getStaticPaths() {
 const { lang } = Astro.params;
 const { post } = Astro.props;
 
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 ---
 
 <Layout
@@ -58,11 +58,11 @@ i18next.changeLanguage(lang as string);
   .back-link {
     display: inline-block;
     padding-bottom: 2rem;
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--text-color);
+    color: var(--color-text);
     opacity: 0.6;
     transition:
       opacity 0.3s ease,
@@ -72,7 +72,7 @@ i18next.changeLanguage(lang as string);
 
   .back-link:hover {
     opacity: 1;
-    color: var(--accent-color);
+    color: var(--color-yolk);
   }
 
   .post-image-wrapper {
@@ -97,7 +97,7 @@ i18next.changeLanguage(lang as string);
 
   .post-date {
     display: block;
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 1rem;
     opacity: 0.6;
     padding-bottom: 1rem;
@@ -105,7 +105,7 @@ i18next.changeLanguage(lang as string);
 
   .post-title {
     font-size: 3rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     line-height: 1.2;
     margin: 0;
   }
@@ -130,6 +130,6 @@ i18next.changeLanguage(lang as string);
 
   .post-content :global(strong) {
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--color-yolk);
   }
 </style>

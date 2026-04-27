@@ -1,0 +1,61 @@
+---
+import { getLangFromUrl, useTranslations } from '@shared/i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <p>
+      &copy; {currentYear} {t("footer.rights")}
+    </p>
+    <div class="social-links">
+      <a
+        href="https://t.me/+QIepC6ildbdmMDBi"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t("footer.socials.telegram")}
+      </a>
+      <a
+        href="https://twitter.com"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t("footer.socials.twitter")}
+      </a>
+      <a
+        href="https://instagram.com"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t("footer.socials.instagram")}
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: 3rem 0;
+    border-top: 1px solid var(--border-color, rgba(43, 43, 43, 0.1));
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: auto;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md, 1.5rem);
+  }
+
+  .social-links {
+    display: flex;
+    gap: var(--spacing-lg, 2rem);
+  }
+</style>

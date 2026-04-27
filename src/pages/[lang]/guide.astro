@@ -1,13 +1,13 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from '@app/layouts/Layout.astro';
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
 }
 
 const { lang } = Astro.params;
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 
 const guideContent = {
   ru: {
@@ -144,7 +144,7 @@ const content = guideContent[lang as "ru" | "en"];
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     padding-bottom: 2rem;
     margin: 0;
   }
@@ -156,11 +156,11 @@ const content = guideContent[lang as "ru" | "en"];
 
   .guide-content h2 {
     font-size: 2.5rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(43, 43, 43, 0.1);
     padding-bottom: 1rem;
-    font-family: var(--font-display);
+    font-family: var(--font-serif-headers);
   }
 
   .term-list {
@@ -173,15 +173,15 @@ const content = guideContent[lang as "ru" | "en"];
   .term-item {
     background-color: rgba(255, 255, 255, 0.3);
     padding: 2rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(43, 43, 43, 0.1);
     border-radius: 4px;
   }
 
   .term-item dt {
-    font-family: var(--font-display);
+    font-family: var(--font-serif-headers);
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     padding-bottom: 0.75rem;
   }
 

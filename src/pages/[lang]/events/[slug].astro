@@ -1,6 +1,6 @@
 ---
-import Layout from "../../../layouts/Layout.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from "@app/layouts/Layout.astro";
 import { eventItems } from "../../../data/content";
 
 export function getStaticPaths() {
@@ -16,7 +16,7 @@ export function getStaticPaths() {
 const { lang } = Astro.params;
 const { event } = Astro.props;
 
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 ---
 
 <Layout title={`${event.title[lang as "ru" | "en"]} | Egg Culture`} lang={lang as string}>
@@ -59,11 +59,11 @@ i18next.changeLanguage(lang as string);
   .back-link {
     display: inline-block;
     padding-bottom: 2rem;
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--text-color);
+    color: var(--color-text);
     opacity: 0.6;
     transition: opacity 0.3s ease, color 0.3s ease;
     text-decoration: none;
@@ -71,11 +71,11 @@ i18next.changeLanguage(lang as string);
 
   .back-link:hover {
     opacity: 1;
-    color: var(--accent-color);
+    color: var(--color-yolk);
   }
 
   .event-detail {
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(43, 43, 43, 0.1);
     background-color: rgba(255, 255, 255, 0.5);
     padding: 3rem;
   }
@@ -97,27 +97,27 @@ i18next.changeLanguage(lang as string);
 
   .event-header {
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(43, 43, 43, 0.1);
     padding-bottom: 2rem;
     text-align: center;
   }
 
   .event-title {
     font-size: 3rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     line-height: 1.2;
     padding: 0 0 1rem 0;
   }
 
   .event-date {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 1.1rem;
     font-weight: 600;
     padding: 0 0 0.5rem 0;
   }
 
   .event-location {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans-ui);
     font-size: 1rem;
     opacity: 0.8;
     margin: 0;
@@ -144,7 +144,7 @@ i18next.changeLanguage(lang as string);
 
   .event-content :global(strong) {
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--color-yolk);
   }
 
   .event-action {

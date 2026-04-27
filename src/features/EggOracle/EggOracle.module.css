@@ -1,5 +1,6 @@
 .container {
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  background-color: rgba(255, 255, 255, 0.3);
   padding: 2.5rem;
   width: 100%;
   box-sizing: border-box;
@@ -16,15 +17,15 @@
 }
 
 .title {
-  font-family: var(--font-display);
-  color: var(--accent-color);
+  font-family: var(--font-serif-headers);
+  color: var(--color-yolk);
   font-size: 2rem;
   margin: 0;
 }
 
 .description {
   opacity: 0.8;
-  font-family: var(--font-serif);
+  font-family: var(--font-serif-body);
   font-size: 1.1rem;
   margin: 0;
 }
@@ -38,10 +39,10 @@
 
 .input {
   padding: 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(43, 43, 43, 0.2);
   background: transparent;
-  color: var(--text-color);
-  font-family: var(--font-serif);
+  color: var(--color-text);
+  font-family: var(--font-serif-body);
   font-size: 1.1rem;
   outline: none;
   width: 100%;
@@ -49,22 +50,29 @@
 }
 
 .input:focus {
-  border-color: var(--accent-color);
+  border-color: var(--color-yolk);
 }
 
 .button {
   padding: 1rem;
-  background: var(--accent-color);
-  color: var(--bg-color);
+  background: var(--color-yolk);
+  color: var(--color-shell);
   border: none;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans-ui);
   text-transform: uppercase;
   font-weight: bold;
   letter-spacing: 0.1em;
-  transition: opacity 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    background-color 0.3s ease;
   width: 100%;
   box-sizing: border-box;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-text);
+  color: var(--color-shell);
 }
 
 .button:disabled {
@@ -75,10 +83,10 @@
 .answer {
   margin-top: 1rem;
   padding: 1.5rem;
-  border-left: 3px solid var(--accent-color);
+  border-left: 3px solid var(--color-yolk);
   font-style: italic;
   font-size: 1.2rem;
-  font-family: var(--font-serif);
+  font-family: var(--font-serif-body);
   background: rgba(212, 175, 55, 0.05);
   animation: fadeIn 0.5s ease;
 }

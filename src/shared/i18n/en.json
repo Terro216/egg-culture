@@ -1,0 +1,191 @@
+{
+  "nav": {
+    "manifesto": "Manifesto",
+    "guide": "Guide",
+    "tools": "Tools",
+    "merch": "Boutique",
+    "blog": "Blog",
+    "events": "Events"
+  },
+  "home": {
+    "pageTitle": "Home | Egg Culture",
+    "heroTitle": "Egg Culture",
+    "heroSubtitle": "The form is perfect. The content is nutritious.",
+    "readManifesto": "Read Manifesto"
+  },
+  "footer": {
+    "rights": "Egg Culture. All rights reserved.",
+    "socials": {
+      "telegram": "Telegram",
+      "twitter": "Twitter",
+      "instagram": "Instagram"
+    }
+  },
+  "tools": {
+    "pageTitle": "Tools | Egg Culture",
+    "title": "Adept's Tools",
+    "subtitle": "Practice requires precision.",
+    "wheelTitle": "Descriptor Wheel",
+    "wheelDesc": "Soon an interactive wheel of tastes and textures will appear here, helping you find the right words to describe your experience.",
+    "inDev": "In development..."
+  },
+  "calculator": {
+    "title": "Exposure Calculator",
+    "subtitle": "Precision is the politeness of an adept. Find your perfect Egg Qi.",
+    "caliber": "Caliber:",
+    "sizeS": "S (Small)",
+    "sizeM": "M (Medium)",
+    "sizeL": "L (Large)",
+    "temp": "Shell temperature:",
+    "tempFridge": "From the fridge (4°C)",
+    "tempRoom": "Room temperature (20°C)",
+    "doneness": "Desired form of experience:",
+    "doneSoft": "Soft-boiled (liquid yolk, trembling white)",
+    "doneMedium": "Medium-boiled (pasty yolk)",
+    "doneHard": "Hard-boiled (dense granular yolk)",
+    "resultLabel": "Recommended boiling time",
+    "minutes": "min",
+    "seconds": "sec"
+  },
+  "oracle": {
+    "title": "Egg Oracle",
+    "desc": "Ask a question and let Egg Qi guide you.",
+    "placeholder": "Your question...",
+    "ask": "Ask the Oracle",
+    "thinking": "Listening to the yolk...",
+    "answers": [
+      "The shell will crack, but the essence remains.",
+      "The yolk says 'yes', the white doubts.",
+      "Perfect pastiness requires patience.",
+      "Your Egg Qi is weak right now. Eat an egg.",
+      "The secret is inside. Do not rush.",
+      "Choose a white shell today.",
+      "The answer lies in the chalky aftertaste.",
+      "The boiling time is up. Act.",
+      "This is a false path, like a store-bought M.",
+      "Seek harmony between texture and meaning."
+    ]
+  },
+  "manifesto": {
+    "pageTitle": "Manifesto | Egg Culture",
+    "title": "Egg Culture Manifesto",
+    "lead": "We live in times of great simplification.",
+    "p1": "The world has forgotten how to look, smell, wait, and distinguish.",
+    "p2": "The world demands brightness, clarity, immediate pleasure, and a direct answer to any question.",
+    "p3": "And therefore, the world is not ready for the egg.",
+    "p4": "The egg is too quiet for an era of shouting.<br/>Too whole for an era of fragments.<br/>Too simple on the outside and too complex on the inside.<br/>It does not sell itself. It does not explain itself. It does not try to please.<br/>It simply lies there — closed, white or dark, smooth, almost silent, like a perfect form, inside which the entire drama of taste, time, body, and origin is already enclosed.",
+    "p5": "Egg culture begins where the habit of seeing the egg only as an ingredient ends.",
+    "p6": "Not an additive. Not a protein source. Not a breakfast unit. Not a background for salt and bread.<br/>But an independent product, worthy of attention, language, memory, and conversation.",
+    "h_affirm": "We affirm:",
+    "p7": "an egg is not lower than wine, not cruder than Chinese tea, and not simpler than specialty coffee.<br/>It simply forgives inattention less.",
+    "p8": "Because the egg is a product of nuance.<br/>It should not be consumed, but encountered.<br/>Not swallowed, but listened to.<br/>Not evaluated on the go, but allowed to enter perception entirely: by temperature, viscosity, minerality, sulfur shadow, grain breath, the slow unfolding of the yolk, the chalky trace of the white, the animal warmth, which should not be too much, but without which there is no life either.",
+    "h_subtlety": "Egg culture is a culture of subtlety.",
+    "p9": "We reject the dictatorship of crude categories: \"rustic\", \"store-bought\", \"fresh\", \"healthy\".<br/>This is not enough.",
+    "p10": "We know that between two eggs there can be a greater distance than between two bottles of wine from the same appellation zone.<br/>We know that feed is not just \"feed\", but the language of the future yolk.<br/>That the age of the hen is not a technical detail, but a factor of texture, depth, and timbre.<br/>That a white shell is not a sign of poverty, but a different way of silence.<br/>That freshness is not an absolute virtue, but only one of the stages of becoming.",
+    "h_reject": "We reject the barbaric demand for immediate brightness.",
+    "p11": "Not every great egg should impress from the first touch.<br/>Some eggs unfold over time.<br/>Some require temperature.<br/>Some — silence.<br/>Some seem almost empty until they suddenly leave a quiet collectedness in the body that cannot be confused with either satiety or suggestion.",
+    "p12": "This is Egg Qi.",
+    "p13": "We are not obliged to explain to everyone what it is.<br/>We know that any genuine gastronomic culture sooner or later comes to the concept of an impact that is greater than the sum of its descriptors.",
+    "p14": "One egg makes the gaze clearer. Another — heavier.<br/>One lifts. Another grounds.<br/>One stays only in the mouth.<br/>Another — in the spine, in the breath, in the pace of thought.<br/>To laugh at this means simply not meeting the product carefully enough.",
+    "h_discipline": "Egg culture requires a new discipline of perception.",
+    "p15": "We urge:",
+    "li1": "to distinguish the white and the yolk as two independent layers of experience;",
+    "li2": "to respect texture no less than aroma;",
+    "li3": "to hear the minerality of the shell in the aftertaste;",
+    "li4": "to notice the grain nature of the yolk;",
+    "li5": "to distinguish noble animality from a defect;",
+    "li6": "not to confuse emptiness with delicacy;",
+    "li7": "not to mistake crude saturation for depth.",
+    "h_origin": "We proclaim the right of the egg to an origin.",
+    "p16": "There are industrial, farm, backyard, and microlot eggs.<br/>There are even batches, there are nervous batches.<br/>There are open and closed eggs, light and brothy, young and aged, direct and meditative.<br/>And all this deserves not a smirk, but a language of description.",
+    "p17": "Without language, there is no culture.<br/>Without distinction, there is no memory.<br/>Without memory, there is no tradition.",
+    "p18": "We create the language of the egg not for the sake of a game, but for the sake of precision.<br/>Yes, we will talk about chalk, grain, warm down, damp shell, creamy pastiness, brothy depth, iron note, and a long protein-mineral trail.<br/>Yes, we will argue about complementary foods, breed, hen age, and whether the egg should breathe before serving.<br/>Yes, we will distinguish batches and defend the right to a white egg in a world that worships only the spectacular yolk.<br/>Because culture begins exactly where for an outsider everything \"tastes the same\".",
+    "h_vulgarity": "We also oppose the vulgarity of egg consumption.",
+    "p19": "Against turning the egg into a dumb function.<br/>Against ketchup as a means of hiding origin.<br/>A person who speaks of an egg only as protein and calories is as blind as a person who speaks of music only as a vibration of air.",
+    "p20": "The egg is not a nutrient.<br/>The egg is a form of experience.",
+    "p21": "We do not claim that everyone is obliged to become an adept.<br/>Not everyone has to drink it raw.<br/>Not everyone has to look for a chalky finish and compare Georgian hens with Crimean ones.<br/>But anyone who has once stopped, smelled, listened, distinguished, and been surprised is already on the threshold of Egg Culture.",
+    "p22": "This culture is not mass — and should not be mass.<br/>Everything genuine begins with a minority of the attentive.",
+    "p23": "We are for slow discovery.<br/>For respect for form.<br/>For precision of words.<br/>For the rehabilitation of the subtle.<br/>For the egg as an object of contemplation, and not just consumption.",
+    "p24": "We believe that one day the day will come when the question<br/><span class=\"text-italic\">\"what did you drink today?\"</span><br/>can receive a quiet, dignified answer:<br/><span class=\"text-italic\">\"a good white egg, early batch, very clean, with soft Egg Qi.\"</span>",
+    "p25": "And there will be no joke or shame in this.",
+    "finale": "Because by that time we will have already won."
+  },
+  "guide": {
+    "pageTitle": "Guide | Egg Culture",
+    "title": "Guide",
+    "inDev": "In development..."
+  },
+  "merch": {
+    "pageTitle": "Boutique | Egg Culture",
+    "title": "Boutique",
+    "inDev": "In development..."
+  },
+  "blog": {
+    "pageTitle": "Blog | Egg Culture",
+    "title": "Blog",
+    "inDev": "In development..."
+  },
+  "events": {
+    "pageTitle": "Events | Egg Culture",
+    "title": "Events"
+  },
+  "terroir": {
+    "title": "Egg Terroir",
+    "subtitle": "The Geography of Egg Qi. Explore texture and origin.",
+    "labels": {
+      "breed": "Breed",
+      "diet": "Diet",
+      "profile": "Profile"
+    },
+    "regions": {
+      "japan": {
+        "name": "Japan",
+        "breed": "Shokoku",
+        "diet": "Fermented rice, seaweed",
+        "profile": "Creamy texture, focused Egg Qi"
+      },
+      "france": {
+        "name": "Loire Valley",
+        "breed": "Maran",
+        "diet": "Grape pomace, wild alfalfa",
+        "profile": "Buttery texture, grounding Egg Qi"
+      },
+      "chile": {
+        "name": "Andes (Chile)",
+        "breed": "Araucana",
+        "diet": "Alpine herbs",
+        "profile": "Mineral aftertaste, elevating Egg Qi"
+      },
+      "russia": {
+        "name": "Russian North",
+        "breed": "Russian White",
+        "diet": "Grain, pine needles and flaxseed",
+        "profile": "Dense, almost bready albumen, warming Egg Qi"
+      },
+      "china": {
+        "name": "Sichuan Province",
+        "breed": "Silkie",
+        "diet": "Bamboo, insects, fermented soy",
+        "profile": "Delicate yolk with earthy tones, meditative Egg Qi"
+      },
+      "italy": {
+        "name": "Tuscany",
+        "breed": "Ancona",
+        "diet": "Tomato pomace and Mediterranean herbs",
+        "profile": "Bright summer yolk, invigorating Egg Qi"
+      },
+      "usa": {
+        "name": "California",
+        "breed": "Plymouth Rock",
+        "diet": "Free-range corn and pumpkin seeds",
+        "profile": "Sweetish pasty yolk, confident Egg Qi"
+      },
+      "australia": {
+        "name": "New South Wales",
+        "breed": "Australorp",
+        "diet": "Wild sorghum and eucalyptus blossom",
+        "profile": "Dry minerality, wild and free Egg Qi"
+      }
+    }
+  }
+}

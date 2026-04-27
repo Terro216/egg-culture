@@ -1,28 +1,32 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import MonumentalEgg from "../../components/MonumentalEgg.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from '@app/layouts/Layout.astro';
+import MonumentalEgg from '@shared/ui/MonumentalEgg/MonumentalEgg.astro';
+import { TerroirMap } from '@features/TerroirMap/TerroirMap';
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
 }
 
 const { lang } = Astro.params;
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={i18next.t("home.pageTitle")} lang={lang as string}>
+<Layout title={t("home.pageTitle")} lang={lang as string}>
   <div class="container hero text-center">
     <div class="hero-content flex-col gap-lg">
-      <h1>{i18next.t("home.heroTitle")}</h1>
+      <h1>{t("home.heroTitle")}</h1>
       <MonumentalEgg />
-      <p>{i18next.t("home.heroSubtitle")}</p>
+      <p>{t("home.heroSubtitle")}</p>
       <div style="padding-bottom: 2rem;">
         <a href={`/${lang}/manifesto`} class="btn"
-          >{i18next.t("home.readManifesto")}</a
+          >{t("home.readManifesto")}</a
         >
       </div>
     </div>
+  </div>
+  <div class="container">
+    <TerroirMap client:visible dict={t("terroir")} />
   </div>
 </Layout>
 
@@ -40,7 +44,7 @@ i18next.changeLanguage(lang as string);
 
   h1 {
     font-size: 4rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
   }
 
   p {

@@ -1,0 +1,83 @@
+---
+import { getLangFromUrl, useTranslations, useTranslatedPath } from '@shared/i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const currentPath = Astro.url.pathname;
+const ruUrl = currentPath.replace(new RegExp(`^/${lang}`), "/ru");
+const enUrl = currentPath.replace(new RegExp(`^/${lang}`), "/en");
+---
+
+<header class="site-header">
+  <div class="container header-container">
+    <a href={translatePath("/")} class="logo">{t("home.heroTitle")}</a>
+    <nav class="main-nav">
+      <a href={translatePath("/manifesto")}>{t("nav.manifesto")}</a>
+      <a href={translatePath("/guide")}>{t("nav.guide")}</a>
+      <a href={translatePath("/tools")}>{t("nav.tools")}</a>
+      <a href={translatePath("/merch")}>{t("nav.merch")}</a>
+      <a href={translatePath("/blog")}>{t("nav.blog")}</a>
+      <a href={translatePath("/events")}>{t("nav.events")}</a>
+      <div class="lang-switcher">
+        <a href={ruUrl} class={lang === "ru" ? "active" : ""}>🇷🇺</a>
+        <a href={enUrl} class={lang === "en" ? "active" : ""}>🇬🇧</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border-color, rgba(43, 43, 43, 0.1));
+  }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-family: var(--font-serif-headers, 'Playfair Display', serif);
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .main-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .main-nav a {
+    font-size: 1.1rem;
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+  }
+
+  .lang-switcher a {
+    font-size: 1.2rem;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .lang-switcher a.active,
+  .lang-switcher a:hover {
+    opacity: 1;
+  }
+</style>

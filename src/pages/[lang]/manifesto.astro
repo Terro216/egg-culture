@@ -1,91 +1,91 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from '@app/layouts/Layout.astro';
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
 }
 
 const { lang } = Astro.params;
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={i18next.t("manifesto.pageTitle")} lang={lang as string}>
+<Layout title={t("manifesto.pageTitle")} lang={lang as string}>
   <div class="container">
     <article class="manifesto">
-      <h1>{i18next.t("manifesto.title")}</h1>
+      <h1>{t("manifesto.title")}</h1>
 
-      <p class="lead">{i18next.t("manifesto.lead")}</p>
+      <p class="lead">{t("manifesto.lead")}</p>
 
-      <p>{i18next.t("manifesto.p1")}</p>
-      <p>{i18next.t("manifesto.p2")}</p>
-      <p>{i18next.t("manifesto.p3")}</p>
+      <p>{t("manifesto.p1")}</p>
+      <p>{t("manifesto.p2")}</p>
+      <p>{t("manifesto.p3")}</p>
 
-      <p set:html={i18next.t("manifesto.p4")} />
+      <p set:html={t("manifesto.p4")} />
 
-      <p class="text-bold">{i18next.t("manifesto.p5")}</p>
+      <p class="text-bold">{t("manifesto.p5")}</p>
 
-      <p set:html={i18next.t("manifesto.p6")} />
+      <p set:html={t("manifesto.p6")} />
 
-      <h2>{i18next.t("manifesto.h_affirm")}</h2>
-      <p set:html={i18next.t("manifesto.p7")} />
+      <h2>{t("manifesto.h_affirm")}</h2>
+      <p set:html={t("manifesto.p7")} />
 
-      <p set:html={i18next.t("manifesto.p8")} />
+      <p set:html={t("manifesto.p8")} />
 
-      <h2>{i18next.t("manifesto.h_subtlety")}</h2>
+      <h2>{t("manifesto.h_subtlety")}</h2>
 
-      <p set:html={i18next.t("manifesto.p9")} />
+      <p set:html={t("manifesto.p9")} />
 
-      <p set:html={i18next.t("manifesto.p10")} />
+      <p set:html={t("manifesto.p10")} />
 
-      <h2>{i18next.t("manifesto.h_reject")}</h2>
+      <h2>{t("manifesto.h_reject")}</h2>
 
-      <p set:html={i18next.t("manifesto.p11")} />
+      <p set:html={t("manifesto.p11")} />
 
-      <p class="text-bold">{i18next.t("manifesto.p12")}</p>
+      <p class="text-bold">{t("manifesto.p12")}</p>
 
-      <p set:html={i18next.t("manifesto.p13")} />
+      <p set:html={t("manifesto.p13")} />
 
-      <p set:html={i18next.t("manifesto.p14")} />
+      <p set:html={t("manifesto.p14")} />
 
-      <h2>{i18next.t("manifesto.h_discipline")}</h2>
+      <h2>{t("manifesto.h_discipline")}</h2>
 
-      <p>{i18next.t("manifesto.p15")}</p>
+      <p>{t("manifesto.p15")}</p>
       <ul>
-        <li>{i18next.t("manifesto.li1")}</li>
-        <li>{i18next.t("manifesto.li2")}</li>
-        <li>{i18next.t("manifesto.li3")}</li>
-        <li>{i18next.t("manifesto.li4")}</li>
-        <li>{i18next.t("manifesto.li5")}</li>
-        <li>{i18next.t("manifesto.li6")}</li>
-        <li>{i18next.t("manifesto.li7")}</li>
+        <li>{t("manifesto.li1")}</li>
+        <li>{t("manifesto.li2")}</li>
+        <li>{t("manifesto.li3")}</li>
+        <li>{t("manifesto.li4")}</li>
+        <li>{t("manifesto.li5")}</li>
+        <li>{t("manifesto.li6")}</li>
+        <li>{t("manifesto.li7")}</li>
       </ul>
 
-      <h2>{i18next.t("manifesto.h_origin")}</h2>
+      <h2>{t("manifesto.h_origin")}</h2>
 
-      <p set:html={i18next.t("manifesto.p16")} />
+      <p set:html={t("manifesto.p16")} />
 
-      <p set:html={i18next.t("manifesto.p17")} />
+      <p set:html={t("manifesto.p17")} />
 
-      <p set:html={i18next.t("manifesto.p18")} />
+      <p set:html={t("manifesto.p18")} />
 
-      <h2>{i18next.t("manifesto.h_vulgarity")}</h2>
+      <h2>{t("manifesto.h_vulgarity")}</h2>
 
-      <p set:html={i18next.t("manifesto.p19")} />
+      <p set:html={t("manifesto.p19")} />
 
-      <p class="text-bold" set:html={i18next.t("manifesto.p20")} />
+      <p class="text-bold" set:html={t("manifesto.p20")} />
 
-      <p set:html={i18next.t("manifesto.p21")} />
+      <p set:html={t("manifesto.p21")} />
 
-      <p set:html={i18next.t("manifesto.p22")} />
+      <p set:html={t("manifesto.p22")} />
 
-      <p set:html={i18next.t("manifesto.p23")} />
+      <p set:html={t("manifesto.p23")} />
 
-      <p set:html={i18next.t("manifesto.p24")} />
+      <p set:html={t("manifesto.p24")} />
 
-      <p>{i18next.t("manifesto.p25")}</p>
+      <p>{t("manifesto.p25")}</p>
 
-      <p class="finale">{i18next.t("manifesto.finale")}</p>
+      <p class="finale">{t("manifesto.finale")}</p>
     </article>
   </div>
 </Layout>
@@ -101,14 +101,14 @@ i18next.changeLanguage(lang as string);
     font-size: 3.5rem;
     text-align: center;
     padding-bottom: 3rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
   }
 
   h2 {
     font-size: 2rem;
     padding-top: 3rem;
     padding-bottom: 1.5rem;
-    color: var(--text-color);
+    color: var(--color-text);
   }
 
   p {
@@ -140,7 +140,7 @@ i18next.changeLanguage(lang as string);
 
   ul li::before {
     content: "•";
-    color: var(--accent-color);
+    color: var(--color-yolk);
     position: absolute;
     left: -1.5rem;
   }

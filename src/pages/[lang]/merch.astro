@@ -1,6 +1,6 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import i18next from "i18next";
+import { useTranslations, type Lang } from '@shared/i18n/utils';
+import Layout from '@app/layouts/Layout.astro';
 import { merchItems } from "../../data/content";
 
 export function getStaticPaths() {
@@ -8,16 +8,16 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-i18next.changeLanguage(lang as string);
+const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={i18next.t("merch.pageTitle")} lang={lang as string}>
+<Layout title={t("merch.pageTitle")} lang={lang as string}>
   <div
     class="container flex-col gap-2xl"
     style="padding-top: 4rem; padding-bottom: 6rem;"
   >
     <div class="text-center flex-col gap-sm">
-      <h1 class="page-title">{i18next.t("merch.title")}</h1>
+      <h1 class="page-title">{t("merch.title")}</h1>
     </div>
 
     <div class="merch-gallery">
@@ -47,7 +47,7 @@ i18next.changeLanguage(lang as string);
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     padding-bottom: 2rem;
     margin: 0;
   }
@@ -78,7 +78,7 @@ i18next.changeLanguage(lang as string);
     height: 400px; /* Adjust height as needed */
     overflow: hidden;
     padding-bottom: 1.5rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(43, 43, 43, 0.1);
     background-color: rgba(0, 0, 0, 0.05);
   }
 
@@ -102,9 +102,9 @@ i18next.changeLanguage(lang as string);
   }
 
   .merch-title {
-    font-family: var(--font-display);
+    font-family: var(--font-serif-headers);
     font-size: 2.2rem;
-    color: var(--accent-color);
+    color: var(--color-yolk);
     margin: 0;
     line-height: 1.2;
   }

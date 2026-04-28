@@ -3,7 +3,7 @@
     "manifesto": "Manifesto",
     "guide": "Guide",
     "tools": "Tools",
-    "merch": "Boutique",
+    "shop": "Boutique",
     "blog": "Blog",
     "events": "Events"
   },
@@ -115,7 +115,7 @@
     "title": "Guide",
     "inDev": "In development..."
   },
-  "merch": {
+  "shop": {
     "pageTitle": "Boutique | Egg Culture",
     "title": "Boutique",
     "inDev": "In development..."

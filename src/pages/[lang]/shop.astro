@@ -1,7 +1,7 @@
 ---
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from '@app/layouts/Layout.astro';
-import { merchItems } from "../../data/content";
+import { shopItems } from "../../data/content";
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
@@ -11,29 +11,29 @@ const { lang } = Astro.params;
 const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={t("merch.pageTitle")} lang={lang as string}>
+<Layout title={t("shop.pageTitle")} lang={lang as string}>
   <div
     class="container flex-col gap-2xl"
     style="padding-top: 4rem; padding-bottom: 6rem;"
   >
     <div class="text-center flex-col gap-sm">
-      <h1 class="page-title">{t("merch.title")}</h1>
+      <h1 class="page-title">{t("shop.title")}</h1>
     </div>
 
-    <div class="merch-gallery">
+    <div class="shop-gallery">
       {
-        merchItems.map((item) => (
-          <a href={`/${lang}/merch/${item.slug}`} class="merch-card">
-            <div class="merch-image-wrapper">
+        shopItems.map((item) => (
+          <a href={`/${lang}/shop/${item.slug}`} class="shop-card">
+            <div class="shop-image-wrapper">
               <img
                 src={item.image}
                 alt={item.title[lang as "ru" | "en"]}
                 loading="lazy"
               />
             </div>
-            <div class="merch-info flex-col gap-sm">
-              <h2 class="merch-title">{item.title[lang as "ru" | "en"]}</h2>
-              <p class="merch-subtitle">
+            <div class="shop-info flex-col gap-sm">
+              <h2 class="shop-title">{item.title[lang as "ru" | "en"]}</h2>
+              <p class="shop-subtitle">
                 {item.shortDescription[lang as "ru" | "en"]}
               </p>
             </div>
@@ -52,13 +52,13 @@ const t = useTranslations(lang as Lang);
     margin: 0;
   }
 
-  .merch-gallery {
+  .shop-gallery {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 3rem;
   }
 
-  .merch-card {
+  .shop-card {
     display: flex;
     flex-direction: column;
     text-decoration: none;
@@ -68,12 +68,12 @@ const t = useTranslations(lang as Lang);
       opacity 0.3s ease;
   }
 
-  .merch-card:hover {
+  .shop-card:hover {
     transform: translateY(-8px);
     opacity: 0.9;
   }
 
-  .merch-image-wrapper {
+  .shop-image-wrapper {
     width: 100%;
     height: 400px; /* Adjust height as needed */
     overflow: hidden;
@@ -82,7 +82,7 @@ const t = useTranslations(lang as Lang);
     background-color: rgba(0, 0, 0, 0.05);
   }
 
-  .merch-image-wrapper img {
+  .shop-image-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -92,16 +92,16 @@ const t = useTranslations(lang as Lang);
       transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
-  .merch-card:hover .merch-image-wrapper img {
+  .shop-card:hover .shop-image-wrapper img {
     filter: grayscale(0) brightness(1);
     transform: scale(1.03);
   }
 
-  .merch-info {
+  .shop-info {
     text-align: center;
   }
 
-  .merch-title {
+  .shop-title {
     font-family: var(--font-serif-headers);
     font-size: 2.2rem;
     color: var(--color-yolk);
@@ -109,21 +109,21 @@ const t = useTranslations(lang as Lang);
     line-height: 1.2;
   }
 
-  .merch-subtitle {
+  .shop-subtitle {
     font-size: 1.1rem;
     opacity: 0.8;
     margin: 0;
   }
 
   @media (max-width: 768px) {
-    .merch-gallery {
+    .shop-gallery {
       grid-template-columns: 1fr;
       gap: 2rem;
     }
-    .merch-image-wrapper {
+    .shop-image-wrapper {
       height: 300px;
     }
-    .merch-title {
+    .shop-title {
       font-size: 1.8rem;
     }
   }

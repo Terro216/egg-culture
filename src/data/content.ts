@@ -3,7 +3,7 @@ export type TranslationString = {
   en: string;
 };
 
-export type MerchItem = {
+export type ShopItem = {
   id: string;
   slug: string;
   title: TranslationString;
@@ -37,7 +37,7 @@ export type EventItem = {
   detailedImage?: string;
 };
 
-export const merchItems: MerchItem[] = [
+export const shopItems: ShopItem[] = [
   {
     id: "1",
     slug: "egg-cup-silence",
@@ -54,6 +54,7 @@ export const merchItems: MerchItem[] = [
       en: "An object created in co-authorship with silence. The dark, coarse texture of the clay emphasizes the fragile perfection of the white shell. Each piece is unique.",
     },
     price: "4 500 ₽",
+    // PROMPT: Minimalist product photography of a dark grey chamotte clay egg cup on a smooth dark background, soft side lighting, wabi-sabi aesthetic
     image: "/egg-cup-silence.webp",
   },
   {
@@ -72,6 +73,7 @@ export const merchItems: MerchItem[] = [
       en: "A tool for a pure encounter. Natural mother-of-pearl is chemically inert: it does not react with the yolk's sulfur, keeping the organoleptic profile intact.",
     },
     price: "5 200 ₽",
+    // PROMPT: Macro shot of an elegant mother-of-pearl spoon resting on a pristine white marble surface, high-end jewelry lighting
     image: "/adept-spoon.webp",
   },
   {
@@ -90,7 +92,84 @@ export const merchItems: MerchItem[] = [
       en: "Heavy polished brass. The mechanical countdown of seconds is a ritual of preparing the mind for the moment the form unfolds. Precision manifested as weight.",
     },
     price: "8 800 ₽",
+    // PROMPT: Sleek polished brass mechanical timer, brutalist minimalist design, dramatic studio lighting against a black background
     image: "/precision-timer.webp",
+  },
+  {
+    id: "4",
+    slug: "dome-plate",
+    title: {
+      ru: "The Dome Plate",
+      en: "The Dome Plate",
+    },
+    shortDescription: {
+      ru: "Блюдо для Купола",
+      en: "Dome Plate",
+    },
+    description: {
+      ru: "Плоское блюдо из матового белого фарфора с едва заметным углублением. Создано для бережной фиксации очищенного яйца, позволяя оценить архитектуру 'Купола' до начала дегустации.",
+      en: "A flat plate made of matte white porcelain with a barely noticeable depression. Created to gently fix the peeled egg, allowing you to appreciate the architecture of the 'Dome' before tasting.",
+    },
+    price: "6 100 ₽",
+    // PROMPT: Top-down view of a perfectly minimalist matte white porcelain plate with a very shallow smooth dimple in the center, resting on a white concrete table, soft daylight, ultra-clean aesthetic
+    image: "/dome-plate.webp",
+  },
+  {
+    id: "5",
+    slug: "chalaza-tweezers",
+    title: {
+      ru: "Purity",
+      en: "Purity",
+    },
+    shortDescription: {
+      ru: "Пинцет для Халазы",
+      en: "Chalaza Tweezers",
+    },
+    description: {
+      ru: "Хирургическая сталь с титановым покрытием. Инструмент абсолютного контроля. Позволяет элегантно удалить халазу, не нарушая гармонию 'Альбуминового Облака' при сырой подаче.",
+      en: "Surgical steel with titanium coating. An instrument of absolute control. Allows you to elegantly remove the chalaza without disturbing the harmony of the 'Albumin Cloud' during raw serving.",
+    },
+    price: "3 900 ₽",
+    // PROMPT: Macro studio shot of surgical precision tweezers with a matte dark titanium finish, resting on a sleek grey slate board, sharp focus, luxury tool photography
+    image: "/chalaza-tweezers.webp",
+  },
+  {
+    id: "6",
+    slug: "blanc-piercer",
+    title: {
+      ru: "Point Blanc",
+      en: "Point Blanc",
+    },
+    shortDescription: {
+      ru: "Стилет-перфоратор",
+      en: "Stiletto Piercer",
+    },
+    description: {
+      ru: "Монолитный алюминиевый цилиндр со скрытой иглой. Микроскопический прокол на тупом конце скорлупы стравливает давление, гарантируя идеальное отделение мембраны и сохраняя форму 'Светлого Стиля (Blanc)'.",
+      en: "Monolithic aluminum cylinder with a hidden needle. A microscopic puncture at the blunt end of the shell releases pressure, ensuring perfect membrane separation and preserving the 'Light Style (Blanc)' form.",
+    },
+    price: "4 300 ₽",
+    // PROMPT: Close up of a minimalist brushed aluminum cylinder, subtle premium design, standing upright on a perfectly smooth white surface, sleek futuristic kitchenware, cinematic lighting
+    image: "/blanc-piercer.webp",
+  },
+  {
+    id: "7",
+    slug: "qi-incense",
+    title: {
+      ru: "Aura",
+      en: "Aura",
+    },
+    shortDescription: {
+      ru: "Сенсорный камертон",
+      en: "Sensory Tuning Fork",
+    },
+    description: {
+      ru: "Набор благовоний с тонким ароматом сухого сена и минералов. Создает 'Вертикаль' перед началом ритуала, очищая рецепторы и подготавливая ум к восприятию тончайших нюансов Яй Ци.",
+      en: "A set of incense with a delicate aroma of dry hay and minerals. Creates a 'Vertical' before the start of the ritual, clearing receptors and preparing the mind to perceive the subtlest nuances of Egg Qi.",
+    },
+    price: "2 500 ₽",
+    // PROMPT: Minimalist zen arrangement of thin premium incense sticks leaning against a raw rough stone, delicate wisp of smoke, soft morning light, muted beige and grey tones
+    image: "/qi-incense.webp",
   },
 ];
 

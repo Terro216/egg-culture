@@ -9,7 +9,7 @@
     "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
-    "start": "astro preview --allowed-hosts=egg.ilyamedve.dev",
+    "start": "astro preview",
     "astro": "astro"
   },
   "dependencies": {

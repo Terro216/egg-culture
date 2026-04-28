@@ -139,6 +139,15 @@ export const blogPosts: BlogPost[] = [
   },
 ];
 
+const getFutureDate = (minDays: number, maxDays: number) => {
+  const days = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
+  const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yy = String(date.getFullYear()).slice(-2);
+  return `${dd}.${mm}.${yy}`;
+};
+
 export const eventItems: EventItem[] = [
   {
     id: "1",
@@ -147,7 +156,7 @@ export const eventItems: EventItem[] = [
       ru: "Яичная Школа. Поток II",
       en: "Egg School. Flow II",
     },
-    date: "15.11.26",
+    date: getFutureDate(4, 10),
     image: "/egg-school.webp",
     location: {
       ru: "Секретное пространство, Москва",
@@ -169,7 +178,7 @@ export const eventItems: EventItem[] = [
       ru: "Grand Degustation",
       en: "Grand Degustation",
     },
-    date: "05.12.26",
+    date: getFutureDate(4, 10),
     image: "/blind-tasting.webp",
     location: {
       ru: "Boutique, Moscow",
@@ -182,6 +191,98 @@ export const eventItems: EventItem[] = [
     description: {
       ru: "<p>Встреча для тех, кто готов отличать зерновое дыхание от травяного в послевкусии.</p>",
       en: "<p>A meeting for those ready to distinguish grain breath from herbal breath in the aftertaste.</p>",
+    },
+  },
+  {
+    id: "3",
+    slug: "meditation-on-yolk",
+    title: {
+      ru: "Медитация: Взгляд в Желток",
+      en: "Meditation: Gaze into the Yolk",
+    },
+    date: getFutureDate(4, 10),
+    // PROMPT: Minimalist macro photography of a perfectly round, vibrant golden egg yolk resting on a matte dark grey clay plate, dramatic soft lighting, zen aesthetic, 8k resolution
+    image: "/meditation-yolk.webp",
+    location: {
+      ru: "Галерея 'Форма', Санкт-Петербург",
+      en: "Gallery 'Form', Saint Petersburg",
+    },
+    shortDescription: {
+      ru: "Практика поиска Яй Ци через визуальную концентрацию на пастозном теле желтка.",
+      en: "The practice of finding Egg Qi through visual concentration on the pasty body of the yolk.",
+    },
+    description: {
+      ru: "<p>Тихое событие. Полное отсутствие света, кроме одного направленного луча на центр экспозиции.</p>",
+      en: "<p>A quiet event. Complete absence of light except for one directed beam on the center of the exposition.</p>",
+    },
+  },
+  {
+    id: "4",
+    slug: "white-shell-aesthetics",
+    title: {
+      ru: "Светлый Стиль (Blanc): Лекция",
+      en: "Light Style (Blanc): Lecture",
+    },
+    date: getFutureDate(4, 10),
+    // PROMPT: A single pure white egg levitating above a raw white marble pedestal, high-end gallery lighting, ultra-minimalism, empty white space, Apple style product photography
+    image: "/white-shell.webp",
+    location: {
+      ru: "Лекторий 'Купол', Казань",
+      en: "Lecture Hall 'Dome', Kazan",
+    },
+    shortDescription: {
+      ru: "Разрушение мифов о фермерских продуктах и апология идеальной формы белого яйца.",
+      en: "Destroying myths about farm products and an apology for the perfect form of the white egg.",
+    },
+    description: {
+      ru: "<p>Лекция об Эстетике молчания и отказе от грубой классификации индустриального стрима.</p>",
+      en: "<p>A lecture on the Aesthetics of Silence and the rejection of the rough classification of the industrial stream.</p>",
+    },
+  },
+  {
+    id: "5",
+    slug: "albumen-texture-workshop",
+    title: {
+      ru: "Текстура как Текст",
+      en: "Texture as Text",
+    },
+    date: getFutureDate(4, 10),
+    // PROMPT: Close-up abstract shot of softly cooked egg white, showing delicate textures resembling a white cloud or silk, pure white background, soft subtle shadows
+    image: "/albumen-texture.webp",
+    location: {
+      ru: "Студия 'Альбуминовое Облако', Москва",
+      en: "Studio 'Albumin Cloud', Moscow",
+    },
+    shortDescription: {
+      ru: "Воркшоп по оценке упругости 'Купола' и распознаванию 'мелового следа' белка.",
+      en: "Workshop on assessing the elasticity of the 'Dome' and recognizing the 'chalky trace' of the white.",
+    },
+    description: {
+      ru: "<p>Практическая сессия по температурному контролю и деконструкции текстуры белка.</p>",
+      en: "<p>Practical session on temperature control and deconstruction of the egg white texture.</p>",
+    },
+  },
+  {
+    id: "6",
+    slug: "terroir-exploration",
+    title: {
+      ru: "Яичный Терруар: Экспедиция",
+      en: "Egg Terroir: Expedition",
+    },
+    date: getFutureDate(4, 10),
+    // PROMPT: A minimalist landscape of a foggy morning meadow with a single elegant hen standing gracefully, muted desaturated colors, misty atmosphere, cinematic art photography
+    image: "/terroir-expedition.webp",
+    location: {
+      ru: "Сбор: Бутик, Москва",
+      en: "Gathering: Boutique, Moscow",
+    },
+    shortDescription: {
+      ru: "Выезд на локальную ферму для изучения влияния диеты и климата на текстурно-вкусовой профиль.",
+      en: "Trip to a local farm to study the influence of diet and climate on the texture and flavor profile.",
+    },
+    description: {
+      ru: "<p>Понимание того, как регион формирует уникальное Яй Ци. Возвращение к корням Дворового Дикого стиля.</p>",
+      en: "<p>Understanding how the region forms a unique Egg Qi. Returning to the roots of the Yard Wild style.</p>",
     },
   },
 ];

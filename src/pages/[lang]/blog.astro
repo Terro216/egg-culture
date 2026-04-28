@@ -1,14 +1,24 @@
 ---
+export const prerender = false;
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from '@app/layouts/Layout.astro';
 import { blogPosts } from "../../data/content";
+import { getCachedWorldNews } from "@shared/utils/newsCache";
+import WorldNewsList from "@features/WorldNews/WorldNewsList";
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
 }
 
 const { lang } = Astro.params;
+
+if (lang !== "ru" && lang !== "en") {
+  return Astro.redirect("/ru/blog");
+}
+
 const t = useTranslations(lang as Lang);
+
+const worldNews = await getCachedWorldNews(lang as "ru" | "en");
 ---
 
 <Layout title={t("blog.pageTitle")} lang={lang as string}>
@@ -20,38 +30,85 @@ const t = useTranslations(lang as Lang);
       <h1 class="page-title">{t("blog.title")}</h1>
     </div>
 
-    <div class="blog-list flex-col gap-xl">
-      {
-        blogPosts.map((post) => (
-          <a href={`/${lang}/blog/${post.slug}`} class="blog-post-row">
-            <div class="post-image-wrapper">
-              <img
-                src={post.image}
-                alt={post.title[lang as "ru" | "en"]}
-                loading="lazy"
-              />
-            </div>
-            <div class="post-content-wrapper flex-col">
-              <span class="post-date">{post.date}</span>
-              <h2 class="post-title">{post.title[lang as "ru" | "en"]}</h2>
-              <p class="post-excerpt">{post.excerpt[lang as "ru" | "en"]}</p>
-              <span class="read-more">
-                {lang === "ru" ? "Читать полностью →" : "Read fully →"}
-              </span>
-            </div>
-          </a>
-        ))
-      }
+    <div class="tabs-container">
+      <button class="tab-btn active" data-target="local-news">{lang === 'ru' ? 'Локальные статьи' : 'Local Articles'}</button>
+      <button class="tab-btn" data-target="world-news">{lang === 'ru' ? 'Мировые новости' : 'World News'}</button>
+    </div>
+
+    <div id="local-news" class="blog-section tab-content">
+      <div class="blog-list flex-col gap-xl">
+        {
+          blogPosts.map((post) => (
+            <a href={`/${lang}/blog/${post.slug}`} class="blog-post-row">
+              <div class="post-image-wrapper">
+                <img
+                  src={post.image}
+                  alt={post.title[lang as "ru" | "en"]}
+                  loading="lazy"
+                />
+              </div>
+              <div class="post-content-wrapper flex-col">
+                <span class="post-date">{post.date}</span>
+                <h2 class="post-title">{post.title[lang as "ru" | "en"]}</h2>
+                <p class="post-excerpt">{post.excerpt[lang as "ru" | "en"]}</p>
+                <span class="read-more">
+                  {lang === "ru" ? "Читать полностью →" : "Read fully →"}
+                </span>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <div id="world-news" class="blog-section tab-content" style="display: none;">
+      <WorldNewsList client:load news={worldNews} lang={lang as "ru" | "en"} />
     </div>
   </div>
 </Layout>
 
-<style>
+<style is:global>
   .page-title {
     font-size: 3.5rem;
     color: var(--color-yolk);
     padding-bottom: 2rem;
     margin: 0;
+  }
+
+  .tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 4rem;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    border-bottom: 1px solid rgba(43, 43, 43, 0.1);
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    font-family: var(--font-serif-headers);
+    font-size: 1.8rem;
+    color: var(--color-text);
+    cursor: pointer;
+    opacity: 0.4;
+    transition: all 0.3s ease;
+    padding: 0 1rem 1rem 1rem;
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+  }
+
+  .tab-btn:hover {
+    opacity: 0.7;
+  }
+
+  .tab-btn.active {
+    opacity: 1;
+    color: var(--color-yolk);
+    border-bottom: 2px solid var(--color-yolk);
   }
 
   .blog-list {
@@ -77,6 +134,11 @@ const t = useTranslations(lang as Lang);
 
   .blog-post-row:hover {
     opacity: 0.8;
+    color: inherit;
+  }
+
+  .blog-post-row:hover .post-title {
+    color: var(--color-yolk);
   }
 
   .post-image-wrapper {
@@ -118,6 +180,7 @@ const t = useTranslations(lang as Lang);
     margin: 0;
     line-height: 1.1;
     color: var(--color-text); /* Use text-color for titles in blog list */
+    transition: color 0.3s ease;
   }
 
   .post-excerpt {
@@ -142,6 +205,26 @@ const t = useTranslations(lang as Lang);
     padding-top: 0.5rem;
   }
 
+  .load-more-btn {
+    background: none;
+    border: 1px solid var(--color-text);
+    color: var(--color-text);
+    font-family: var(--font-sans-ui);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 1rem 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+  }
+
+  .load-more-btn:hover {
+    opacity: 1;
+    background: var(--color-text);
+    color: var(--color-shell);
+  }
+
   @media (max-width: 768px) {
     .blog-post-row {
       flex-direction: column;
@@ -162,3 +245,28 @@ const t = useTranslations(lang as Lang);
     }
   }
 </style>
+
+<script>
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove active classes
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => (c as HTMLElement).style.display = 'none');
+
+      // Add active class to clicked button
+      btn.classList.add('active');
+
+      // Show corresponding content
+      const targetId = btn.getAttribute('data-target');
+      if (targetId) {
+        const targetContent = document.getElementById(targetId);
+        if (targetContent) {
+          targetContent.style.display = 'block';
+        }
+      }
+    });
+  });
+</script>

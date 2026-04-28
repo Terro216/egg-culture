@@ -1,0 +1,1430 @@
+{
+  "lastFetch": {
+    "ru": 1777398091905,
+    "en": 1777398091905
+  },
+  "news": {
+    "ru": [
+      {
+        "article_id": "c4354aee785c0137cdf022102103f288",
+        "link": "https://daryo.uz/ru/2026/04/28/uzbekistan-samarkand-eksport-yaits/",
+        "title": "Самарканд заработал $4,8 млн на экспорте яиц",
+        "description": "В январе-марте текущего года Самаркандская область экспортировала в зарубежные страны 966 тонн яиц. Больще всего яиц закупил Афганистан.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "yangi daryo",
+          "daryo",
+          "самарканд",
+          "uzbekistan",
+          "яйца",
+          "афганистан",
+          "экспорт",
+          "экономика",
+          "news"
+        ],
+        "creator": [
+          "online service group"
+        ],
+        "language": "russian",
+        "country": [
+          "uzbekistan"
+        ],
+        "category": [
+          "top"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:58:07",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:21:12",
+        "image_url": "https://data.daryo.uz/media/2026/04/28/1777352331473643104_IMG_20260428_095316_374.jpg",
+        "video_url": null,
+        "source_id": "daryo_uz",
+        "source_name": "Daryo",
+        "source_priority": 99999999,
+        "source_url": "https://daryo.uz",
+        "source_icon": "https://n.bytvi.com/Daryo_Uz.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "5b826b36d648c5d7bc9aa284d5a72744",
+        "link": "https://www.lada.kz/kazakhstan-news/152377-kazakhstan-zakryl-rynok-dlia-importnykh-iaits.html",
+        "title": "Казахстан закрыл рынок для импортных яиц",
+        "description": "Казахстан ввели запрет на импорт свежих куриных яиц сроком на шесть месяцев, одновременно фиксируя рост внутреннего производства и увеличение экспорта, сообщает Lada.kz со ссылкой на LS.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "яйца",
+          "импортные",
+          "запрет",
+          "казахстан",
+          "ввоз"
+        ],
+        "creator": [
+          "lada.kz"
+        ],
+        "language": "russian",
+        "country": [
+          "russia"
+        ],
+        "category": [
+          "business",
+          "top"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-27 09:44:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-27 19:17:35",
+        "image_url": "https://www.lada.kz/cache/imagine/1200/uploads/photos/2026-04/1777265050.jpg",
+        "video_url": null,
+        "source_id": "lada",
+        "source_name": "Лада",
+        "source_priority": 4167666,
+        "source_url": "https://www.lada.kz",
+        "source_icon": "https://n.bytvi.com/lada.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      }
+    ],
+    "en": [
+      {
+        "article_id": "ad889cf61493697c4fc3d2dbaa04578b",
+        "link": "https://www.abc.net.au/news/2026-04-28/locust-riverland-migrate-nsw-pirsa-surveying/106615540",
+        "title": "Farmers and authorities on alert as locusts migrate to South Australia",
+        "description": "Multiple locust swarms in South Australia's Riverland region have put farmers and authorities on alert, prompting the South Australian Plague Locust Commissioner to send surveying teams to the region.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "loxton",
+          "biosecurity",
+          "swarms",
+          "ecologist",
+          "locust outbreak",
+          "entomologist",
+          "new south wales",
+          "the south australian plague locust commissioner",
+          "australian plague locust",
+          "department of primary industries and regions",
+          "locusts",
+          "tom fielke",
+          "geoff furness"
+        ],
+        "creator": [
+          "amelia walters"
+        ],
+        "language": "english",
+        "country": [
+          "australia"
+        ],
+        "category": [
+          "top",
+          "environment"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:37:27",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:01:47",
+        "image_url": null,
+        "video_url": null,
+        "source_id": "abc_net",
+        "source_name": "Abc",
+        "source_priority": 3795,
+        "source_url": "https://www.abc.net.au",
+        "source_icon": "https://n.bytvi.com/abc_net.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "ee458d62f22af3eda4e04de06e6f7027",
+        "link": "https://us.headtopics.com/news/study-explores-how-microgravity-affects-sperm-fertilization-82757457",
+        "title": "Study Explores How Microgravity Affects Sperm Fertilization in Space",
+        "description": "Researchers from Australia conducted experiments to simulate microgravity's impact on sperm fertilization using human, pig, and mouse samples. The study, published in Communications Biology, found that while human sperm swimming ability remained unaffected, its navigation was altered. Mice and pig sperm showed reduced fertilization success, raising concerns about reproduction in long-term space missions.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "space travel",
+          "microgravity",
+          "sperm fertilization",
+          "science and technology",
+          "reproduction in space",
+          "long-term space missions"
+        ],
+        "creator": [
+          "universetoday"
+        ],
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "top",
+          "science"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:36:10",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:36:10",
+        "image_url": "https://i.headtopics.com/images/2026/4/28/universetoday/study-explores-how-microgravity-affects-sperm-fert-study-explores-how-microgravity-affects-sperm-fert-4E06CD01421BDF7C5E5F92C1D1A619BD.webp",
+        "video_url": null,
+        "source_id": "headtopics",
+        "source_name": "Headtopics",
+        "source_priority": 43039,
+        "source_url": "https://headtopics.com",
+        "source_icon": "https://n.bytvi.com/headtopics.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "21a2a7a803f1a325f99b4077e1614180",
+        "link": "https://www.forbes.com/sites/olliebarder/2026/04/28/seeing-the-new-4k-remaster-of-angels-egg-in-the-theater-was-astonishing/",
+        "title": "Seeing The New 4K Remaster Of ‘Angel’s Egg’ In The Theater Was Astonishing",
+        "description": "While I was a little late to the party on this one, I’ve finally managed to see the new 4K remaster of 'Angel’s Egg' in the theater, and it was genuinely wondrous.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "film",
+          "4k",
+          "ova",
+          "mamoru oshii",
+          "yoshitaka amano",
+          "theater",
+          "angel's egg",
+          "blu-ray",
+          "anime"
+        ],
+        "creator": [
+          "ollie barder"
+        ],
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "technology"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:22:17",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:00:43",
+        "image_url": "https://imageio.forbes.com/specials-images/imageserve/69f03fba33146efc41e518a7/0x0.jpg",
+        "video_url": null,
+        "source_id": "forbes",
+        "source_name": "Forbes",
+        "source_priority": 154,
+        "source_url": "https://www.forbes.com",
+        "source_icon": "https://n.bytvi.com/forbes.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "7f6d3e867391150437b9959d5e75b31a",
+        "link": "https://www.businessoffood.in/15009-2/",
+        "title": "NŌDO launches India’s first Grab-n-Go Pan-Asian kitchen concept",
+        "description": "Delhi’s dining culture is shifting fast—where busy schedules, constant movement, and changing lifestyles are redefining how the city chooses to eat. Meals today are increasingly shaped by convenience, speed, and quality options that fit seamlessly into the flow of the day rather than traditional sit-down dining. Evolving food landscape has a way to make inroads [...] The post NŌDO launches India’s first Grab-n-Go Pan-Asian kitchen concept appeared first on Business of Food .",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "business of food",
+          "food entrepreneurship ideas",
+          "food service industry growth",
+          "food delivery trends",
+          "health conscious food options",
+          "food industry trends",
+          "latest food business insights",
+          "sustainable food practices",
+          "the tokyo street",
+          "food business analysis",
+          "food industry",
+          "retail industry",
+          "fmcg brands",
+          "food technology",
+          "food service",
+          "restaurant business growth",
+          "food retail",
+          "food news india",
+          "food business update",
+          "retail news"
+        ],
+        "creator": [
+          "business"
+        ],
+        "language": "english",
+        "country": [
+          "india"
+        ],
+        "category": [
+          "top",
+          "food",
+          "tourism"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:22:06",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:48:34",
+        "image_url": "https://www.businessoffood.in/wp-content/uploads/2026/04/8.jpg",
+        "video_url": null,
+        "source_id": "businessoffood_in",
+        "source_name": "Business Of Food",
+        "source_priority": 99999999,
+        "source_url": "https://www.businessoffood.in",
+        "source_icon": "https://n.bytvi.com/businessoffood_in.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "a6b8240637830f055d198cb43ae5bbeb",
+        "link": "https://ca.style.yahoo.com/32-easy-kid-friendly-dinners-204500844.html",
+        "title": "32 Easy Kid-Friendly Dinners for Picky Eaters",
+        "description": "Some days are more balanced than others, and that's perfectly fine!",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "rice porridge",
+          "chicken parmesan",
+          "chicken broth",
+          "pasta primavera recipe",
+          "pork fried rice recipe",
+          "instant pot",
+          "chicken nuggets"
+        ],
+        "creator": [
+          "meleyna nomura"
+        ],
+        "language": "english",
+        "country": [
+          "canada"
+        ],
+        "category": [
+          "sports"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:20:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:31:48",
+        "image_url": "https://s.yimg.com/ny/api/res/1.2/QgktXpo_Fn385cG6kXdvRA--/YXBwaWQ9aGlnaGxhbmRlcjt3PTE2MDA7aD0xMDg2O2NmPXdlYnA-/https://media.zenfs.com/en/cubby_ca_294/9719fc77ed0bc467812387ee7bb0efc9",
+        "video_url": null,
+        "source_id": "yahoo",
+        "source_name": "Yahoo! News",
+        "source_priority": 17,
+        "source_url": "https://news.yahoo.com",
+        "source_icon": "https://n.bytvi.com/yahoo.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "3d9350d5e41420d9167e98012db0d1bc",
+        "link": "https://www.santafenewmexican.com/news/education/new-mexicos-youngest-trout-raisers-pecos-pre-k-kids-get-hands-on-with-environmental-project/article_c950c271-4da6-4b17-bf81-80e826f1e564.html",
+        "title": "New Mexico's youngest trout-raisers? Pecos pre-K kids get hands-on with environmental project",
+        "description": "A Pecos pre-K class is learning to take care of their local environment amid looming threats of mining and drought nearby.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "education",
+          "local_news"
+        ],
+        "creator": [
+          "andré salkin asalkin com"
+        ],
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "top",
+          "environment"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:15:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:36:43",
+        "image_url": "https://bloximages.newyork1.vip.townnews.com/santafenewmexican.com/content/tncms/assets/v3/editorial/b/2e/b2e479fb-0335-4967-9863-49ff0b03de89/69e1515fe12b5.image.jpg?crop=1754%2C921%2C0%2C130&resize=1200%2C630&order=crop%2Cresize",
+        "video_url": null,
+        "source_id": "santafenewmexican",
+        "source_name": "Santa Fe New Mexican Homepage | Santa Fe New Mexic",
+        "source_priority": 34615,
+        "source_url": "https://www.santafenewmexican.com",
+        "source_icon": "https://n.bytvi.com/santafenewmexican.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "e8d32981fd31e518741de2e3a71348b9",
+        "link": "https://menafn.com/1111041396/NODO-Launches-Indias-First-Grab-Go-Pan-Asian-Kitchen-Concept-Begins-In-Delhis-Khan-Market",
+        "title": "NODO Launches India's First Grab & Go Pan-Asian Kitchen Concept, Begins In Delhi's Khan Market",
+        "description": "(MENAFN - ForPressRelease) Delhi, April 28, 2026: In Delhi, the way people eat out is becoming increasingly fluid. With little time in hand, meals are often decided around packed schedules and quick ...",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": null,
+        "language": "english",
+        "country": [
+          "india",
+          "uzbekistan",
+          "maldives",
+          "taiwan",
+          "thailand",
+          "syria",
+          "pakistan",
+          "qatar",
+          "china",
+          "kyrgyzstan",
+          "bhutan",
+          "vietnam",
+          "myanmar",
+          "georgia",
+          "brunei",
+          "iran",
+          "timor-leste",
+          "yemen",
+          "japan",
+          "north korea",
+          "south korea",
+          "bangladesh",
+          "saudi arabia",
+          "iraq",
+          "macau",
+          "philippines",
+          "turkmenistan",
+          "mongolia",
+          "armenia",
+          "cyprus",
+          "bahrain",
+          "afghanistan",
+          "tajikistan",
+          "united arab emirates",
+          "singapore",
+          "turkey",
+          "cambodia",
+          "azerbaijan",
+          "jordan",
+          "indonesia",
+          "lebanon",
+          "laos",
+          "kuwait",
+          "nepal",
+          "israel",
+          "kazakhstan",
+          "malaysia",
+          "sri lanka"
+        ],
+        "category": [
+          "top",
+          "food"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:14:31",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 09:36:11",
+        "image_url": "https://menafn.com/updates/pr/2026-04/28/F_9b9c5image_story.jpg",
+        "video_url": null,
+        "source_id": "menafn",
+        "source_name": "Menafn",
+        "source_priority": 28392,
+        "source_url": "https://menafn.com",
+        "source_icon": "https://n.bytvi.com/menafn.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "712e9c10715bd50974f3a2652fd52fd8",
+        "link": "https://ca.news.yahoo.com/tv-tonight-richard-gadd-hard-051040294.html",
+        "title": "TV tonight: Richard Gadd’s hard hitting follow-up to Baby Reindeer",
+        "description": "Half Man is the story of two 1980s schoolboys and their entwined lives. Plus: a reality series following first-time daters. Here’s what to watch this evening",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "baby reindeer",
+          "marj hogarth",
+          "jamie bell",
+          "richard gadd",
+          "stuart campbell",
+          "mitchell robertson",
+          "keith brymer jones"
+        ],
+        "creator": [
+          "hollie richardson",
+          "ali catterall",
+          "graeme virtue",
+          "jack seale",
+          "lucinda everett",
+          "hannah j davies and simon wardell"
+        ],
+        "language": "english",
+        "country": [
+          "canada"
+        ],
+        "category": [
+          "sports"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:10:40",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:31:48",
+        "image_url": "https://s.yimg.com/ny/api/res/1.2/QbaVVkiiCf4g6a4R6yWcMQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTI0MDA7aD0xOTIwO2NmPXdlYnA-/https://media.zenfs.com/en/theguardian_763/4b662d5accb49747a8842a7fe9ec30cf",
+        "video_url": null,
+        "source_id": "yahoo",
+        "source_name": "Yahoo! News",
+        "source_priority": 17,
+        "source_url": "https://news.yahoo.com",
+        "source_icon": "https://n.bytvi.com/yahoo.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": true
+      },
+      {
+        "article_id": "9f9414c05d8ae6afa16a866b01781062",
+        "link": "https://www.theguardian.com/tv-and-radio/2026/apr/28/tv-tonight-richard-gadd-baby-reindeer-half-man",
+        "title": "TV tonight: Richard Gadd’s hard hitting follow-up to Baby Reindeer",
+        "description": "Half Man is the story of two 1980s schoolboys and their entwined lives. Plus: a reality series following first-time daters. Here’s what to watch this evening 10.40pm, BBC One Richard Gadd’s follow-up to Baby Reindeer comes to regular telly, having premiered on iPlayer last week. Mitchell Robertson and Stuart Campbell are both superb as weak Niall and violent Ruben, a duo of 1980s schoolboys. We flash forward to glimpse Jamie Bell and Gadd himself playing them as adults – who are about to form a toxic lifelong bond. Jack Seale Continue reading...",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "television",
+          "television & radio",
+          "culture"
+        ],
+        "creator": [
+          "graeme virtue"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "top",
+          "entertainment"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:10:40",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:30:54",
+        "image_url": "https://i.guim.co.uk/img/media/f6f76ff0ab13b886cb7fc46da0ef538859de17c3/297_0_3571_2857/master/3571.jpg?width=140&quality=85&auto=format&fit=max&s=f580b648d92d0ae6f77cdbc11f70e54b",
+        "video_url": null,
+        "source_id": "theguardiantheguardian",
+        "source_name": "Theguardiantheguardian",
+        "source_priority": 184,
+        "source_url": "https://www.theguardian.com",
+        "source_icon": "https://n.bytvi.com/theguardiantheguardian.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "5dfad8df5c4ecb318d78245d40764088",
+        "link": "https://the-slovenia.com/en/slovenia/top-reasons-to-visit-slovenia/",
+        "title": "Top reasons to visit Slovenia",
+        "description": "Nestled in the heart of Europe, Slovenia is a hidden gem waiting to be explored. With its stunning natural landscapes, rich cultural heritage, and warm hospitality, this small yet diverse country offers something for every type of traveler. From the majestic Julian Alps and pristine lakes to charming medieval towns and vibrant cities, Slovenia is [...]",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "must-see slovenia attractions",
+          "why visit slovenia",
+          "outdoor adventures in slovenia",
+          "slovenia trip",
+          "reasons to visit slovenia",
+          "slovenia",
+          "slovenia tourism",
+          "things to do in slovenia",
+          "safe country",
+          "slovenia travel",
+          "why choose slovenia"
+        ],
+        "creator": [
+          "jure s"
+        ],
+        "language": "english",
+        "country": [
+          "slovenia"
+        ],
+        "category": [
+          "sports"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:08:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 09:46:35",
+        "image_url": "https://the-slovenia.com/wp-content/uploads/2024/07/MG_0480-12.jpg",
+        "video_url": null,
+        "source_id": "the_slovenia",
+        "source_name": "The Slovenia",
+        "source_priority": 2353824,
+        "source_url": "https://the-slovenia.com",
+        "source_icon": "https://n.bytvi.com/the_slovenia.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "de3ce04928b4ff4bf02c99f09e9b6e55",
+        "link": "https://www.theguardian.com/food/2026/apr/28/moussaka-chocolate-viennetta-chickpea-dipping-soup-mediterranean-recipes-georgina-hayden",
+        "title": "Moussaka, a chickpea soup/stew and homemade vienetta: Georgina Hayden’s Mediterranean party – recipes",
+        "description": "A fun, shareable Tunisian chickpea soup for a party, a one-pan moussaka, and a fragrant, layered, chocolate viennetta Traditionally, this would be a Tunisian breakfast, and it’s not a million miles from one of my favourites, Egyptian ful medames . But here I ’ m proposing it as an evening offering: make a big pot of delicious flavourful chickpeas, then lay out a spread of accompaniments (pickles, olives, capers, boiled eggs). Second, a good traditional moussaka is a wholesome but time-consuming process, but that ’ s not the case with this simplified version, which you can easily make on a weeknight. Finally, you might not be surprised to learn that this basil viennetta was one of the most popular recipes when we were testing dishes for my new book, MEDesque. First, of course, because it tastes unreal. Second, because everyone got a huge tug of nostalgia, and third, because everyone became giddy with excitement, trying to figure out what the flavour was. Continue reading...",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "herbs and spices",
+          "potatoes",
+          "dessert",
+          "chocolate",
+          "cheese",
+          "eggs",
+          "stew",
+          "main course",
+          "soup",
+          "north african food and drink",
+          "beans",
+          "starter",
+          "vegetables",
+          "food",
+          "bread",
+          "meat",
+          "pulses and legumes",
+          "ice-cream and sorbet",
+          "greek food and drink",
+          "lamb"
+        ],
+        "creator": [
+          "georgina hayden"
+        ],
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "lifestyle"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:00:40",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:33:45",
+        "image_url": "https://i.guim.co.uk/img/media/340bd91ded9d917841492764324d1894ed9cc662/0_2861_4380_3504/master/4380.jpg?width=140&quality=85&auto=format&fit=max&s=1c38d90d59c9de319961c645dc9c098f",
+        "video_url": null,
+        "source_id": "theguardian",
+        "source_name": "The Guardian",
+        "source_priority": 106,
+        "source_url": "https://www.theguardian.com",
+        "source_icon": "https://n.bytvi.com/theguardian.jpg",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "6f9c7b83331a5aa55f7dae49489f7f43",
+        "link": "https://inews.co.uk/inews-lifestyle/seven-foods-soaring-price-cook-instead-4382470",
+        "title": "Seven foods that are soaring in price, and what to cook with instead",
+        "description": "Cucumbers, tomatoes and peppers are getting more expensive, with chicken and steak also set to go up. Here are the swaps a food editor is making with her weekly shop",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "food and drink",
+          "food prices",
+          "features"
+        ],
+        "creator": [
+          "sophie morris"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "lifestyle"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:00:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:02:04",
+        "image_url": "https://inews.co.uk/wp-content/uploads/2025/02/SEI_201512702.jpg",
+        "video_url": null,
+        "source_id": "inews",
+        "source_name": "Inews",
+        "source_priority": 10018,
+        "source_url": "https://inews.co.uk",
+        "source_icon": "https://n.bytvi.com/inews.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "b0f7c55f0ecb3d62a1d17d7d61d03766",
+        "link": "https://inews.co.uk/inews-lifestyle/travel/loveliest-best-value-time-visit-spanish-city-4382297",
+        "title": "I’ve found the loveliest, best-value time to visit this alluring Spanish city",
+        "description": "A new exhibition at the National Gallery celebrates Zurbaran, who trained in Seville. Here's when to book a trip to his Golden Age backdrop",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "spain travel",
+          "europe travel",
+          "city break",
+          "travel"
+        ],
+        "creator": [
+          "susan gray"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "lifestyle"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:00:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:02:04",
+        "image_url": "https://inews.co.uk/wp-content/uploads/2026/04/SEI_294910198.jpg",
+        "video_url": null,
+        "source_id": "inews",
+        "source_name": "Inews",
+        "source_priority": 10018,
+        "source_url": "https://inews.co.uk",
+        "source_icon": "https://n.bytvi.com/inews.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "f9908f651720282e309af3a235f4d838",
+        "link": "https://inews.co.uk/opinion/retired-47-regret-no-excuse-grandkids-4325336",
+        "title": "I retired at 47 and regret it. Now I have no excuse to not look after the grandkids",
+        "description": null,
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "perspectives",
+          "pensions",
+          "retirement"
+        ],
+        "creator": [
+          "emma parsons-reid"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "politics"
+        ],
+        "datatype": "opinion",
+        "pubDate": "2026-04-28 05:00:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:02:13",
+        "image_url": "https://inews.co.uk/wp-content/uploads/2026/04/SEI_294874100.jpg",
+        "video_url": null,
+        "source_id": "inews",
+        "source_name": "Inews",
+        "source_priority": 10018,
+        "source_url": "https://inews.co.uk",
+        "source_icon": "https://n.bytvi.com/inews.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "b97e4f8a1e86376a928b4320bb034ffd",
+        "link": "https://www.independent.co.uk/life-style/food-and-drink/recipes/air-fryer-recipes-chilli-beef-fried-chicken-lucy-lord-b2961092.html",
+        "title": "The air fryer isn’t just for nuggets – these recipes prove it",
+        "description": "From crispy chilli beef to hot honey chicken and gooey cookies, Lucy Lord’s ‘Love Your Air Fryer’ shows how the kitchen staple has evolved into a genuinely versatile, everyday tool",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          "hannah twiggs"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "top",
+          "food"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 05:00:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:31:05",
+        "image_url": "https://static.independent.co.uk/2026/04/27/14/41/love-your-air-fryer-recipes.jpeg?width=1200&auto=webp&crop=3%3A2",
+        "video_url": null,
+        "source_id": "independentuk",
+        "source_name": "The Independent",
+        "source_priority": 290,
+        "source_url": "https://www.independent.co.uk",
+        "source_icon": "https://n.bytvi.com/independentuk.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "28550f3bc16352747ebb741e063512cc",
+        "link": "https://www.openpr.com/news/4491905/influenza-vaccine-market-to-reach-17-41-billion-by-2035",
+        "title": "Influenza Vaccine Market to Reach $17.41 Billion by 2035, Growing at 7.72% CAGR | Sanofi, GSK, Pfizer Lead Global Competition",
+        "description": "The global influenza vaccine market, valued at USD 8.27 billion in 2025, is on track to reach USD 17.41 billion by 2035, advancing at a compound annual growth rate (CAGR) of 7.72% over the forecast period. Seasonal flu infects roughly",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "pr",
+          "presses release",
+          "pr marketing",
+          "advertising",
+          "news release",
+          "pr strategy",
+          "media release",
+          "public relations",
+          "pr service",
+          "publicity",
+          "marketing",
+          "pressreleases"
+        ],
+        "creator": [
+          "roots analysis"
+        ],
+        "language": "english",
+        "country": [
+          "germany"
+        ],
+        "category": [
+          "health"
+        ],
+        "datatype": "pressrelease",
+        "pubDate": "2026-04-28 04:56:13",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:36:23",
+        "image_url": "https://cdn.open-pr.com/L/4/L428115824_g.jpg",
+        "video_url": null,
+        "source_id": "openpr",
+        "source_name": "Openpr.com",
+        "source_priority": 31972,
+        "source_url": "https://www.openpr.com",
+        "source_icon": "https://n.bytvi.com/openpr.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "1d31b764b5b6adba941d9b2a7a41441a",
+        "link": "https://www.news18.com/photogallery/lifestyle/food/8-quick-canned-fish-sandwich-ideas-for-tasty-protein-packed-meals-ws-l-10061224.html",
+        "title": "8 Quick Canned Fish Sandwich Ideas For Tasty, Protein-Packed Meals",
+        "description": "From creamy tuna classics to refreshing sardine melts, these recipes are budget-friendly, nutritious, and endlessly customizable.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "salmon sandwich recipe",
+          "mackerel sandwich",
+          "tuna mayo sandwich",
+          "spicy sardine toastie",
+          "sardine sandwich ideas",
+          "canned tuna recipes",
+          "canned fish sandwiches",
+          "salmon cucumber sandwich"
+        ],
+        "creator": [
+          "priyanka das"
+        ],
+        "language": "english",
+        "country": [
+          "india"
+        ],
+        "category": [
+          "top",
+          "food"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:52:45",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:00:34",
+        "image_url": "https://images.news18.com/ibnlive/uploads/2026/04/Easy-Canned-Fish-Sandwich-Recipes-2026-04-4a8fe20aeeb648509556d84f2abede10-1200x800.jpg",
+        "video_url": null,
+        "source_id": "news18",
+        "source_name": "News 18",
+        "source_priority": 1063,
+        "source_url": "https://www.news18.com",
+        "source_icon": "https://n.bytvi.com/news18.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "cc608042708488c671e504b73bc53296",
+        "link": "https://www.warrackherald.com.au/rapt-with-cling-wrap-2026-04-28",
+        "title": "A Mum's World: Rapt with cling wrap",
+        "description": "I think I might have a crush on my roll of Gladwrap. When I'm around it, I just can't get enough; I get clingy when I'm with my cling film. Case in point - my father-in-law's 90th Birthday Party last weekend. That roll of shiny transparent plastic was my everything when it came to food transportation and protection. How else would I have delivered my platter of curried egg sandwiches to the party as fresh as a daisy? Without that snuggly applied airtight shield of freshness provided by my Gladwrap, the bread could not have remained so sweetly soft. There's certainly no way my platter of King Island Double Brie with dried cranberries and fresh strawberries would have arrived at the party perfectly presented. Without cling wrap, everything would have toppled and rolled, with strawberries strewn under car seats and cheese knives posing problems. As it was, with the help of a little plastic wrap, everything was neatly held in place for the car trip, travelling from kitchen bench at my place to trestle table under a marquee in a backyard across town, in happy harmony. My freshly washed grapes were built into a tower on a platter and plastered down with plastic to hold them all in place. My Madeleines didn't move a muscle in motion from location A to location B, turning up on the table laid out like the petals of a flower - my precious little shell-like sponge cakes. Talk about taking the pressure off. There's nothing good about watching flies climb all over a beautifully prepared meal while the guests patiently wait for grace to be said at an Australian backyard do.It's not a problem if the plastic is in place. When cling wrap is doing its thing, the wrapping comes off after grace and, 'voila', food is protected from the blowies and good to go. As for leftovers, don't get me started on how lost I would be without my darling roll of plastic wrap. Okay, you got me started, but surely, I need not elaborate on the incredible convenience of popping an airtight seal over a plate, platter or bowl of food to make it last a little longer or survive the journey home in safety. Without a doubt, some people may consider my passionate involvement with my 'mother's little helper' to be an illicit love affair. Many might feel that I should be careful not to overuse my precious lifestyle assistant. Yes, yes, there are microplastics found even in our blood now - but blood is red and red is the colour of love and I love my Gladwrap, so it's complicated. Maybe my love is just an indication of my generation.I love my planet, but I love my food and I hate waste. Last weekend's birthday boy is certainly from the most waste conscious generation of our time though. His generation of Australians lived through the war years and needed to know how to make things last. If only they had Gladwrap.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          "yolande grosser"
+        ],
+        "language": "english",
+        "country": [
+          "australia"
+        ],
+        "category": [
+          "lifestyle",
+          "top"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:52:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:15:34",
+        "image_url": "https://wmnnews-4634.kxcdn.com/img/containers/assets/news/yolandeonline-1777272214.jpg/fbf49c46c1a971778daf12fbf8ae3103.jpg",
+        "video_url": null,
+        "source_id": "wimmeramalleenews_au",
+        "source_name": "Wimmera Mallee News",
+        "source_priority": 2373751,
+        "source_url": "https://www.wimmeramalleenews.com.au",
+        "source_icon": "https://n.bytvi.com/wimmeramalleenews_au.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "3a884f4e84adfcd73b73b8684b53d21b",
+        "link": "https://www.birminghammail.co.uk/news/midlands-news/birmingham-mcdonalds-pleads-guilty-food-33845509",
+        "title": "Birmingham McDonald's pleads guilty to food safety breaches after mice found",
+        "description": "Court hears restaurant had 'abundant signs of imminent risk to public health' after Birmingham City Council health inspection",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "birmingham city council",
+          "mcdonalds"
+        ],
+        "creator": [
+          "gurdip thandi"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "top",
+          "crime"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:52:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:18:55",
+        "image_url": "https://i2-prod.birminghammail.co.uk/news/midlands-news/article33845508.ece/ALTERNATES/s615/0_McDonalds-Kingstanding.jpg",
+        "video_url": null,
+        "source_id": "birminghammail",
+        "source_name": "Birmingham Live",
+        "source_priority": 8610,
+        "source_url": "https://www.birminghammail.co.uk",
+        "source_icon": "https://n.bytvi.com/birminghammail.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "ba45d13891b6c9c557ee3afbfeb2bfa0",
+        "link": "https://www.cobramcourier.com.au/news/what-are-australias-strongest-domestic-agricultural-industries/",
+        "title": "What are Australia’s strongest domestic agricultural industries?",
+        "description": "Australia's agriculture sector is dynamic, to say the very least. There are a growing variety of markets for farmers to fill, spanning from soy for meat alternatives...",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          "times news group"
+        ],
+        "language": "english",
+        "country": [
+          "australia"
+        ],
+        "category": [
+          "domestic"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:43:11",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 04:44:59",
+        "image_url": null,
+        "video_url": null,
+        "source_id": "cobramcourier_au",
+        "source_name": "Cobram Courier",
+        "source_priority": 1184779,
+        "source_url": "https://www.cobramcourier.com.au",
+        "source_icon": "https://n.bytvi.com/cobramcourier_au.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "93d9c3f9455be62974bcc3bb7ae4d102",
+        "link": "https://dailytrust.com/hardship-grant-tax-relief-to-workers-tuc-tells-fg/",
+        "title": "Hardship: Grant tax relief to workers, TUC tells FG",
+        "description": "The Trade Union Congress of Nigeria (TUC), on Monday called on the Federal Government to grant a 50 per cent tax relief to workers and manufacturing companies as part of urgent measures to cushion the economic impact of the ongoing Iran–United States conflict. The demand was part of resolutions reached at the union’s National Executive [...]",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          ". ."
+        ],
+        "language": "english",
+        "country": [
+          "nigeria"
+        ],
+        "category": [
+          "business",
+          "top",
+          "politics"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:41:48",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:36:50",
+        "image_url": "https://dailytrust.com/wp-content/uploads/2026/04/Late-Abdulsamad-Jamiu-150x150.jpg",
+        "video_url": null,
+        "source_id": "dailytrust",
+        "source_name": "Daily Trust",
+        "source_priority": 40583,
+        "source_url": "https://dailytrust.com",
+        "source_icon": "https://n.bytvi.com/dailytrust.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "4e06cd01421bdf7c5e5f92c1d1a619bd",
+        "link": "https://www.universetoday.com/articles/space-travel-may-impact-human-fertility-and-fertilization",
+        "title": "Space Travel May Impact Human Fertility and Fertilization",
+        "description": "Space travel has taught us valuable lessons for living and working in outer space, specifically regarding how microgravity (often mistakenly called zero-gravity) impacts the human body during short- and long-term spaceflight. This includes decreased muscle and bone mass, fluid shifts, reduced heart rate, psychological health, compromised immune system, and radiation exposure. But with agencies like NASA aspiring to build a lunar base and establish a long-term presence on the Moon, and eventually Mars, how could space travel impact potentially having babies in space?",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          "laurence tognetti; msc"
+        ],
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "science"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:35:42",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 05:00:46",
+        "image_url": "https://www.universetoday.com/article_images/aa-Cover-r7s8taq5hp0fm1upu432k0g040-20170810104629.Medi_750_20260428_043532.jpg",
+        "video_url": null,
+        "source_id": "universetoday",
+        "source_name": "Universe Today",
+        "source_priority": 5127,
+        "source_url": "https://www.universetoday.com",
+        "source_icon": "https://n.bytvi.com/universetoday.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "cf9d7d831c44797a87ba10a7bba2fc66",
+        "link": "https://www.independent.ie/irish-news/courts/messages-reveal-sean-mcgoverns-plan-to-have-easy-target-noel-duck-egg-kirwan-killed-to-restore-hitmans-confidence/a958715575.html",
+        "title": "Messages reveal Sean McGovern’s plan to have ‘easy target’ Noel ‘Duck Egg’ Kirwan killed to restore hitman’s ‘confidence’",
+        "description": "Secret messages between the Kinahan leadership at the height of their violent feud with the Hutch gang have given a chilling insight into the casual mindset Ireland’s largest crime group had to murder.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "signature crime",
+          "kinahan cartel",
+          "an garda síochána",
+          "gerry hutch",
+          "latest news ticker",
+          "robin schiller",
+          "shp"
+        ],
+        "creator": [
+          "robin schiller"
+        ],
+        "language": "english",
+        "country": [
+          "ireland"
+        ],
+        "category": [
+          "top",
+          "politics"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:30:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 04:34:01",
+        "image_url": "https://focus.independent.ie/thumbor/27IO2cMYsqLrLA7nuUEhIqKfI7I=/60x0:735x450/550x550/prod-mh-ireland/f544e3f0-1953-47b9-b69d-4d19656a833b/c9b31a93-c051-47e4-8730-ffc7a193339b/video/video.jpg",
+        "video_url": null,
+        "source_id": "independent",
+        "source_name": "The Independent",
+        "source_priority": 12913,
+        "source_url": "https://www.independent.ie",
+        "source_icon": "https://n.bytvi.com/independent.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "d0e994bee5e5ee7c5051a1cc0aa3e9fc",
+        "link": "https://www.newtimes.co.rw/article/35221/news/polycystic-ovarian-syndrome-the-overlooked-cause-of-infertility-in-women",
+        "title": "Polycystic Ovarian Syndrome: The overlooked cause of infertility in women",
+        "description": "Polycystic Ovary Syndrome (PCOS) is a common condition that affects hormones. In recent years, I have seen many young women seeking treatment for infertility being diagnosed with P...",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "cause",
+          "overlooked",
+          "syndrome:",
+          "of",
+          "the",
+          "infertility",
+          "in",
+          "polycystic",
+          "women",
+          "ovarian"
+        ],
+        "creator": [
+          "dr. rachna pande"
+        ],
+        "language": "english",
+        "country": [
+          "rwanda"
+        ],
+        "category": [
+          "top",
+          "health"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:27:32",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 04:40:05",
+        "image_url": "https://www.newtimes.co.rw/thenewtimes/uploads/images/2026/04/28/104146.jpeg",
+        "video_url": null,
+        "source_id": "newtimes",
+        "source_name": "The New Times",
+        "source_priority": 315985,
+        "source_url": "https://www.newtimes.co.rw",
+        "source_icon": "https://n.bytvi.com/newtimes.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "bbe98ff44eab8d2610fd6e856dec34d2",
+        "link": "https://fijionenews.com.fj/hot-bread-kitchen-draw-rewards-26-back-to-school-winners/",
+        "title": "Hot Bread Kitchen Draw Rewards 26 Back-To-School Winners",
+        "description": "26 lucky customers are being named in the Hot Bread Kitchen back-to-school promotion draw, marking the final highlight of a campaign that has connected closely with families over the past two months. The promotion, done in partnership with CJ Patel, focused on affordable meal combos for students during the school term. Hot Bread Kitchen Sales The post Hot Bread Kitchen Draw Rewards 26 Back-To-School Winners appeared first on Fiji One News .",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": null,
+        "language": "english",
+        "country": [
+          "fiji"
+        ],
+        "category": [
+          "lifestyle",
+          "top"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:18:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:47:22",
+        "image_url": null,
+        "video_url": null,
+        "source_id": "fijionenews",
+        "source_name": "Fiji One News",
+        "source_priority": 2958190,
+        "source_url": "https://fijionenews.com.fj",
+        "source_icon": "https://n.bytvi.com/fijionenews.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "1997d80402ce73f9e2a08e2a2e99d5ac",
+        "link": "https://www.thestandard.com.hk/wellness/article/329674/Nutritionist-5-budget-friendly-anti-aging-foods-including-the-white-pith-on-citrus-fruits",
+        "title": "Nutritionist 5 budget-friendly anti-aging foods, including the white pith on citrus fruits",
+        "description": "Do you think anti-aging requires expensive, high-end supplements? A nutritionist recommends 5 budget-friendly anti-aging foods. Surprisingly, even the white pith that people usually peel off citrus fruits can be an anti-inflammatory gem.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          "khan heeba lazmi"
+        ],
+        "language": "english",
+        "country": [
+          "hong kong"
+        ],
+        "category": [
+          "top",
+          "health"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:07:07",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 04:07:07",
+        "image_url": "https://image.hkstandard.com.hk/f/1024p0/0x0/100/none/4761470fd3b95e78ada63775558c0289/2026-04/soheil-kmp-vdcrRSmHiuA-unsplash.jpg",
+        "video_url": null,
+        "source_id": "thestandard_hk",
+        "source_name": "The Standard 英文虎報",
+        "source_priority": 42604,
+        "source_url": "https://www.thestandard.com.hk",
+        "source_icon": "https://n.bytvi.com/thestandard_hk.jpg",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "1fd16b28207ccde99e0674e3c61d17ad",
+        "link": "https://www.newswise.com/articles/fatal-delays-in-epipen-treatment-for-food-anaphylaxis-in-children-finds-research/?sc=rsla",
+        "title": "Fatal delays in EpiPen treatment for food anaphylaxis in children, finds research",
+        "description": "Fatal delays in administering life-saving adrenaline autoinjector (EpiPen) for food anaphylaxis, a severe and rapid allergic reaction, is highlighted in research being presented at the Royal College of Emergency Medicine Conference today [28 April].",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "emergency medicine",
+          "embargoed feed - hidden",
+          "health food",
+          "university of bristol",
+          "healthcare",
+          "respiratory diseases",
+          "allergies",
+          "childrens health",
+          "newswise"
+        ],
+        "creator": [
+          "university"
+        ],
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "top",
+          "health"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:05:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:33:49",
+        "image_url": "https://www.newswise.com/assets/new/img/logo-banner.jpg",
+        "video_url": null,
+        "source_id": "newswise",
+        "source_name": "Newswise",
+        "source_priority": 17594,
+        "source_url": "https://www.newswise.com",
+        "source_icon": "https://n.bytvi.com/newswise.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "f3a21a8850cb57f549ec564def44aa81",
+        "link": "https://dieselgasoil.com/4-blood-sugar-supporting-breakfasts/",
+        "title": "4 Blood Sugar Supporting Breakfasts",
+        "description": "Blood sugar plays an important role in how we feel each day. It impacts metabolic rate, energy, and even immune system health. Nutrition is essential",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": [
+          "dg"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "top",
+          "health"
+        ],
+        "datatype": "blog",
+        "pubDate": "2026-04-28 04:04:58",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 04:15:26",
+        "image_url": "https://jessicasepel.com/wp-content/uploads/2026/04/French-Toast-Chia-Jam-BLOG-1-scaled.jpg",
+        "video_url": null,
+        "source_id": "dieselgasoil",
+        "source_name": "Dieselgasoil",
+        "source_priority": 1266292,
+        "source_url": "https://dieselgasoil.com",
+        "source_icon": null,
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "d10db57a7bb823fb44ce125b1c9b7024",
+        "link": "https://www.nj.com/highschoolsports/2026/04/marano-homers-in-cedar-creeks-win-over-egg-harbor-softball-recap.html",
+        "title": "Marano homers in Cedar Creek’s win over Egg Harbor - Softball recap",
+        "description": "Marano homers in Cedar Creek’s win over Egg Harbor - Softball recap",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": null,
+        "creator": null,
+        "language": "english",
+        "country": [
+          "united states of america"
+        ],
+        "category": [
+          "top",
+          "sports"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:00:38",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 04:31:34",
+        "image_url": "https://www.nj.com/resizer/v2/HY4MFUMTMNHAPFSB2E6I4TY674.jpg?auth=064baffd497d7a5a54b550c976d5902f30cb421e444debbcf6d9f06165c02ef2&smart=true&height=1200",
+        "video_url": null,
+        "source_id": "nj",
+        "source_name": "Nj",
+        "source_priority": 979,
+        "source_url": "https://www.nj.com",
+        "source_icon": "https://n.bytvi.com/nj.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
+      {
+        "article_id": "a7b45d32faad0273caea2b39b308a285",
+        "link": "https://www.lancashiretelegraph.co.uk/news/26056598.preston-events-submitted-unesco-living-heritage-scheme/",
+        "title": "2 Lancashire events that are hundreds of years old could gain national recognition",
+        "description": "Preston City Council has formally submitted expressions of interest to include two of the city's most cherished traditions, Preston Guild and Preston Egg Rolling, within the UK's UNESCO Living Heritage inventories.",
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "content-level:1",
+          "source:newsquest",
+          "topics:leisure",
+          "topics:leisure:events",
+          "article_types:news",
+          "locations:lancashire:preston-lancashire"
+        ],
+        "creator": [
+          "sarah mcgee"
+        ],
+        "language": "english",
+        "country": [
+          "united kingdom"
+        ],
+        "category": [
+          "lifestyle",
+          "top"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-04-28 04:00:00",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-04-28 06:08:29",
+        "image_url": null,
+        "video_url": null,
+        "source_id": "lancashiretelegraph",
+        "source_name": "Lancashire Telegraph",
+        "source_priority": 119090,
+        "source_url": "https://www.lancashiretelegraph.co.uk",
+        "source_icon": "https://n.bytvi.com/lancashiretelegraph.png",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      }
+    ]
+  }
+}

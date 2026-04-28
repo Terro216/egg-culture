@@ -54,8 +54,7 @@ export const merchItems: MerchItem[] = [
       en: "An object created in co-authorship with silence. The dark, coarse texture of the clay emphasizes the fragile perfection of the white shell. Each piece is unique.",
     },
     price: "4 500 ₽",
-    image:
-      "https://images.unsplash.com/photo-1516448653548-c5b57f02377b?q=80&w=1000&auto=format&fit=crop",
+    image: "/egg-cup-silence.webp",
   },
   {
     id: "2",
@@ -73,8 +72,7 @@ export const merchItems: MerchItem[] = [
       en: "A tool for a pure encounter. Natural mother-of-pearl is chemically inert: it does not react with the yolk's sulfur, keeping the organoleptic profile intact.",
     },
     price: "5 200 ₽",
-    image:
-      "https://images.unsplash.com/photo-1621251342518-77b31336423d?q=80&w=1000&auto=format&fit=crop",
+    image: "/adept-spoon.webp",
   },
   {
     id: "3",
@@ -92,8 +90,7 @@ export const merchItems: MerchItem[] = [
       en: "Heavy polished brass. The mechanical countdown of seconds is a ritual of preparing the mind for the moment the form unfolds. Precision manifested as weight.",
     },
     price: "8 800 ₽",
-    image:
-      "https://images.unsplash.com/photo-1509048191080-d2984bad6ad5?q=80&w=1000&auto=format&fit=crop",
+    image: "/precision-timer.webp",
   },
 ];
 
@@ -106,8 +103,7 @@ export const blogPosts: BlogPost[] = [
       en: "Color Dichotomy: Porcelain vs Terracotta",
     },
     date: "15.10.26",
-    image:
-      "https://images.unsplash.com/photo-1587486913049-53fe8953f1d2?q=80&w=1200&auto=format&fit=crop",
+    image: "/white-vs-dark.webp",
     excerpt: {
       ru: "Почему эстетика белого яйца требует большей дисциплины восприятия, чем привычный культ фермерской коричневой скорлупы.",
       en: "Why the aesthetics of a white egg require more discipline of perception than the usual cult of farm brown shells.",
@@ -131,8 +127,7 @@ export const blogPosts: BlogPost[] = [
       en: "Texture as Text: From Liquid to Pasty",
     },
     date: "02.11.26",
-    image:
-      "https://images.unsplash.com/photo-1598965402089-897ce52e8355?q=80&w=1200&auto=format&fit=crop",
+    image: "/anatomy-of-yolk.webp",
     excerpt: {
       ru: "Гайд по температурной деконструкции желтка: как поймать момент, когда энергия превращается в пасту.",
       en: "A guide to the thermal deconstruction of the yolk: how to catch the moment when energy turns into paste.",
@@ -153,8 +148,7 @@ export const eventItems: EventItem[] = [
       en: "Egg School. Flow II",
     },
     date: "15.11.26",
-    image:
-      "https://images.unsplash.com/photo-1498654077810-12c21d4d6dc3?q=80&w=1200&auto=format&fit=crop",
+    image: "/egg-school.webp",
     location: {
       ru: "Секретное пространство, Москва",
       en: "Secret space, Moscow",
@@ -176,8 +170,7 @@ export const eventItems: EventItem[] = [
       en: "Grand Degustation",
     },
     date: "05.12.26",
-    image:
-      "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1200&auto=format&fit=crop",
+    image: "/blind-tasting.webp",
     location: {
       ru: "Boutique, Moscow",
       en: "Boutique, Moscow",

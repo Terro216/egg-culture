@@ -2,7 +2,6 @@
 export const prerender = false;
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from '@app/layouts/Layout.astro';
-import { blogPosts } from "../../data/content";
 import { getCachedWorldNews } from "@shared/utils/newsCache";
 import WorldNewsList from "@features/WorldNews/WorldNewsList";
 
@@ -19,6 +18,10 @@ if (lang !== "ru" && lang !== "en") {
 const t = useTranslations(lang as Lang);
 
 const worldNews = await getCachedWorldNews(lang as "ru" | "en");
+
+const ruPosts = Object.values(import.meta.glob("../../data/blog/ru/*.md", { eager: true }));
+const enPosts = Object.values(import.meta.glob("../../data/blog/en/*.md", { eager: true }));
+const posts = lang === "ru" ? ruPosts : enPosts as any[];
 ---
 
 <Layout title={t("blog.pageTitle")} lang={lang as string}>
@@ -38,25 +41,27 @@ const worldNews = await getCachedWorldNews(lang as "ru" | "en");
     <div id="local-news" class="blog-section tab-content">
       <div class="blog-list flex-col gap-xl">
         {
-          blogPosts.map((post) => (
-            <a href={`/${lang}/blog/${post.slug}`} class="blog-post-row">
+          posts.map((post) => {
+            const slug = post.file.split('/').pop()?.replace('.md', '');
+            return (
+            <a href={`/${lang}/blog/${slug}`} class="blog-post-row">
               <div class="post-image-wrapper">
                 <img
-                  src={post.image}
-                  alt={post.title[lang as "ru" | "en"]}
+                  src={post.frontmatter.image}
+                  alt={post.frontmatter.title}
                   loading="lazy"
                 />
               </div>
               <div class="post-content-wrapper flex-col">
-                <span class="post-date">{post.date}</span>
-                <h2 class="post-title">{post.title[lang as "ru" | "en"]}</h2>
-                <p class="post-excerpt">{post.excerpt[lang as "ru" | "en"]}</p>
+                <span class="post-date">{post.frontmatter.date}</span>
+                <h2 class="post-title">{post.frontmatter.title}</h2>
+                <p class="post-excerpt">{post.frontmatter.excerpt}</p>
                 <span class="read-more">
                   {lang === "ru" ? "Читать полностью →" : "Read fully →"}
                 </span>
               </div>
             </a>
-          ))
+          )})
         }
       </div>
     </div>

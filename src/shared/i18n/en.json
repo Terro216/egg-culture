@@ -78,15 +78,15 @@
     "p6": "Not an additive. Not a protein source. Not a breakfast unit. Not a background for salt and bread.<br/>But an independent product, worthy of attention, language, memory, and conversation.",
     "h_affirm": "We affirm:",
     "p7": "an egg is not lower than wine, not cruder than Chinese tea, and not simpler than specialty coffee.<br/>It simply forgives inattention less.",
-    "p8": "Because the egg is a product of nuance.<br/>It should not be consumed, but encountered.<br/>Not swallowed, but listened to.<br/>Not evaluated on the go, but allowed to enter perception entirely: by temperature, viscosity, minerality, sulfur shadow, grain breath, the slow unfolding of the yolk, the chalky trace of the white, the animal warmth, which should not be too much, but without which there is no life either.",
+    "p8": "Because the egg is a product of nuance.<br/>It should not be consumed, but encountered.<br/>Not swallowed, but listened to.<br/>Not evaluated on the go, but allowed to enter perception entirely: by temperature, viscosity, minerality, sulfur shadow, grain breath, the resilience of the Dome, the chalky trail of the white, the animal warmth, which should not be too much, but without which there is no life either.",
     "h_subtlety": "Egg culture is a culture of subtlety.",
-    "p9": "We reject the dictatorship of crude categories: \"rustic\", \"store-bought\", \"fresh\", \"healthy\".<br/>This is not enough.",
+    "p9": "We reject the dictatorship of crude categories: from \"store-bought\" to \"rustic\".<br/>This is not enough.",
     "p10": "We know that between two eggs there can be a greater distance than between two bottles of wine from the same appellation zone.<br/>We know that feed is not just \"feed\", but the language of the future yolk.<br/>That the age of the hen is not a technical detail, but a factor of texture, depth, and timbre.<br/>That a white shell is not a sign of poverty, but a different way of silence.<br/>That freshness is not an absolute virtue, but only one of the stages of becoming.",
     "h_reject": "We reject the barbaric demand for immediate brightness.",
     "p11": "Not every great egg should impress from the first touch.<br/>Some eggs unfold over time.<br/>Some require temperature.<br/>Some — silence.<br/>Some seem almost empty until they suddenly leave a quiet collectedness in the body that cannot be confused with either satiety or suggestion.",
     "p12": "This is Egg Qi.",
     "p13": "We are not obliged to explain to everyone what it is.<br/>We know that any genuine gastronomic culture sooner or later comes to the concept of an impact that is greater than the sum of its descriptors.",
-    "p14": "One egg makes the gaze clearer. Another — heavier.<br/>One lifts. Another grounds.<br/>One stays only in the mouth.<br/>Another — in the spine, in the breath, in the pace of thought.<br/>To laugh at this means simply not meeting the product carefully enough.",
+    "p14": "One egg makes the gaze clearer. Another — heavier.<br/>One builds Verticality. Another provides Grounding.<br/>One stays only in the mouth.<br/>Another — in the spine, in the breath, in the pace of thought.<br/>To laugh at this means simply not meeting the product carefully enough.",
     "h_discipline": "Egg culture requires a new discipline of perception.",
     "p15": "We urge:",
     "li1": "to distinguish the white and the yolk as two independent layers of experience;",
@@ -94,12 +94,12 @@
     "li3": "to hear the minerality of the shell in the aftertaste;",
     "li4": "to notice the grain nature of the yolk;",
     "li5": "to distinguish noble animality from a defect;",
-    "li6": "not to confuse emptiness with delicacy;",
+    "li6": "not to confuse The Void with delicacy;",
     "li7": "not to mistake crude saturation for depth.",
     "h_origin": "We proclaim the right of the egg to an origin.",
-    "p16": "There are industrial, farm, backyard, and microlot eggs.<br/>There are even batches, there are nervous batches.<br/>There are open and closed eggs, light and brothy, young and aged, direct and meditative.<br/>And all this deserves not a smirk, but a language of description.",
+    "p16": "There is the Industrial Stream, Farmer's Concept, Yard Wild, and Micro-batches.<br/>There are composed batches, there are nervous batches.<br/>There is the Light Style (Blanc) and Broth Style, Pastoral and Aged.<br/>And all this deserves not a smirk, but a language of description.",
     "p17": "Without language, there is no culture.<br/>Without distinction, there is no memory.<br/>Without memory, there is no tradition.",
-    "p18": "We create the language of the egg not for the sake of a game, but for the sake of precision.<br/>Yes, we will talk about chalk, grain, warm down, damp shell, creamy pastiness, brothy depth, iron note, and a long protein-mineral trail.<br/>Yes, we will argue about complementary foods, breed, hen age, and whether the egg should breathe before serving.<br/>Yes, we will distinguish batches and defend the right to a white egg in a world that worships only the spectacular yolk.<br/>Because culture begins exactly where for an outsider everything \"tastes the same\".",
+    "p18": "We create the language of the egg not for the sake of a game, but for the sake of precision.<br/>Yes, we will talk about the resilience of the Dome, the Albumin Cloud, creamy Attack, Broth Style, the Vibration of Egg Qi, and a long chalky trail.<br/>Yes, we will argue about complementary foods, terroir, hen age, and the Temperature Pause before serving.<br/>Yes, we will distinguish micro-batches and defend the right to a white egg in a world that worships only the spectacular yolk.<br/>Because culture begins exactly where for an outsider everything \"tastes the same\".",
     "h_vulgarity": "We also oppose the vulgarity of egg consumption.",
     "p19": "Against turning the egg into a dumb function.<br/>Against ketchup as a means of hiding origin.<br/>A person who speaks of an egg only as protein and calories is as blind as a person who speaks of music only as a vibration of air.",
     "p20": "The egg is not a nutrient.<br/>The egg is a form of experience.",
@@ -148,19 +148,19 @@
         "name": "Loire Valley",
         "breed": "Maran",
         "diet": "Grape pomace, wild alfalfa",
-        "profile": "Buttery texture, grounding Egg Qi"
+        "profile": "Buttery texture, deep Grounding"
       },
       "chile": {
         "name": "Andes (Chile)",
         "breed": "Araucana",
         "diet": "Alpine herbs",
-        "profile": "Mineral aftertaste, elevating Egg Qi"
+        "profile": "Chalky trail, builds Verticality"
       },
       "russia": {
         "name": "Russian North",
         "breed": "Russian White",
         "diet": "Grain, pine needles and flaxseed",
-        "profile": "Dense, almost bready albumen, warming Egg Qi"
+        "profile": "Dense body, almost bready albumen, warming Egg Qi"
       },
       "china": {
         "name": "Sichuan Province",
@@ -184,7 +184,7 @@
         "name": "New South Wales",
         "breed": "Australorp",
         "diet": "Wild sorghum and eucalyptus blossom",
-        "profile": "Dry minerality, wild and free Egg Qi"
+        "profile": "Dry chalky trail, Vibration and wild Egg Qi"
       }
     }
   }

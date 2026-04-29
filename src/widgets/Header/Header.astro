@@ -20,6 +20,7 @@ const enUrl = currentPath.replace(new RegExp(`^/${lang}`), "/en");
       <a href={translatePath("/shop")}>{t("nav.shop")}</a>
       <a href={translatePath("/blog")}>{t("nav.blog")}</a>
       <a href={translatePath("/events")}>{t("nav.events")}</a>
+      <a href={`/${lang}/quiz`} class="secret-key" title="Initiation">🗝️</a>
       <div class="lang-switcher">
         <a href={ruUrl} class={lang === "ru" ? "active" : ""}>🇷🇺</a>
         <a href={enUrl} class={lang === "en" ? "active" : ""}>🇬🇧</a>
@@ -60,6 +61,17 @@ const enUrl = currentPath.replace(new RegExp(`^/${lang}`), "/en");
     font-size: 1.1rem;
     text-transform: lowercase;
     letter-spacing: 0.05em;
+  }
+
+  .secret-key {
+    opacity: 0.3;
+    font-size: 1.2rem !important;
+    transition: opacity 0.3s ease;
+    text-decoration: none;
+  }
+
+  .secret-key:hover {
+    opacity: 1;
   }
 
   .lang-switcher {

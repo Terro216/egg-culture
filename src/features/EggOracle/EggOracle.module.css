@@ -101,3 +101,26 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  .title {
+    font-size: 1.5rem;
+  }
+  .description {
+    font-size: 1rem;
+  }
+  .input {
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+  .button {
+    padding: 0.75rem;
+  }
+  .answer {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}

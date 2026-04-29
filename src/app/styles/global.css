@@ -35,6 +35,7 @@ html,
 body {
   width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 body {
@@ -92,4 +93,36 @@ button {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.875rem;
+}
+
+/* Responsive Utilities & Typography Scaling */
+@media (max-width: 768px) {
+  :root {
+    --spacing-md: 0.75rem;
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.5rem;
+    --spacing-2xl: 2.5rem;
+    --spacing-3xl: 4rem;
+  }
+
+  body {
+    font-size: 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.75rem;
+  }
+  h3 {
+    font-size: 1.5rem;
+  }
+  h4 {
+    font-size: 1.25rem;
+  }
+
+  .text-ui {
+    font-size: 0.75rem;
+  }
 }

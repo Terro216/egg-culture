@@ -335,6 +335,16 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
     margin: 0;
   }
 
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2rem;
+    }
+    .guide-layout {
+      padding: 0 1rem;
+      gap: 2rem;
+    }
+  }
+
   .guide-container {
     max-width: 800px;
     margin: 0;
@@ -379,5 +389,17 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
     font-size: 1.1rem;
     line-height: 1.8;
     opacity: 0.9;
+  }
+
+  @media (max-width: 768px) {
+    .term-item {
+      padding: 1rem;
+    }
+    .term-item dt {
+      font-size: 1.25rem;
+    }
+    .term-item dd {
+      font-size: 1rem;
+    }
   }
 </style>

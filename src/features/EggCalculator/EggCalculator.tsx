@@ -70,134 +70,159 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
   });
 
   return (
-    <div
-      style={{
-        padding: "2rem",
-        border: "1px solid var(--border-color, rgba(43,43,43,0.1))",
-        maxWidth: "600px",
-        margin: "0 auto",
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "2rem",
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <h3
-          style={{
-            color: "var(--color-yolk, var(--accent-color, #d4af37))",
-            fontSize: "2rem",
-            margin: 0,
-            textAlign: "center",
-          }}
-        >
-          {dict.title}
-        </h3>
-        <p
-          style={{
-            fontStyle: "italic",
-            opacity: 0.8,
-            margin: 0,
-            textAlign: "center",
-          }}
-        >
-          {dict.subtitle}
-        </p>
-      </div>
+    <>
+      <style>{`
+        .egg-calculator-container {
+          padding: 2rem;
+          border: 1px solid var(--border-color, rgba(43,43,43,0.1));
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: rgba(255, 255, 255, 0.3);
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+        }
+        .egg-calculator-result {
+          font-size: 3rem !important;
+        }
+        @media (max-width: 768px) {
+          .egg-calculator-container {
+            padding: 1rem;
+            gap: 1.5rem;
+          }
+          .egg-calculator-result {
+            font-size: 2rem !important;
+          }
+        }
+      `}</style>
+      <div className="egg-calculator-container">
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <h3
+            style={{
+              color: "var(--color-yolk, var(--accent-color, #d4af37))",
+              fontSize: "2rem",
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            {dict.title}
+          </h3>
+          <p
+            style={{
+              fontStyle: "italic",
+              opacity: 0.8,
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            {dict.subtitle}
+          </p>
+        </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>{dict.caliber}</p>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          {(["S", "M", "L"] as Size[]).map((s) => (
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          <p style={{ margin: 0, fontWeight: 600 }}>{dict.caliber}</p>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            {(["S", "M", "L"] as Size[]).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSize(s)}
+                style={{ ...buttonStyle(size === s), flex: 1 }}
+              >
+                {s === "S" && dict.sizeS}
+                {s === "M" && dict.sizeM}
+                {s === "L" && dict.sizeL}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          <p style={{ margin: 0, fontWeight: 600 }}>{dict.temp}</p>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <button
-              key={s}
-              onClick={() => setSize(s)}
-              style={{ ...buttonStyle(size === s), flex: 1 }}
+              onClick={() => setTemp("fridge")}
+              style={{ ...buttonStyle(temp === "fridge"), flex: 1 }}
             >
-              {s === "S" && dict.sizeS}
-              {s === "M" && dict.sizeM}
-              {s === "L" && dict.sizeL}
+              {dict.tempFridge}
             </button>
-          ))}
+            <button
+              onClick={() => setTemp("room")}
+              style={{ ...buttonStyle(temp === "room"), flex: 1 }}
+            >
+              {dict.tempRoom}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>{dict.temp}</p>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <button
-            onClick={() => setTemp("fridge")}
-            style={{ ...buttonStyle(temp === "fridge"), flex: 1 }}
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          <p style={{ margin: 0, fontWeight: 600 }}>{dict.doneness}</p>
+          <div
+            style={{ display: "flex", gap: "1rem", flexDirection: "column" }}
           >
-            {dict.tempFridge}
-          </button>
-          <button
-            onClick={() => setTemp("room")}
-            style={{ ...buttonStyle(temp === "room"), flex: 1 }}
-          >
-            {dict.tempRoom}
-          </button>
+            <button
+              onClick={() => setDoneness("soft")}
+              style={buttonStyle(doneness === "soft")}
+            >
+              {dict.doneSoft}
+            </button>
+            <button
+              onClick={() => setDoneness("medium")}
+              style={buttonStyle(doneness === "medium")}
+            >
+              {dict.doneMedium}
+            </button>
+            <button
+              onClick={() => setDoneness("hard")}
+              style={buttonStyle(doneness === "hard")}
+            >
+              {dict.doneHard}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>{dict.doneness}</p>
-        <div style={{ display: "flex", gap: "1rem", flexDirection: "column" }}>
-          <button
-            onClick={() => setDoneness("soft")}
-            style={buttonStyle(doneness === "soft")}
-          >
-            {dict.doneSoft}
-          </button>
-          <button
-            onClick={() => setDoneness("medium")}
-            style={buttonStyle(doneness === "medium")}
-          >
-            {dict.doneMedium}
-          </button>
-          <button
-            onClick={() => setDoneness("hard")}
-            style={buttonStyle(doneness === "hard")}
-          >
-            {dict.doneHard}
-          </button>
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "2rem",
-          backgroundColor: "rgba(212, 175, 55, 0.1)",
-          border: "1px dashed var(--color-yolk, var(--accent-color, #d4af37))",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.5rem",
-          textAlign: "center",
-        }}
-      >
-        <p
+        <div
           style={{
-            fontSize: "0.9rem",
-            opacity: 0.8,
-            margin: 0,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
+            padding: "2rem",
+            backgroundColor: "rgba(212, 175, 55, 0.1)",
+            border:
+              "1px dashed var(--color-yolk, var(--accent-color, #d4af37))",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            textAlign: "center",
           }}
         >
-          {dict.resultLabel}
-        </p>
-        <p
-          style={{
-            fontSize: "3rem",
-            fontWeight: 600,
-            color: "var(--color-yolk, var(--accent-color, #d4af37))",
-            margin: 0,
-            fontFamily: "var(--font-serif-headers, var(--font-serif-headers))",
-          }}
-        >
-          {calculateTime()}
-        </p>
+          <p
+            style={{
+              fontSize: "0.9rem",
+              opacity: 0.8,
+              margin: 0,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            {dict.resultLabel}
+          </p>
+          <p
+            className="egg-calculator-result"
+            style={{
+              fontWeight: 600,
+              color: "var(--color-yolk, var(--accent-color, #d4af37))",
+              margin: 0,
+              fontFamily:
+                "var(--font-serif-headers, var(--font-serif-headers))",
+            }}
+          >
+            {calculateTime()}
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

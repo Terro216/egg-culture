@@ -1,0 +1,352 @@
+---
+import Layout from '@app/layouts/Layout.astro';
+import { getLangFromUrl, useTranslations } from '@shared/i18n/utils';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: 'ru' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title="The Dark Side of the Egg" description="Only for the true Adepts">
+  <div class="dark-room">
+    <canvas id="curtains-canvas"></canvas>
+    <a href={lang === 'ru' ? "/ru" : "/en"} class="escape-btn">
+      {lang === 'ru' ? "Выйти на светлую сторону" : "Return to the light"}
+    </a>
+
+    <div class="content-wrapper">
+      <h1 class="neon-title">The Dark Side of the Egg</h1>
+
+      <div class="secret-content">
+        <p class="intro">
+          {lang === 'ru'
+            ? "Вы прошли сквозь Купол. Добро пожаловать за кулисы Индустриального Стрима."
+            : "You have passed through the Dome. Welcome behind the scenes of the Industrial Stream."}
+        </p>
+
+        <div class="card-grid">
+          <article class="secret-card">
+            <h2>{lang === 'ru' ? "Розыгрыш: Микролот 'Чёрное на белом'" : "Giveaway: Microlot 'Black on White'"}</h2>
+            <p>
+              {lang === 'ru'
+                ? "Только 12 яиц от кур породы Аям Цемани, выращенных на склонах спящего вулкана. Пепельно-чёрная скорлупа скрывает желток невероятной плотности. Участвуйте в слепой жеребьевке."
+                : "Only 12 eggs from Ayam Cemani hens raised on the slopes of a dormant volcano. Ash-black shell hides a yolk of incredible density. Enter the blind draw."}
+            </p>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Оставить след" : "Leave a trace"}</a>
+          </article>
+
+          <article class="secret-card">
+            <h2>{lang === 'ru' ? "Тайная Экспедиция" : "Secret Expedition"}</h2>
+            <p>
+              {lang === 'ru'
+                ? "В конце осени мы отправляемся в отдаленный монастырь во Французских Альпах, где монахи сохранили рецепт многодневной выдержки яиц в дубовой золе. Запись строго конфиденциальна."
+                : "In late autumn, we travel to a remote monastery in the French Alps, where monks have preserved the recipe for multi-day egg aging in oak ash. Registration is strictly confidential."}
+            </p>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Подать прошение" : "Submit petition"}</a>
+          </article>
+
+          <article class="secret-card">
+            <h2>{lang === 'ru' ? "Ночной Семинар: Меловой След" : "Night Seminar: Chalky Trail"}</h2>
+            <p>
+              {lang === 'ru'
+                ? "Закрытая встреча Адептов в подземелье бывшей винодельни. Мы будем слушать Яй Ци редких белых яиц под аккомпанемент виолончели и исследовать минеральные послевкусия."
+                : "A closed meeting of Adepts in the dungeon of a former winery. We will listen to the Egg Qi of rare white eggs accompanied by a cello and explore mineral aftertastes."}
+            </p>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Получить пароль" : "Get password"}</a>
+          </article>
+        </div>
+
+        <div class="manifesto-quote">
+          <blockquote>
+            "Тот, кто однажды познал пустоту скорлупы, больше никогда не будет прежним."
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Проверяем доступ
+  if (typeof window !== 'undefined') {
+    const isAdept = localStorage.getItem('egg_adept');
+    if (isAdept !== 'true') {
+      window.location.href = window.location.pathname.replace('/dark-side', '/quiz');
+    }
+  }
+</script>
+
+<script type="module">
+  import * as THREE from 'https://esm.sh/three@0.158.0';
+
+  const canvas = document.getElementById('curtains-canvas');
+  if (canvas) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const geometry = new THREE.PlaneGeometry(2, 2);
+
+    // Shader material for velvet curtains
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uTime;
+        uniform vec2 uResolution;
+        varying vec2 vUv;
+
+        // Noise function for velvet texture
+        float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
+        float noise(vec2 x) {
+          vec2 i = floor(x);
+          vec2 f = fract(x);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+        }
+
+        void main() {
+          vec2 st = gl_FragCoord.xy / uResolution.xy;
+          vec2 center = st - 0.5;
+          center.x *= uResolution.x / uResolution.y;
+
+          float dist = length(center);
+
+          // Diverging circles
+          float circles = sin(dist * 30.0 - uTime * 1.5);
+
+          // Noise
+          float n = noise(st * uResolution.xy * 0.5);
+
+          float shadow = smoothstep(-1.0, 1.0, circles) * 0.7 + 0.3;
+          float highlight = smoothstep(0.7, 1.0, circles) * 0.4;
+
+          vec3 baseColor = vec3(0.5, 0.0, 0.0);
+          vec3 darkColor = vec3(0.05, 0.0, 0.0);
+          vec3 highlightColor = vec3(0.9, 0.1, 0.1);
+
+          vec3 color = mix(darkColor, baseColor, shadow);
+          color += highlightColor * highlight;
+
+          // Add velvet micro-noise
+          color -= n * 0.08;
+
+          // Vignette and center fade
+          float centerFade = smoothstep(0.2, 0.4, dist);
+          float edgeFade = 1.0 - smoothstep(0.5, 1.0, dist);
+
+          float alpha = centerFade * edgeFade * 0.85;
+
+          gl_FragColor = vec4(color, alpha);
+        }
+      `,
+      transparent: true
+    });
+
+    const plane = new THREE.Mesh(geometry, material);
+    scene.add(plane);
+
+    camera.position.z = 1;
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+      material.uniforms.uTime.value += 0.05;
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+    });
+  }
+</script>
+
+<style>
+  /* Переопределение глобальных стилей для этой страницы */
+  :global(body) {
+    background-color: #050000;
+    color: #e0d5d5;
+  }
+
+  :global(.site-header) {
+    display: none !important;
+  }
+
+  .dark-room {
+    position: relative;
+    min-height: 100vh;
+    padding: 6rem 1rem 4rem;
+    overflow-x: hidden;
+    background: radial-gradient(circle at center, #1a0000 0%, #050000 100%);
+    font-family: var(--font-serif-body, 'Lora', serif);
+  }
+
+  #curtains-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .escape-btn {
+    position: fixed;
+    top: 1.5rem;
+    right: 2rem;
+    z-index: 100;
+    background: rgba(139, 0, 0, 0.2);
+    border: 1px solid #8b0000;
+    color: #ff6b6b;
+    padding: 0.6rem 1.2rem;
+    font-family: var(--font-sans-ui, sans-serif);
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  .escape-btn:hover {
+    background: #8b0000;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.8);
+  }
+
+  .content-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .neon-title {
+    font-family: var(--font-serif-headers, 'Playfair Display', serif);
+    font-size: 3.5rem;
+    color: #ff3333;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px #ff0000, 0 0 20px #8b0000, 0 0 30px #4a0000;
+    animation: flicker 4s infinite;
+  }
+
+  @keyframes flicker {
+    0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+      opacity: 1;
+      text-shadow: 0 0 10px #ff0000, 0 0 20px #8b0000, 0 0 30px #4a0000;
+    }
+    20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+      opacity: 0.4;
+      text-shadow: none;
+    }
+  }
+
+  .intro {
+    font-size: 1.4rem;
+    font-style: italic;
+    color: #c4a1a1;
+    margin-bottom: 4rem;
+    line-height: 1.6;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .secret-card {
+    background: rgba(42, 0, 0, 0.4);
+    border: 1px solid rgba(139, 0, 0, 0.5);
+    padding: 2.5rem 1.5rem;
+    backdrop-filter: blur(5px);
+    transition: transform 0.4s ease, background 0.4s ease;
+  }
+
+  .secret-card:hover {
+    transform: translateY(-5px);
+    background: rgba(60, 0, 0, 0.6);
+    border-color: #ff3333;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px rgba(139, 0, 0, 0.3);
+  }
+
+  .secret-card h2 {
+    font-family: var(--font-serif-headers, 'Playfair Display', serif);
+    font-size: 1.4rem;
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(139, 0, 0, 0.3);
+    padding-bottom: 0.5rem;
+  }
+
+  .secret-card p {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    color: #d1b8b8;
+  }
+
+  .action-btn {
+    display: inline-block;
+    background: transparent;
+    border: 1px solid #8b0000;
+    color: #ff6b6b;
+    padding: 0.8rem 1.5rem;
+    font-family: var(--font-sans-ui, sans-serif);
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .action-btn:hover {
+    background: #8b0000;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
+  }
+
+  .manifesto-quote {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 0, 0, 0.2);
+  }
+
+  .manifesto-quote blockquote {
+    font-size: 1.6rem;
+    font-style: italic;
+    color: #a87b7b;
+    font-family: var(--font-serif-headers, 'Playfair Display', serif);
+  }
+</style>

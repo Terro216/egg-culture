@@ -185,6 +185,23 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ dict }) => {
           display: block;
           margin-bottom: 0.1rem;
         }
+
+        @media (max-width: 768px) {
+          .terroir-section {
+            padding: 2rem 0;
+          }
+          .terroir-header h2 {
+            font-size: 1.75rem;
+          }
+          .terroir-header p {
+            font-size: 1rem;
+          }
+          .terroir-tooltip {
+            max-width: 90vw;
+            padding: 1rem;
+            transform: translate(-50%, -100%);
+          }
+        }
       `}</style>
 
       <div className="terroir-header">

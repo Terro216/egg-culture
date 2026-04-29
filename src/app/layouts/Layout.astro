@@ -67,6 +67,12 @@ const { title, lang = "ru" } = Astro.props;
     box-sizing: border-box;
   }
 
+  @media (max-width: 768px) {
+    .container {
+      padding: 0 1rem;
+    }
+  }
+
   /* Typography Utilities */
   .text-bold {
     font-weight: 600;

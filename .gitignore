@@ -17,6 +17,9 @@ pnpm-debug.log*
 .env
 .env.production
 
+# private gift assets
+private/
+
 # macOS-specific files
 .DS_Store
 

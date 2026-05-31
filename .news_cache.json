@@ -1,10 +1,54 @@
 {
   "lastFetch": {
-    "ru": 1777398091905,
+    "ru": 1780184040624,
     "en": 1777398091905
   },
   "news": {
     "ru": [
+      {
+        "article_id": "49917a36cde0bf51a1ca58bb7f6bbfbf",
+        "link": "https://sakhaday.ru/news/yakutyane-stali-pokupat-bolshe-kur-nesushek-iz-za-vysokoy-stoimosti-yaic",
+        "title": "Якутяне стали покупать больше кур-несушек из-за высокой стоимости яиц",
+        "description": null,
+        "content": "ONLY AVAILABLE IN PAID PLANS",
+        "keywords": [
+          "курицы",
+          "несушки",
+          "яйца",
+          "якутская птицефабрика",
+          "цены на яйца",
+          "цены на продукты",
+          "якутия"
+        ],
+        "creator": [
+          "виктория тарабукина"
+        ],
+        "language": "russian",
+        "country": [
+          "russia"
+        ],
+        "category": [
+          "top"
+        ],
+        "datatype": "news",
+        "pubDate": "2026-05-29 06:28:18",
+        "pubDateTZ": "UTC",
+        "fetched_at": "2026-05-29 06:37:04",
+        "image_url": "https://sakhaday.ru/wp-content/uploads/2026/05/s48NonsnqG.jpg",
+        "video_url": null,
+        "source_id": "sakhaday",
+        "source_name": "Sakhaday",
+        "source_priority": 74060,
+        "source_url": "https://sakhaday.ru",
+        "source_icon": "https://n.bytvi.com/sakhaday.jpeg",
+        "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "sentiment_stats": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_tag": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS",
+        "ai_region": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_org": "ONLY AVAILABLE IN CORPORATE PLANS",
+        "ai_summary": "ONLY AVAILABLE IN PAID PLANS",
+        "duplicate": false
+      },
       {
         "article_id": "c4354aee785c0137cdf022102103f288",
         "link": "https://daryo.uz/ru/2026/04/28/uzbekistan-samarkand-eksport-yaits/",

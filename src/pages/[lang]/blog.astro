@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
-import { useTranslations, type Lang } from '@shared/i18n/utils';
-import Layout from '@app/layouts/Layout.astro';
+import { useTranslations, type Lang } from "@shared/i18n/utils";
+import Layout from "@app/layouts/Layout.astro";
 import { getCachedWorldNews } from "@shared/utils/newsCache";
 import WorldNewsList from "@features/WorldNews/WorldNewsList";
 
@@ -19,9 +19,23 @@ const t = useTranslations(lang as Lang);
 
 const worldNews = await getCachedWorldNews(lang as "ru" | "en");
 
-const ruPosts = Object.values(import.meta.glob("../../data/blog/ru/*.md", { eager: true }));
-const enPosts = Object.values(import.meta.glob("../../data/blog/en/*.md", { eager: true }));
-const posts = lang === "ru" ? ruPosts : enPosts as any[];
+const ruPosts = Object.values(
+  import.meta.glob("../../data/blog/ru/*.md", { eager: true }),
+);
+const enPosts = Object.values(
+  import.meta.glob("../../data/blog/en/*.md", { eager: true }),
+);
+const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
+  (a: any, b: any) => {
+    const aSlug = a.file.split("/").pop()?.replace(".md", "");
+    const bSlug = b.file.split("/").pop()?.replace(".md", "");
+
+    if (aSlug === "dmitry-fonin-visionary") return -1;
+    if (bSlug === "dmitry-fonin-visionary") return 1;
+
+    return 0;
+  },
+);
 ---
 
 <Layout title={t("blog.pageTitle")} lang={lang as string}>
@@ -34,39 +48,48 @@ const posts = lang === "ru" ? ruPosts : enPosts as any[];
     </div>
 
     <div class="tabs-container">
-      <button class="tab-btn active" data-target="local-news">{lang === 'ru' ? 'Локальные статьи' : 'Local Articles'}</button>
-      <button class="tab-btn" data-target="world-news">{lang === 'ru' ? 'Мировые новости' : 'World News'}</button>
+      <button class="tab-btn active" data-target="local-news"
+        >{lang === "ru" ? "Локальные статьи" : "Local Articles"}</button
+      >
+      <button class="tab-btn" data-target="world-news"
+        >{lang === "ru" ? "Мировые новости" : "World News"}</button
+      >
     </div>
 
     <div id="local-news" class="blog-section tab-content">
       <div class="blog-list flex-col gap-xl">
         {
           posts.map((post) => {
-            const slug = post.file.split('/').pop()?.replace('.md', '');
+            const slug = post.file.split("/").pop()?.replace(".md", "");
             return (
-            <a href={`/${lang}/blog/${slug}`} class="blog-post-row">
-              <div class="post-image-wrapper">
-                <img
-                  src={post.frontmatter.image}
-                  alt={post.frontmatter.title}
-                  loading="lazy"
-                />
-              </div>
-              <div class="post-content-wrapper flex-col">
-                <span class="post-date">{post.frontmatter.date}</span>
-                <h2 class="post-title">{post.frontmatter.title}</h2>
-                <p class="post-excerpt">{post.frontmatter.excerpt}</p>
-                <span class="read-more">
-                  {lang === "ru" ? "Читать полностью →" : "Read fully →"}
-                </span>
-              </div>
-            </a>
-          )})
+              <a href={`/${lang}/blog/${slug}`} class="blog-post-row">
+                <div class="post-image-wrapper">
+                  <img
+                    src={post.frontmatter.image}
+                    alt={post.frontmatter.title}
+                    loading="lazy"
+                  />
+                </div>
+                <div class="post-content-wrapper flex-col">
+                  <span class="post-date">{post.frontmatter.date}</span>
+                  <h2 class="post-title">{post.frontmatter.title}</h2>
+                  <p class="post-excerpt">{post.frontmatter.excerpt}</p>
+                  <span class="read-more">
+                    {lang === "ru" ? "Читать полностью →" : "Read fully →"}
+                  </span>
+                </div>
+              </a>
+            );
+          })
         }
       </div>
     </div>
 
-    <div id="world-news" class="blog-section tab-content" style="display: none;">
+    <div
+      id="world-news"
+      class="blog-section tab-content"
+      style="display: none;"
+    >
       <WorldNewsList client:load news={worldNews} lang={lang as "ru" | "en"} />
     </div>
   </div>
@@ -235,7 +258,7 @@ const posts = lang === "ru" ? ruPosts : enPosts as any[];
       flex-direction: column;
       gap: 1.5rem;
       padding-bottom: 2rem;
-    margin: 0;
+      margin: 0;
     }
     .post-image-wrapper {
       flex: none;
@@ -252,24 +275,24 @@ const posts = lang === "ru" ? ruPosts : enPosts as any[];
 </style>
 
 <script>
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabContents = document.querySelectorAll('.tab-content');
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
 
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
       // Remove active classes
-      tabBtns.forEach(b => b.classList.remove('active'));
-      tabContents.forEach(c => (c as HTMLElement).style.display = 'none');
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      tabContents.forEach((c) => ((c as HTMLElement).style.display = "none"));
 
       // Add active class to clicked button
-      btn.classList.add('active');
+      btn.classList.add("active");
 
       // Show corresponding content
-      const targetId = btn.getAttribute('data-target');
+      const targetId = btn.getAttribute("data-target");
       if (targetId) {
         const targetContent = document.getElementById(targetId);
         if (targetContent) {
-          targetContent.style.display = 'block';
+          targetContent.style.display = "block";
         }
       }
     });

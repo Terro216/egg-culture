@@ -1,0 +1,185 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import { GiftVault } from "@features/GiftVault/GiftVault";
+import { getLangFromUrl } from "@shared/i18n/utils";
+
+export const prerender = false;
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+<Layout
+  title="Три дара Дмитрия Фонина | The Dark Side of the Egg"
+  description="Закрытая чайная кладка Яичной Культуры"
+>
+  <main class="fonin-vault-page">
+    <canvas id="gift-canvas"></canvas>
+    <a href={`/${lang}/dark-side`} class="back-to-dark">
+      {lang === "ru" ? "Назад в темную сторону" : "Back to the dark side"}
+    </a>
+
+    <div class="vault-shell">
+      <GiftVault client:visible />
+    </div>
+  </main>
+</Layout>
+
+<script>
+  if (typeof window !== "undefined") {
+    const isAdept = localStorage.getItem("egg_adept");
+    if (isAdept !== "true") {
+      localStorage.setItem("egg_after_quiz", window.location.pathname);
+      window.location.href = window.location.pathname.replace(
+        "/dark-side/fonin",
+        "/quiz",
+      );
+    }
+  }
+</script>
+
+<script type="module">
+  const canvas = document.getElementById("gift-canvas");
+  const context = canvas?.getContext("2d");
+
+  if (canvas && context) {
+    const particles = Array.from({ length: 44 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      radius: Math.random() * 1.8 + 0.5,
+      speed: Math.random() * 0.00035 + 0.00012,
+      alpha: Math.random() * 0.45 + 0.12,
+    }));
+
+    const resize = () => {
+      canvas.width = window.innerWidth * window.devicePixelRatio;
+      canvas.height = window.innerHeight * window.devicePixelRatio;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      context.setTransform(
+        window.devicePixelRatio,
+        0,
+        0,
+        window.devicePixelRatio,
+        0,
+        0,
+      );
+    };
+
+    const draw = () => {
+      context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      particles.forEach((particle) => {
+        particle.y -= particle.speed;
+        if (particle.y < -0.04) {
+          particle.y = 1.04;
+          particle.x = Math.random();
+        }
+
+        const gradient = context.createRadialGradient(
+          particle.x * window.innerWidth,
+          particle.y * window.innerHeight,
+          0,
+          particle.x * window.innerWidth,
+          particle.y * window.innerHeight,
+          particle.radius * 10,
+        );
+
+        gradient.addColorStop(0, `rgba(255, 212, 138, ${particle.alpha})`);
+        gradient.addColorStop(1, "rgba(255, 212, 138, 0)");
+
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(
+          particle.x * window.innerWidth,
+          particle.y * window.innerHeight,
+          particle.radius * 10,
+          0,
+          Math.PI * 2,
+        );
+        context.fill();
+      });
+
+      requestAnimationFrame(draw);
+    };
+
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+  }
+</script>
+
+<style>
+  :global(body) {
+    background-color: #050000;
+    color: #f7e8d0;
+  }
+
+  :global(.site-header),
+  :global(.site-footer) {
+    display: none !important;
+  }
+
+  .fonin-vault-page {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background:
+      radial-gradient(
+        circle at 50% 0%,
+        rgba(112, 34, 0, 0.58),
+        transparent 42%
+      ),
+      radial-gradient(
+        circle at 50% 100%,
+        rgba(212, 175, 55, 0.16),
+        transparent 34%
+      ),
+      linear-gradient(180deg, #080000 0%, #170000 52%, #050000 100%);
+  }
+
+  #gift-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .vault-shell {
+    position: relative;
+    z-index: 1;
+  }
+
+  .back-to-dark {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+    max-width: calc(100vw - 2rem);
+    box-sizing: border-box;
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(255, 212, 138, 0.32);
+    border-radius: 999px;
+    background: rgba(5, 0, 0, 0.58);
+    color: #ffd48a;
+    backdrop-filter: blur(10px);
+    font-family: var(--font-sans-ui, sans-serif);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  @media (max-width: 520px) {
+    .back-to-dark {
+      position: absolute;
+      top: 0.8rem;
+      left: 0.85rem;
+      right: 0.85rem;
+      text-align: center;
+    }
+  }
+</style>

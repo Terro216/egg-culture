@@ -26,7 +26,7 @@ const t = useTranslations(lang as Lang);
     </div>
   </div>
   <div class="container">
-    <TerroirMap client:visible dict={t("terroir")} />
+    <TerroirMap client:visible lang={lang as Lang} dict={t("terroir")} />
   </div>
 </Layout>
 

@@ -4,7 +4,7 @@ import Layout from '@app/layouts/Layout.astro';
 import EggCalculator from '@features/EggCalculator/EggCalculator';
 import EggOracle from '@features/EggOracle/EggOracle';
 import DescriptorWheel from '@widgets/DescriptorWheel/DescriptorWheel.jsx';
-import { Suspense } from "react";
+import TastingNoteGenerator from '@features/TastingNote/TastingNoteGenerator';
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
@@ -25,15 +25,26 @@ const t = useTranslations(lang as Lang);
     </div>
 
     <div>
-      <Suspense fallback="loading">
-        <EggCalculator client:only dict={t("calculator")} />
-      </Suspense>
+      <EggCalculator client:only="react" dict={t("calculator")} />
     </div>
 
     <div>
-      <Suspense fallback="loading">
-        <EggOracle client:only dict={t("oracle")} />
-      </Suspense>
+      <EggOracle client:only="react" dict={t("oracle")} />
+      <p class="text-center" style="margin-top: 1.5rem;">
+        <a href={`/${lang}/prophecy`} class="prophecy-link">
+          {lang === "ru"
+            ? "Ежедневное пророчество желтка →"
+            : "The daily prophecy of the yolk →"}
+        </a>
+      </p>
+    </div>
+
+    <div>
+      <div class="text-center flex-col gap-md" style="margin-bottom: 2rem;">
+        <h2>{t("tools.noteGenTitle")}</h2>
+        <p>{t("tools.noteGenDesc")}</p>
+      </div>
+      <TastingNoteGenerator client:visible lang={lang as Lang} />
     </div>
 
     <div>
@@ -52,6 +63,16 @@ const t = useTranslations(lang as Lang);
     color: var(--color-yolk);
     padding-bottom: 2rem;
     margin: 0;
+  }
+
+  .prophecy-link {
+    font-style: italic;
+    opacity: 0.75;
+    transition: opacity 0.3s ease;
+  }
+
+  .prophecy-link:hover {
+    opacity: 1;
   }
 
   @media (max-width: 768px) {

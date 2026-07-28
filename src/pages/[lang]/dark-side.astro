@@ -13,7 +13,7 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<Layout title="The Dark Side of the Egg" description="Only for the true Adepts">
+<Layout title="The Dark Side of the Egg" description="Only for the true Adepts" lang={lang}>
   <div class="dark-room">
     <canvas id="curtains-canvas"></canvas>
     <a href={lang === 'ru' ? "/ru" : "/en"} class="escape-btn">

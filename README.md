@@ -1,46 +1,64 @@
-# Astro Starter Kit: Basics
+# Яичная Культура (Egg Culture)
+
+Гастрономический и эстетический манифест, возводящий куриное яйцо в ранг спешалти-кофе, коллекционного вина и элитного китайского чая. Ироничный по замыслу, абсолютно серьезный в подаче.
+
+Сайт: `https://egg.<DOMAIN>` (по умолчанию — https://egg.ilyamedve.dev)
+
+Полное описание концепции, философии и архитектуры — в [EGG.md](EGG.md). Исторический план проекта — в [PROJECT_PLAN.md](PROJECT_PLAN.md). Механика закрытой «кладки Фонина» — в [FONIN_PLAN.md](FONIN_PLAN.md).
+
+## Стек
+
+- **Astro 6** — статика (SSG) по умолчанию + SSR-адаптер `@astrojs/node` (standalone) для динамических страниц (`/blog`, `/prophecy`, `/dark-side/fonin`, API-роуты).
+- **React 19** — точечные интерактивные острова (Island Architecture).
+- **Three.js** — 3D-яйцо и шейдеры тёмной стороны.
+- **d3-geo + topojson-client** — векторная карта терруаров.
+- Нативный Astro i18n (`ru`/`en`) + собственная утилита переводов, без клиентских i18n-библиотек.
+- Архитектура — Feature-Sliced Design (`app / pages / widgets / features / shared`).
+
+## Команды
+
+| Команда           | Действие                                    |
+| :---------------- | :------------------------------------------ |
+| `npm install`     | Установка зависимостей                      |
+| `npm run dev`     | Dev-сервер на `localhost:4321` (с `--host`) |
+| `npm run build`   | Сборка в `./dist/`                          |
+| `npm run preview` | Локальный предпросмотр сборки               |
+
+Требуется Node.js >= 22.12.
+
+## Переменные окружения
+
+Смотри `.env.example`:
+
+- `DOMAIN` — базовый домен (сайт живет на поддомене `egg.`).
+- `NEWS_API_KEY` — ключ [NewsData.io](https://newsdata.io) для мировой яичной ленты в блоге. Без ключа лента пустая, сайт работает.
+- `FONIN_ACCESS_WORD` — кодовое слово закрытой кладки подарков.
+- `FONIN_GIFT_TOKEN_SECRET` — секрет подписи временных ссылок на сертификаты (если не задан — используется кодовое слово, задать настоятельно рекомендуется).
+- `FONIN_GIFT_PRIVATE_DIR` — путь к директории с PNG-сертификатами (по умолчанию `private/fonin-gifts`).
+
+После изменения `.env` контейнер нужно перезапустить.
+
+## Деплой
+
+Docker-first, без CI/CD:
 
 ```sh
-npm create astro@latest -- --template basics
+docker compose up -d --build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+`docker-compose.yml` рассчитан на внешнюю сеть `caddy_net` с Caddy в роли reverse proxy (лейблы для автоматического SSL уже прописаны). Кэш новостей живет в named volume `news_cache` и переживает redeploy.
 
-## 🚀 Project Structure
+Приватные сертификаты кладки (`private/fonin-gifts/*.png`) не хранятся в git — при деплое из чистого клона их нужно положить на место руками, иначе API отдаст 404 (мягкая деградация).
 
-Inside of your Astro project, you'll see the following folders and files:
+## Структура
 
 ```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+src/
+├── app/        # Layout, глобальные стили (дизайн-токены)
+├── pages/      # Роутинг: [lang]/... (ru|en) + api/
+├── widgets/    # Header, Footer, DescriptorWheel
+├── features/   # EggCalculator, EggOracle, TerroirMap, Quiz,
+│               # GiftVault, QiCompass, TastingNote, WorldNews
+├── shared/     # i18n, утилиты (newsCache, foninGiftToken), UI, данные
+└── data/       # Контент: блог (md), товары, события
 ```
-
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

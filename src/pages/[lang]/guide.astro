@@ -1,6 +1,7 @@
 ---
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from '@app/layouts/Layout.astro';
+import QiCompass from '@features/QiCompass/QiCompass';
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
@@ -174,6 +175,19 @@ const guideContent = {
 
 const content = guideContent[lang as "ru" | "en"];
 
+const compassSection = {
+  ru: {
+    title: "Компас Яй Ци",
+    intro:
+      "Всякий стиль занимает свое место между минеральностью и животностью, легкостью и плотностью. Пустота — в начале координат.",
+  },
+  en: {
+    title: "The Egg Qi Compass",
+    intro:
+      "Every style occupies its place between minerality and animality, lightness and density. The Void sits at the origin.",
+  },
+}[lang as "ru" | "en"];
+
 const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 ---
 
@@ -189,6 +203,9 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
               </li>
             ))
           }
+          <li>
+            <a href="#qi-compass">{compassSection.title}</a>
+          </li>
         </ul>
       </div>
     </nav>
@@ -224,6 +241,23 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
           </>
         ))
       }
+
+      <h2 id="qi-compass">
+        <a href="#qi-compass" class="heading-anchor">#</a>
+        {compassSection.title}
+      </h2>
+      <p class="text-lead" style="padding-top: 1.5rem; line-height: 1.6;">
+        {compassSection.intro}
+      </p>
+      <div style="padding-top: 2rem; padding-bottom: 4rem;">
+        <QiCompass client:visible lang={lang as "ru" | "en"} />
+      </div>
+
+      <p class="text-center" style="padding-bottom: 4rem;">
+        <a href={`/${lang}/vintages`} class="btn">
+          {lang === "ru" ? "Сезонность Партий: Винтажи →" : "Seasonality of Batches: Vintages →"}
+        </a>
+      </p>
     </article>
     </div>
   </div>

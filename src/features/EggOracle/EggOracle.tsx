@@ -18,7 +18,7 @@ export default function EggOracle({ dict }: EggOracleProps) {
   const [isThinking, setIsThinking] = useState(false);
 
   const handleAsk = () => {
-    if (!question.trim()) return;
+    if (isThinking || !question.trim()) return;
     setIsThinking(true);
     setAnswer("");
     setTimeout(() => {

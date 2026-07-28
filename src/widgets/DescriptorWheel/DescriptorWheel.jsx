@@ -430,24 +430,43 @@ function getContrastYIQ(hexcolor) {
 export default function DescriptorWheel() {
   const [mode, setMode] = useState("white");
   const [hoveredItem, setHoveredItem] = useState(null);
-  const [originalBg, setOriginalBg] = useState("");
 
+  // Фон страницы следует за активным дескриптором. Управляем им из эффекта,
+  // чтобы фон гарантированно возвращался при смене режима, исчезновении чипа
+  // из DOM и размонтировании — одного mouseleave для этого недостаточно
+  // (тач-устройства не присылают его вовсе).
   useEffect(() => {
-    setOriginalBg(document.body.style.backgroundColor);
+    if (!hoveredItem) return;
+    const body = document.body;
+    const prevBg = body.style.backgroundColor;
+    const prevTransition = body.style.transition;
+    body.style.transition = "background-color 0.4s ease";
+    body.style.backgroundColor = hoveredItem.color;
     return () => {
-      document.body.style.backgroundColor = originalBg;
+      body.style.backgroundColor = prevBg;
+      body.style.transition = prevTransition;
     };
-  }, []);
+  }, [hoveredItem]);
 
   const handleMouseEnter = (item) => {
     setHoveredItem(item);
-    document.body.style.backgroundColor = item.color;
-    document.body.style.transition = "background-color 0.4s ease";
   };
 
   const handleMouseLeave = () => {
     setHoveredItem(null);
-    document.body.style.backgroundColor = originalBg;
+  };
+
+  const handleModeChange = (nextMode) => {
+    setMode(nextMode);
+    setHoveredItem(null);
+  };
+
+  // На тач-устройствах тап по чипу эмулирует mouseenter, а mouseleave не
+  // приходит — сбрасываем выбор тапом по любому месту вне чипов.
+  const handleTouchStart = (e) => {
+    if (!e.target.closest("[data-descriptor-chip]")) {
+      setHoveredItem(null);
+    }
   };
 
   const activeCategories = wheelData.filter((cat) => cat.modes.includes(mode));
@@ -489,13 +508,13 @@ export default function DescriptorWheel() {
           }
         }
       `}</style>
-      <div className="descriptor-container">
+      <div className="descriptor-container" onTouchStart={handleTouchStart}>
         {/* Left Column: Controls & Grid */}
         <div className="descriptor-left">
           {/* Mode Toggles */}
           <div className="descriptor-toggles">
             <button
-              onClick={() => setMode("white")}
+              onClick={() => handleModeChange("white")}
               style={{
                 padding: "0.75rem 1.5rem",
                 cursor: "pointer",
@@ -510,7 +529,7 @@ export default function DescriptorWheel() {
               ⚪ Колесо Белка
             </button>
             <button
-              onClick={() => setMode("yolk")}
+              onClick={() => handleModeChange("yolk")}
               style={{
                 padding: "0.75rem 1.5rem",
                 cursor: "pointer",
@@ -586,6 +605,7 @@ export default function DescriptorWheel() {
                         {itemsToShow.map((item, iidx) => (
                           <div
                             key={iidx}
+                            data-descriptor-chip
                             onMouseEnter={() => handleMouseEnter(item)}
                             onMouseLeave={handleMouseLeave}
                             style={{

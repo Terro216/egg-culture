@@ -20,6 +20,10 @@ pnpm-debug.log*
 # private gift assets
 private/
 
+# runtime news cache
+.news_cache.json
+.news-cache/
+
 # macOS-specific files
 .DS_Store
 

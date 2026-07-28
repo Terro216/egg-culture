@@ -41,6 +41,14 @@ const t = useTranslations(lang as Lang);
         ))
       }
     </div>
+
+    <p class="text-center">
+      <a href={`/${lang}/tasting-sheet`} class="btn-sm">
+        {lang === "ru"
+          ? "Печатный дегустационный лист для Слепых Встреч →"
+          : "Printable tasting sheet for Blind Meetings →"}
+      </a>
+    </p>
   </div>
 </Layout>
 

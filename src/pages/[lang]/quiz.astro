@@ -13,7 +13,7 @@ export function getStaticPaths() {
 const lang = getLangFromUrl(Astro.url);
 ---
 
-<Layout title="Инициация | Яичная Культура" description="Проверьте свою приверженность">
+<Layout title="Инициация | Яичная Культура" description="Проверьте свою приверженность" lang={lang}>
   <main class="quiz-page">
     <div class="container">
       <h1 class="page-title">Инициация Адепта</h1>

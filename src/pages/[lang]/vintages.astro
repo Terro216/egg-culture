@@ -1,0 +1,337 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+
+const content = {
+  ru: {
+    pageTitle: "Винтажи | Яичная Культура",
+    title: "Сезонность Партий",
+    intro:
+      "Курица живет во времени, и желток помнит сезон. Считать все кладки одинаковыми — то же варварство, что не различать урожаи вина. Ниже — календарь винтажей и оценки последних лет.",
+    seasonsTitle: "Календарь кладок",
+    seasons: [
+      {
+        name: "Весенняя кладка (Первый сбор)",
+        months: "Март — Май",
+        rating: 5,
+        white: "Белок звонкий, высокой минеральности, с выраженным меловым следом.",
+        yolk: "Желток легкий, травяной, цвета утреннего света.",
+        qi: "Яй Ци: чистая Вертикаль. Лучший сезон для Светлого Стиля.",
+        advice:
+          "Пить молодым. Выдержка убивает весеннюю нервность, а вместе с ней — и смысл.",
+      },
+      {
+        name: "Летняя кладка",
+        months: "Июнь — Август",
+        rating: 3,
+        white: "Белок расслабленный, водянистость Внешней Террасы выше обычного.",
+        yolk: "Желток яркий, но склонный к пастозности: курица пьет много и думает мало.",
+        qi: "Яй Ци рассеянное, полуденное. Подходит для первых шагов неофита.",
+        advice:
+          "Сезон компромиссов. Ищите утренние партии и держите Температурную Паузу короче.",
+      },
+      {
+        name: "Осенняя кладка",
+        months: "Сентябрь — Ноябрь",
+        rating: 4,
+        white: "Белок собранный, упругий: Альбуминовое Облако очерчено как ореол.",
+        yolk: "Желток зерновой, глубокий, с нотами стерни и позднего зерна.",
+        qi: "Яй Ци ровное, медитативное. Партии этого сезона стареют достойнее всех.",
+        advice:
+          "Идеальный кандидат для Архивного Стиля: 21 день выдержки раскрывают погребную глубину.",
+      },
+      {
+        name: "Зимняя кладка",
+        months: "Декабрь — Февраль",
+        rating: 4,
+        white: "Белок плотный, молчаливый, с закрытой минеральностью.",
+        yolk: "Желток тяжелый, бульонный, максимальной концентрации умами.",
+        qi: "Яй Ци: глубокое Заземление. Сезон Бульонного Стиля и длинных финишей.",
+        advice:
+          "Не торопите зимнюю партию. Ей нужна полная Температурная Пауза и тишина.",
+      },
+    ],
+    archiveTitle: "Оценки последних лет",
+    archiveNote: "Оценка — в Куполах, по пятибалльной шкале Гильдии.",
+    archive: [
+      {
+        year: "2022",
+        rating: 3,
+        note: "Год ровный, но безмолвный. Много технически чистой Пустоты.",
+      },
+      {
+        year: "2023",
+        rating: 4,
+        note: "Сильная осень. Архивные партии этого года до сих пор в ходу.",
+      },
+      {
+        year: "2024",
+        rating: 2,
+        note: "Год нервных партий. Металлические ноты, перепады, Йодистая Тревога.",
+      },
+      {
+        year: "2025",
+        rating: 5,
+        note: "Великий год. Весенний первый сбор вошел в учебники Гильдии.",
+      },
+      {
+        year: "2026",
+        rating: 4,
+        note: "Многообещающая весна; зиму еще предстоит услышать.",
+      },
+    ],
+    backToGuide: "← В Справочник",
+  },
+  en: {
+    pageTitle: "Vintages | Egg Culture",
+    title: "Seasonality of Batches",
+    intro:
+      "The hen lives in time, and the yolk remembers the season. To treat all layings as equal is the same barbarism as ignoring wine harvests. Below — the vintage calendar and the ratings of recent years.",
+    seasonsTitle: "The Laying Calendar",
+    seasons: [
+      {
+        name: "Spring Laying (First Harvest)",
+        months: "March — May",
+        rating: 5,
+        white: "A ringing white of high minerality, with a pronounced chalky trace.",
+        yolk: "A light, grassy yolk the color of morning light.",
+        qi: "Egg Qi: pure Verticality. The best season for the Blanc Style.",
+        advice:
+          "Drink it young. Aging kills the spring nervousness — and with it, the point.",
+      },
+      {
+        name: "Summer Laying",
+        months: "June — August",
+        rating: 3,
+        white: "A relaxed white; the wateriness of the Outer Terrace runs higher than usual.",
+        yolk: "A bright yolk prone to pastiness: the hen drinks much and thinks little.",
+        qi: "A scattered, midday Egg Qi. Suitable for a neophyte's first steps.",
+        advice:
+          "A season of compromises. Seek the morning batches and keep the Temperature Pause short.",
+      },
+      {
+        name: "Autumn Laying",
+        months: "September — November",
+        rating: 4,
+        white: "A composed, resilient white: the Albumin Cloud outlined like a halo.",
+        yolk: "A grainy, deep yolk with notes of stubble and late grain.",
+        qi: "An even, meditative Egg Qi. Batches of this season age with the most dignity.",
+        advice:
+          "The perfect candidate for the Archive Style: 21 days of aging reveal the cellar depth.",
+      },
+      {
+        name: "Winter Laying",
+        months: "December — February",
+        rating: 4,
+        white: "A dense, silent white with a closed minerality.",
+        yolk: "A heavy, brothy yolk of maximum umami concentration.",
+        qi: "Egg Qi: deep Grounding. The season of the Bouillon Style and long finishes.",
+        advice:
+          "Do not rush a winter batch. It requires the full Temperature Pause and silence.",
+      },
+    ],
+    archiveTitle: "Ratings of Recent Years",
+    archiveNote: "Rated in Domes, on the Guild's five-point scale.",
+    archive: [
+      {
+        year: "2022",
+        rating: 3,
+        note: "An even but silent year. Much technically clean Void.",
+      },
+      {
+        year: "2023",
+        rating: 4,
+        note: "A strong autumn. Archive batches of this year are still in circulation.",
+      },
+      {
+        year: "2024",
+        rating: 2,
+        note: "A year of nervous batches. Metallic notes, swings, the Iodine Anxiety.",
+      },
+      {
+        year: "2025",
+        rating: 5,
+        note: "A great year. The spring first harvest entered the Guild's textbooks.",
+      },
+      {
+        year: "2026",
+        rating: 4,
+        note: "A promising spring; the winter is yet to be heard.",
+      },
+    ],
+    backToGuide: "← Back to the Guide",
+  },
+}[lang as "ru" | "en"];
+
+const domes = (rating: number) => "●".repeat(rating) + "○".repeat(5 - rating);
+---
+
+<Layout title={content.pageTitle} lang={lang as string}>
+  <div
+    class="container flex-col gap-2xl"
+    style="padding-top: 3rem; padding-bottom: 4rem; max-width: 900px;"
+  >
+    <header class="text-center flex-col gap-sm">
+      <h1 class="page-title">{content.title}</h1>
+      <p class="text-lead" style="line-height: 1.6;">{content.intro}</p>
+    </header>
+
+    <section class="flex-col gap-lg">
+      <h2 class="section-title">{content.seasonsTitle}</h2>
+      <div class="season-grid">
+        {
+          content.seasons.map((season) => (
+            <article class="season-card">
+              <p class="season-months">{season.months}</p>
+              <h3>{season.name}</h3>
+              <p class="season-rating" title={`${season.rating}/5`}>
+                {domes(season.rating)}
+              </p>
+              <p>{season.white}</p>
+              <p>{season.yolk}</p>
+              <p class="season-qi">{season.qi}</p>
+              <p class="season-advice">{season.advice}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="flex-col gap-lg">
+      <h2 class="section-title">{content.archiveTitle}</h2>
+      <p class="text-center" style="font-style: italic; opacity: 0.7; margin: 0;">
+        {content.archiveNote}
+      </p>
+      <div class="archive-list">
+        {
+          content.archive.map((entry) => (
+            <div class="archive-row">
+              <span class="archive-year">{entry.year}</span>
+              <span class="archive-rating" title={`${entry.rating}/5`}>
+                {domes(entry.rating)}
+              </span>
+              <span class="archive-note">{entry.note}</span>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <p class="text-center">
+      <a href={`/${lang}/guide`} class="btn">{content.backToGuide}</a>
+    </p>
+  </div>
+</Layout>
+
+<style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--color-yolk);
+    margin: 0;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    color: var(--color-yolk);
+    text-align: center;
+    margin: 0;
+  }
+
+  .season-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+  }
+
+  .season-card {
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(43, 43, 43, 0.1);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .season-card h3 {
+    font-family: var(--font-serif-headers);
+    color: var(--color-yolk);
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .season-card p {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .season-months {
+    font-family: var(--font-sans-ui, sans-serif);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.8rem;
+    opacity: 0.6;
+  }
+
+  .season-rating {
+    color: var(--color-yolk);
+    letter-spacing: 0.35em;
+  }
+
+  .season-qi {
+    font-style: italic;
+  }
+
+  .season-advice {
+    opacity: 0.75;
+    border-top: 1px solid rgba(43, 43, 43, 0.1);
+    padding-top: 0.75rem;
+  }
+
+  .archive-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(43, 43, 43, 0.1);
+  }
+
+  .archive-row {
+    display: grid;
+    grid-template-columns: 5rem 8rem 1fr;
+    gap: 1.5rem;
+    align-items: baseline;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid rgba(43, 43, 43, 0.1);
+  }
+
+  .archive-year {
+    font-family: var(--font-serif-headers);
+    font-size: 1.5rem;
+    color: var(--color-yolk);
+  }
+
+  .archive-rating {
+    color: var(--color-yolk);
+    letter-spacing: 0.35em;
+    white-space: nowrap;
+  }
+
+  .archive-note {
+    line-height: 1.6;
+    opacity: 0.85;
+  }
+
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2rem;
+    }
+
+    .archive-row {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+    }
+  }
+</style>

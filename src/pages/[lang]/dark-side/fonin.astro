@@ -5,8 +5,11 @@ import { getLangFromUrl } from "@shared/i18n/utils";
 
 export const prerender = false;
 
-export function getStaticPaths() {
-  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+// Страница SSR: getStaticPaths здесь не работает, поэтому [lang]
+// валидируем вручную, чтобы не плодить дубликаты URL для краулеров.
+const { lang: langParam } = Astro.params;
+if (langParam !== "ru" && langParam !== "en") {
+  return Astro.redirect("/ru/dark-side/fonin");
 }
 
 const lang = getLangFromUrl(Astro.url);
@@ -15,6 +18,7 @@ const lang = getLangFromUrl(Astro.url);
 <Layout
   title="Три дара Дмитрия Фонина | The Dark Side of the Egg"
   description="Закрытая чайная кладка Яичной Культуры"
+  lang={lang}
 >
   <main class="fonin-vault-page">
     <canvas id="gift-canvas"></canvas>

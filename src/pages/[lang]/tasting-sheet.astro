@@ -1,0 +1,406 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+
+const content = {
+  ru: {
+    pageTitle: "Дегустационный Лист | Яичная Культура",
+    title: "Дегустационный Лист",
+    subtitle:
+      "Бланк Слепой Встречи. Распечатайте, заполняйте от руки, храните в дневнике Адепта.",
+    print: "Распечатать бланк",
+    meta: ["Дата", "Локация", "Партия №", "Дегустатор"],
+    scalesTitle: "Оценка формы (обведите)",
+    scales: [
+      "Купол",
+      "Альбуминовое Облако",
+      "Атака",
+      "Тело",
+      "Финиш",
+      "Яй Ци",
+    ],
+    descriptorsTitle: "Дескрипторы (отметьте услышанное)",
+    descriptors: [
+      "Меловой след",
+      "Бульонная глубина",
+      "Зерновое дыхание",
+      "Теплая шерсть",
+      "Сернистая тень",
+      "Сливочная пастозность",
+      "Железистая нота",
+      "Минеральность скорлупы",
+      "Животная теплота",
+      "Нервность партии",
+      "Пыльность старого сена",
+      "Пустота",
+    ],
+    defectsTitle: "Дефектология",
+    defects: ["Холодильный Ожог", "Рыбная Тень", "Картонный Финиш", "Йодистая Тревога"],
+    qiTitle: "Вектор Яй Ци (отметьте один)",
+    qiOptions: ["Вертикаль", "Заземление", "Вибрация", "Не определено"],
+    notesTitle: "Свободные заметки",
+    verdictTitle: "Вердикт",
+    verdictOptions: [
+      "Достойно второй встречи",
+      "Для калибровки рецепторов",
+      "В архив Гильдии",
+      "Забыть",
+    ],
+    footer:
+      "Без языка нет культуры. Без различения нет памяти. Без памяти нет традиции.",
+  },
+  en: {
+    pageTitle: "Tasting Sheet | Egg Culture",
+    title: "Tasting Sheet",
+    subtitle:
+      "The Blind Meeting form. Print it, fill it in by hand, keep it in the Adept's diary.",
+    print: "Print the sheet",
+    meta: ["Date", "Location", "Batch №", "Taster"],
+    scalesTitle: "Assessment of Form (circle one)",
+    scales: ["The Dome", "The Albumin Cloud", "Attack", "Body", "Finish", "Egg Qi"],
+    descriptorsTitle: "Descriptors (mark what you heard)",
+    descriptors: [
+      "Chalky trace",
+      "Broth depth",
+      "Grain breath",
+      "Warm wool",
+      "Sulfurous shadow",
+      "Creamy pastiness",
+      "Ferrous note",
+      "Shell minerality",
+      "Animal warmth",
+      "Batch nervousness",
+      "Old hay dustiness",
+      "The Void",
+    ],
+    defectsTitle: "Defectology",
+    defects: ["Refrigerator Burn", "Fish Shadow", "Cardboard Finish", "Iodine Anxiety"],
+    qiTitle: "Egg Qi Vector (mark one)",
+    qiOptions: ["Verticality", "Grounding", "Vibration", "Undetermined"],
+    notesTitle: "Free Notes",
+    verdictTitle: "Verdict",
+    verdictOptions: [
+      "Worthy of a second meeting",
+      "For receptor calibration",
+      "To the Guild archive",
+      "To forget",
+    ],
+    footer:
+      "Without language there is no culture. Without distinction there is no memory. Without memory there is no tradition.",
+  },
+}[lang as "ru" | "en"];
+---
+
+<Layout title={content.pageTitle} lang={lang as string}>
+  <div class="container sheet-container">
+    <div class="sheet-actions">
+      <button type="button" class="btn" onclick="window.print()">
+        {content.print}
+      </button>
+    </div>
+
+    <div class="sheet">
+      <header class="sheet-header">
+        <h1>{content.title}</h1>
+        <p>{content.subtitle}</p>
+      </header>
+
+      <section class="sheet-meta">
+        {
+          content.meta.map((label) => (
+            <div class="meta-field">
+              <span>{label}</span>
+              <span class="meta-line" />
+            </div>
+          ))
+        }
+      </section>
+
+      <section>
+        <h2>{content.scalesTitle}</h2>
+        <div class="scale-list">
+          {
+            content.scales.map((scale) => (
+              <div class="scale-row">
+                <span class="scale-name">{scale}</span>
+                <span class="scale-marks">1 · 2 · 3 · 4 · 5</span>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section>
+        <h2>{content.descriptorsTitle}</h2>
+        <div class="check-grid">
+          {
+            content.descriptors.map((descriptor) => (
+              <span class="check-item">
+                <span class="checkbox" />
+                {descriptor}
+              </span>
+            ))
+          }
+        </div>
+      </section>
+
+      <div class="sheet-columns">
+        <section>
+          <h2>{content.defectsTitle}</h2>
+          <div class="check-grid check-grid--single">
+            {
+              content.defects.map((defect) => (
+                <span class="check-item">
+                  <span class="checkbox" />
+                  {defect}
+                </span>
+              ))
+            }
+          </div>
+        </section>
+
+        <section>
+          <h2>{content.qiTitle}</h2>
+          <div class="check-grid check-grid--single">
+            {
+              content.qiOptions.map((option) => (
+                <span class="check-item">
+                  <span class="checkbox checkbox--round" />
+                  {option}
+                </span>
+              ))
+            }
+          </div>
+        </section>
+      </div>
+
+      <section>
+        <h2>{content.notesTitle}</h2>
+        <div class="note-lines">
+          <span /><span /><span /><span />
+        </div>
+      </section>
+
+      <section>
+        <h2>{content.verdictTitle}</h2>
+        <div class="check-grid">
+          {
+            content.verdictOptions.map((option) => (
+              <span class="check-item">
+                <span class="checkbox checkbox--round" />
+                {option}
+              </span>
+            ))
+          }
+        </div>
+      </section>
+
+      <p class="sheet-footer">{content.footer}</p>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .sheet-container {
+    max-width: 860px;
+    padding-top: 3rem;
+    padding-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sheet-actions {
+    text-align: center;
+  }
+
+  .sheet-actions .btn {
+    cursor: pointer;
+  }
+
+  .sheet {
+    border: 1px solid var(--color-text, #2b2b2b);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  .sheet-header {
+    text-align: center;
+  }
+
+  .sheet-header h1 {
+    font-size: 2.5rem;
+    margin: 0 0 0.5rem;
+    color: var(--color-yolk);
+  }
+
+  .sheet-header p {
+    margin: 0;
+    font-style: italic;
+    opacity: 0.75;
+  }
+
+  .sheet h2 {
+    font-family: var(--font-sans-ui, sans-serif);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border-bottom: 1px solid var(--color-text, #2b2b2b);
+    padding-bottom: 0.5rem;
+    margin: 0 0 1rem;
+  }
+
+  .sheet-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem 2.5rem;
+  }
+
+  .meta-field {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .meta-field > span:first-child {
+    font-family: var(--font-sans-ui, sans-serif);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    opacity: 0.7;
+  }
+
+  .meta-line {
+    flex: 1;
+    border-bottom: 1px solid rgba(43, 43, 43, 0.5);
+    min-height: 1.4rem;
+  }
+
+  .scale-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .scale-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .scale-name {
+    font-size: 1.05rem;
+  }
+
+  .scale-marks {
+    letter-spacing: 0.4em;
+    font-family: var(--font-sans-ui, sans-serif);
+    white-space: nowrap;
+  }
+
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem 1.5rem;
+  }
+
+  .check-grid--single {
+    grid-template-columns: 1fr;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .checkbox {
+    width: 0.95rem;
+    height: 0.95rem;
+    border: 1px solid var(--color-text, #2b2b2b);
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+  .checkbox--round {
+    border-radius: 50%;
+  }
+
+  .sheet-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+
+  .note-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    padding-top: 0.5rem;
+  }
+
+  .note-lines span {
+    border-bottom: 1px solid rgba(43, 43, 43, 0.5);
+  }
+
+  .sheet-footer {
+    margin: 0;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.6;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .sheet {
+      padding: 1.5rem;
+    }
+
+    .sheet-meta,
+    .sheet-columns {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<style is:global>
+  @media print {
+    .site-header,
+    .site-footer,
+    .sheet-actions {
+      display: none !important;
+    }
+
+    body {
+      background: #fff !important;
+    }
+
+    .sheet {
+      border-color: #000;
+      background: #fff;
+      padding: 0;
+      border: none;
+      gap: 1.5rem;
+    }
+
+    .sheet-container {
+      padding: 0;
+      max-width: none;
+    }
+
+    .sheet-header h1 {
+      color: #000;
+    }
+  }
+</style>

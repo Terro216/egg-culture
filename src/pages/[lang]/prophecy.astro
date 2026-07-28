@@ -1,0 +1,167 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import MonumentalEgg from "@shared/ui/MonumentalEgg/MonumentalEgg.astro";
+
+export const prerender = false;
+
+// Страница SSR: getStaticPaths не работает, [lang] валидируем вручную.
+const { lang: langParam } = Astro.params;
+if (langParam !== "ru" && langParam !== "en") {
+  return Astro.redirect("/ru/prophecy");
+}
+const lang = langParam as "ru" | "en";
+
+// Одно пророчество на весь мир в сутки: индекс детерминированно
+// выводится из даты (UTC), чтобы все адепты слышали одно и то же.
+const prophecies: { ru: string; en: string }[] = [
+  {
+    ru: "Сегодня стоит доверять белым партиям. Купол не подведет.",
+    en: "Today, trust the white batches. The Dome will not fail you.",
+  },
+  {
+    ru: "Не вскрывайте того, что еще не согрелось до комнатной температуры.",
+    en: "Do not open what has not yet warmed to room temperature.",
+  },
+  {
+    ru: "Меловой след на языке — знак, что день пройдет ясно.",
+    en: "A chalky trace on the tongue is a sign the day will pass clearly.",
+  },
+  {
+    ru: "Ждите нервную партию. Не судите ее строго: она проделала долгий путь.",
+    en: "Expect a nervous batch. Do not judge it harshly: it has come a long way.",
+  },
+  {
+    ru: "Ваша Вертикаль сегодня требует одного очень чистого белка.",
+    en: "Your Vertical today demands one very clean white.",
+  },
+  {
+    ru: "Заземление наступит после полудня. Плотный желток ускорит его.",
+    en: "Grounding will arrive past noon. A dense yolk will hasten it.",
+  },
+  {
+    ru: "Пустота притворится деликатностью. Не верьте.",
+    en: "The Void will pose as delicacy. Do not believe it.",
+  },
+  {
+    ru: "Слушайте халазу: она держит не только желток.",
+    en: "Listen to the chalaza: it holds more than the yolk.",
+  },
+  {
+    ru: "День для Архивного Стиля. Все выдержанное сегодня звучит глубже.",
+    en: "A day for the Archive Style. All that is aged sounds deeper today.",
+  },
+  {
+    ru: "Утренняя партия скажет больше вечерней. Встаньте раньше.",
+    en: "The morning batch will say more than the evening one. Rise earlier.",
+  },
+  {
+    ru: "Кто-то рядом посолит, не попробовав. Простите его.",
+    en: "Someone near you will salt without tasting. Forgive them.",
+  },
+  {
+    ru: "Хорошее Яй Ци сегодня приходит через тишину. Отложите телефон на время дегустации.",
+    en: "Good Egg Qi arrives through silence today. Set the phone aside for the tasting.",
+  },
+  {
+    ru: "Рыбная Тень пройдет стороной, если вы будете внимательны к прикорму.",
+    en: "The Fish Shadow will pass you by if you stay attentive to the feed.",
+  },
+  {
+    ru: "Ледяная купель решит то, чего не решил кипяток.",
+    en: "The ice bath will resolve what the boiling water could not.",
+  },
+  {
+    ru: "Форма идеальна. Содержание питательно. Сегодня этого достаточно.",
+    en: "The form is perfect. The content is nutritious. Today, that is enough.",
+  },
+  {
+    ru: "Не считайте сегодня калории. Считайте нюансы.",
+    en: "Do not count calories today. Count nuances.",
+  },
+];
+
+const now = new Date();
+const isoDay = now.toISOString().slice(0, 10);
+const dayHash = isoDay
+  .split("")
+  .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 100000, 7);
+const prophecy = prophecies[dayHash % prophecies.length][lang];
+
+const formattedDate = now.toLocaleDateString(
+  lang === "ru" ? "ru-RU" : "en-US",
+  { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" },
+);
+
+const ui = {
+  ru: {
+    pageTitle: "Пророчество Желтка | Яичная Культура",
+    kicker: "Ежедневное пророчество желтка",
+    note: "Одно пророчество на весь мир. Новое — на рассвете.",
+    back: "К инструментарию",
+  },
+  en: {
+    pageTitle: "Prophecy of the Yolk | Egg Culture",
+    kicker: "The daily prophecy of the yolk",
+    note: "One prophecy for the whole world. A new one at dawn.",
+    back: "Back to the instruments",
+  },
+}[lang];
+---
+
+<Layout title={ui.pageTitle} lang={lang}>
+  <div class="container prophecy-page text-center flex-col gap-lg">
+    <p class="prophecy-kicker">{ui.kicker}</p>
+    <p class="prophecy-date">{formattedDate}</p>
+    <MonumentalEgg />
+    <blockquote class="prophecy-text">{prophecy}</blockquote>
+    <p class="prophecy-note">{ui.note}</p>
+    <a href={`/${lang}/tools`} class="btn">{ui.back}</a>
+  </div>
+</Layout>
+
+<style>
+  .prophecy-page {
+    min-height: calc(100vh - 200px);
+    justify-content: center;
+    align-items: center;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .prophecy-kicker {
+    font-family: var(--font-sans-ui, sans-serif);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  .prophecy-date {
+    font-family: var(--font-serif-body, serif);
+    font-style: italic;
+    opacity: 0.7;
+    margin: 0;
+  }
+
+  .prophecy-text {
+    font-family: var(--font-serif-headers, serif);
+    font-size: 2.2rem;
+    line-height: 1.5;
+    color: var(--color-yolk, #d4af37);
+    max-width: 750px;
+    margin: 0;
+  }
+
+  .prophecy-note {
+    font-style: italic;
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .prophecy-text {
+      font-size: 1.5rem;
+    }
+  }
+</style>

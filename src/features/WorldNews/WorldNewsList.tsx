@@ -16,6 +16,15 @@ interface WorldNewsListProps {
 
 const ITEMS_PER_PAGE = 10;
 
+// NewsData.io отдает pubDate вида "2026-07-28 07:00:00" (UTC, не ISO):
+// Safari парсит такую строку в Invalid Date, остальные браузеры — как локальное время.
+function formatPubDate(pubDate: string, lang: "ru" | "en"): string {
+  const iso = pubDate.includes("T") ? pubDate : pubDate.replace(" ", "T") + "Z";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-US");
+}
+
 export default function WorldNewsList({ news, lang }: WorldNewsListProps) {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
@@ -53,17 +62,16 @@ export default function WorldNewsList({ news, lang }: WorldNewsListProps) {
                 alt={item.title}
                 loading="lazy"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
+                  const wrapper = (e.target as HTMLImageElement).closest(
+                    ".post-image-wrapper",
+                  ) as HTMLElement | null;
+                  if (wrapper) wrapper.style.display = "none";
                 }}
               />
             </div>
           )}
           <div className="post-content-wrapper flex-col">
-            <span className="post-date">
-              {new Date(item.pubDate).toLocaleDateString(
-                lang === "ru" ? "ru-RU" : "en-US",
-              )}
-            </span>
+            <span className="post-date">{formatPubDate(item.pubDate, lang)}</span>
             <h2 className="post-title">{item.title}</h2>
             <p className="post-excerpt">{item.description}</p>
             <span className="read-more">

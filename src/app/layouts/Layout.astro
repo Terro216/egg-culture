@@ -7,9 +7,16 @@ interface Props {
   title: string;
   lang?: string;
   description?: string;
+  ogImage?: string;
+  ogType?: string;
 }
 
-const { title, lang = "ru", description } = Astro.props;
+const { title, lang = "ru", description, ogImage, ogType = "website" } = Astro.props;
+
+const site = Astro.site ?? new URL("https://egg.ilyamedve.dev/");
+const canonicalUrl = new URL(Astro.url.pathname, site).href;
+// og:image должен быть абсолютным URL — относительные пути соцсети игнорируют.
+const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
 ---
 
 <!doctype html>
@@ -21,6 +28,20 @@ const { title, lang = "ru", description } = Astro.props;
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     {description && <meta name="description" content={description} />}
+
+    <!-- OpenGraph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Egg Culture" />
+    <meta property="og:locale" content={lang === "ru" ? "ru_RU" : "en_US"} />
+    {description && <meta property="og:description" content={description} />}
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta
+      name="twitter:card"
+      content={ogImageUrl ? "summary_large_image" : "summary"}
+    />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
     <!-- Подключение шрифтов -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

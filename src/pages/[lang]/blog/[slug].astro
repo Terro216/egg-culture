@@ -35,6 +35,9 @@ const t = useTranslations(lang as Lang);
 <Layout
   title={`${frontmatter.title} | Egg Culture`}
   lang={lang as string}
+  description={frontmatter.excerpt}
+  ogImage={frontmatter.image}
+  ogType="article"
 >
   <div
     class="container blog-container"

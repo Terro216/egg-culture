@@ -107,8 +107,40 @@ const vibrate = (pattern: VibrationPattern) => {
   return vibration?.call(vibratingNavigator, pattern) ?? false;
 };
 
+// Живой вывод β/γ вынесен в отдельный компонент: deviceorientation стреляет
+// ~60 раз в секунду, и держать эти данные в state родителя означало бы
+// ре-рендерить весь GiftVault на каждое событие сенсора.
+const SensorReadout: React.FC = () => {
+  const [orientation, setOrientation] = useState<Orientation>(emptyOrientation);
+
+  useEffect(() => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      setOrientation({
+        alpha: event.alpha ?? 0,
+        beta: event.beta ?? 0,
+        gamma: event.gamma ?? 0,
+      });
+    };
+
+    window.addEventListener("deviceorientation", handleOrientation);
+    return () =>
+      window.removeEventListener("deviceorientation", handleOrientation);
+  }, []);
+
+  return (
+    <div className="sensor-readout">
+      <span>β {orientation.beta.toFixed(0)}°</span>
+      <span>γ {orientation.gamma.toFixed(0)}°</span>
+    </div>
+  );
+};
+
 const MonumentalEggModel: React.FC<{ offset: Vector2 }> = ({ offset }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  // animate() живет в эффекте с пустыми deps и видит только первый offset —
+  // актуальное значение прокидываем через ref.
+  const offsetRef = useRef(offset);
+  offsetRef.current = offset;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -163,8 +195,8 @@ const MonumentalEggModel: React.FC<{ offset: Vector2 }> = ({ offset }) => {
       animationFrame = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
       egg.rotation.y = elapsedTime * 0.45;
-      egg.rotation.z = 0.15 + offset.x * 0.0012;
-      egg.rotation.x = 0.1 - offset.y * 0.001;
+      egg.rotation.z = 0.15 + offsetRef.current.x * 0.0012;
+      egg.rotation.x = 0.1 - offsetRef.current.y * 0.001;
       egg.position.y = Math.sin(elapsedTime * 0.9) * 0.08;
       renderer.render(scene, camera);
     };
@@ -201,7 +233,6 @@ export const GiftVault: React.FC = () => {
   const [accessChecking, setAccessChecking] = useState(false);
   const [mode, setMode] = useState<RitualMode>("locked");
   const [stageIndex, setStageIndex] = useState(0);
-  const [orientation, setOrientation] = useState<Orientation>(emptyOrientation);
   const [baseline, setBaseline] = useState<Orientation | null>(null);
   const [statusText, setStatusText] = useState(
     "Введите кодовое слово, чтобы начать процедуру.",
@@ -211,10 +242,6 @@ export const GiftVault: React.FC = () => {
   const [pourFill, setPourFill] = useState(0);
   const [pourSpill, setPourSpill] = useState(0);
   const [eggOffset, setEggOffset] = useState<Vector2>({ x: 0, y: 0 });
-  const [chalazaArenaSize, setChalazaArenaSize] = useState({
-    width: 320,
-    height: 420,
-  });
   const [chalazaHoldMs, setChalazaHoldMs] = useState(0);
   const [chalazaRolledAway, setChalazaRolledAway] = useState(false);
   const [shakePower, setShakePower] = useState(0);
@@ -229,6 +256,11 @@ export const GiftVault: React.FC = () => {
   const modeRef = useRef<RitualMode>("locked");
   const stageIndexRef = useRef(0);
   const calibrationTimer = useRef<number | null>(null);
+  const chalazaRollTimer = useRef<number | null>(null);
+  // Размер арены держим в ref: мобильные браузеры кидают resize при скрытии
+  // адресной строки, а перезапуск игрового эффекта из-за deps сбрасывал бы
+  // фазу дрейфа посреди игры.
+  const chalazaArenaSize = useRef({ width: 320, height: 420 });
   const pourState = useRef({ fill: 0, spill: 0, completed: false });
   const chalazaState = useRef({
     x: 0,
@@ -298,7 +330,7 @@ export const GiftVault: React.FC = () => {
       if (!arena) return;
 
       const rect = arena.getBoundingClientRect();
-      setChalazaArenaSize({ width: rect.width, height: rect.height });
+      chalazaArenaSize.current = { width: rect.width, height: rect.height };
     };
 
     updateArenaSize();
@@ -313,13 +345,11 @@ export const GiftVault: React.FC = () => {
 
   useEffect(() => {
     const handleOrientation = (event: DeviceOrientationEvent) => {
-      const next = {
+      latestOrientation.current = {
         alpha: event.alpha ?? 0,
         beta: event.beta ?? 0,
         gamma: event.gamma ?? 0,
       };
-      latestOrientation.current = next;
-      setOrientation(next);
     };
 
     const finishOracleShake = () => {
@@ -421,6 +451,8 @@ export const GiftVault: React.FC = () => {
       window.removeEventListener("devicemotion", handleMotion);
       if (calibrationTimer.current)
         window.clearTimeout(calibrationTimer.current);
+      if (chalazaRollTimer.current)
+        window.clearTimeout(chalazaRollTimer.current);
       clearOracleTimers();
     };
   }, []);
@@ -545,8 +577,8 @@ export const GiftVault: React.FC = () => {
         CHALAZA_FRAME_LIMIT,
       );
 
-      const maxOffsetX = Math.max(40, chalazaArenaSize.width / 2);
-      const maxOffsetY = Math.max(40, chalazaArenaSize.height / 2);
+      const maxOffsetX = Math.max(40, chalazaArenaSize.current.width / 2);
+      const maxOffsetY = Math.max(40, chalazaArenaSize.current.height / 2);
       const nextOffset = {
         x: state.x * maxOffsetX,
         y: state.y * maxOffsetY,
@@ -570,7 +602,8 @@ export const GiftVault: React.FC = () => {
         setChalazaRolledAway(true);
         setStatusText("Яйцо укатилось за край блюда.");
         vibrate([140, 60, 220]);
-        window.setTimeout(() => {
+        chalazaRollTimer.current = window.setTimeout(() => {
+          chalazaRollTimer.current = null;
           setChalazaRolledAway(false);
           setEggOffset({ x: 0, y: 0 });
           chalazaState.current = {
@@ -607,15 +640,28 @@ export const GiftVault: React.FC = () => {
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [mode, baseline, stage.kind, chalazaArenaSize]);
+  }, [mode, baseline, stage.kind]);
 
   const requestMotionIfNeeded = async () => {
-    const maybeDeviceOrientation = DeviceOrientationEvent as unknown as {
+    // На iOS 13+ у deviceorientation и devicemotion отдельные requestPermission —
+    // для оракула (встряхивание) нужен именно второй.
+    type PermissionRequester = {
       requestPermission?: () => Promise<"granted" | "denied">;
     };
+    const maybeDeviceOrientation =
+      DeviceOrientationEvent as unknown as PermissionRequester;
+    const maybeDeviceMotion =
+      typeof DeviceMotionEvent !== "undefined"
+        ? (DeviceMotionEvent as unknown as PermissionRequester)
+        : undefined;
 
     if (typeof maybeDeviceOrientation.requestPermission === "function") {
       const permission = await maybeDeviceOrientation.requestPermission();
+      if (permission !== "granted") return false;
+    }
+
+    if (typeof maybeDeviceMotion?.requestPermission === "function") {
+      const permission = await maybeDeviceMotion.requestPermission();
       return permission === "granted";
     }
 
@@ -749,6 +795,8 @@ export const GiftVault: React.FC = () => {
         !oracleResolved.current
       ) {
         oracleResolved.current = true;
+        shakePeak.current = 0;
+        setShakePower(0);
         setOracleAnswer("Оракул не почувствовал вопрос.");
         setStatusText("Слишком тихо. Желток не проснулся.");
         setMode("ready");
@@ -819,6 +867,10 @@ export const GiftVault: React.FC = () => {
       window.clearTimeout(calibrationTimer.current);
       calibrationTimer.current = null;
     }
+    if (chalazaRollTimer.current) {
+      window.clearTimeout(chalazaRollTimer.current);
+      chalazaRollTimer.current = null;
+    }
     setBaseline(null);
     setPourFill(0);
     setPourSpill(0);
@@ -838,6 +890,10 @@ export const GiftVault: React.FC = () => {
       return;
     }
 
+    if (chalazaRollTimer.current) {
+      window.clearTimeout(chalazaRollTimer.current);
+      chalazaRollTimer.current = null;
+    }
     setStageIndex(nextStage);
     setBaseline(null);
     setPourFill(0);
@@ -989,10 +1045,7 @@ export const GiftVault: React.FC = () => {
 
             {renderStageVisual()}
 
-            <div className="sensor-readout">
-              <span>β {orientation.beta.toFixed(0)}°</span>
-              <span>γ {orientation.gamma.toFixed(0)}°</span>
-            </div>
+            <SensorReadout />
 
             <div className="ritual-actions">
               {stage.kind !== "oracle" &&

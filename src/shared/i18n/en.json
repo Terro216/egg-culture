@@ -27,7 +27,9 @@
     "subtitle": "Practice requires precision.",
     "wheelTitle": "Descriptor Wheel",
     "wheelDesc": "Soon an interactive wheel of tastes and textures will appear here, helping you find the right words to describe your experience.",
-    "inDev": "In development..."
+    "inDev": "In development...",
+    "noteGenTitle": "Tasting Note Generator",
+    "noteGenDesc": "Assemble the batch profile from descriptors — and receive a note worthy of an Adept's diary."
   },
   "calculator": {
     "title": "Exposure Calculator",
@@ -45,7 +47,33 @@
     "doneHard": "Hard-boiled (dense granular yolk)",
     "resultLabel": "Recommended boiling time",
     "minutes": "min",
-    "seconds": "sec"
+    "seconds": "sec",
+    "startCeremony": "Begin the Ceremony",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Abort the ceremony",
+    "ceremonyLabel": "The ceremony is underway",
+    "phaseLabel": "Phase",
+    "phases": [
+      {
+        "name": "Immersion",
+        "text": "Lower the form into the boiling silence. Do not disturb the water."
+      },
+      {
+        "name": "Silence of the White",
+        "text": "The albumen is gathering itself. Listen, do not interfere."
+      },
+      {
+        "name": "Becoming of the Dome",
+        "text": "The Dome acquires its resilience. Keep your breath even."
+      },
+      {
+        "name": "Ripening of the Egg Qi",
+        "text": "The energy condenses. Not long now."
+      }
+    ],
+    "finishTitle": "The time has come",
+    "finishText": "Quench the fire. An ice bath will fix the achieved form."
   },
   "oracle": {
     "title": "Egg Oracle",

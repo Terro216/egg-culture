@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 // @ts-ignore
 import worldData from "@shared/data/world-110m.json";
 
 interface TerroirMapProps {
+  lang: "ru" | "en";
   dict: {
     title: string;
     subtitle: string;
@@ -37,7 +38,11 @@ const COUNTRY_MAP: Record<string, string> = {
   Australia: "australia",
 };
 
-export const TerroirMap: React.FC<TerroirMapProps> = ({ dict }) => {
+// Базовые размеры для проекции D3
+const MAP_WIDTH = 1000;
+const MAP_HEIGHT = 500;
+
+export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
     x: number;
@@ -52,40 +57,50 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ dict }) => {
     countryName: "",
   });
 
-  // Распаковываем TopoJSON только один раз
-  const geometries = useMemo(() => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Распаковываем TopoJSON и считаем SVG-пути один раз: геометрия статична,
+  // а pathGenerator по всем странам — слишком дорог для каждого рендера.
+  const countryPaths = useMemo(() => {
     // @ts-ignore
     const featureCollection = feature(worldData, worldData.objects.countries);
     const features = featureCollection.features;
     // Сортируем: сначала обычные регионы, затем "яичные", чтобы их обводка не перекрывалась
-    return features.sort((a: any, b: any) => {
+    features.sort((a: any, b: any) => {
       const aIsTerroir = !!COUNTRY_MAP[a.properties?.name];
       const bIsTerroir = !!COUNTRY_MAP[b.properties?.name];
       if (aIsTerroir === bIsTerroir) return 0;
       return aIsTerroir ? 1 : -1;
     });
+
+    // Используем проекцию Меркатора (можно заменить на geoNaturalEarth1 для более мягких форм)
+    const projection = geoMercator()
+      .scale(120)
+      .translate([MAP_WIDTH / 2, MAP_HEIGHT / 1.4]);
+    const pathGenerator = geoPath().projection(projection);
+
+    return features.map((geo: any) => {
+      const countryName: string = geo.properties?.name || "";
+      return {
+        d: pathGenerator(geo) || "",
+        countryName,
+        regionKey: COUNTRY_MAP[countryName] || null,
+      };
+    });
   }, []);
-
-  // Базовые размеры для проекции D3
-  const width = 1000;
-  const height = 500;
-
-  // Используем проекцию Меркатора (можно заменить на geoNaturalEarth1 для более мягких форм)
-  const projection = geoMercator()
-    .scale(120)
-    .translate([width / 2, height / 1.4]);
-  const pathGenerator = geoPath().projection(projection);
 
   const handleMouseMove = (
     e: React.MouseEvent,
     regionId: string | null,
     countryName: string,
   ) => {
-    // Позиционируем относительно контейнера страницы
+    // Позиционируем относительно .map-container — он position: relative,
+    // поэтому тултип не зависит от positioned-предков выше по дереву.
+    const rect = containerRef.current?.getBoundingClientRect();
     setTooltip({
       visible: true,
-      x: e.pageX,
-      y: e.pageY,
+      x: e.clientX - (rect?.left ?? 0),
+      y: e.clientY - (rect?.top ?? 0),
       regionId,
       countryName,
     });
@@ -93,6 +108,14 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ dict }) => {
 
   const handleMouseLeave = () => {
     setTooltip((prev) => ({ ...prev, visible: false }));
+  };
+
+  // На тач-устройствах mouseleave не приходит: скрываем тултип тапом
+  // по пустому месту (страны обрабатываются эмулированными mouse-событиями).
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!(e.target as Element).closest("path")) {
+      handleMouseLeave();
+    }
   };
 
   const tooltipData = tooltip.regionId ? dict.regions[tooltip.regionId] : null;
@@ -209,67 +232,68 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ dict }) => {
         <p>{dict.subtitle}</p>
       </div>
 
-      <div className="map-container">
-        <svg viewBox={`0 0 ${width} ${height}`} className="terroir-svg">
-          {geometries.map((geo: any, i: number) => {
-            const countryName = geo.properties?.name;
-            const regionKey = COUNTRY_MAP[countryName];
-            const isTerroir = !!regionKey;
-
-            return (
-              <path
-                key={i}
-                d={pathGenerator(geo) || ""}
-                className={`map-path ${isTerroir ? "is-terroir" : ""}`}
-                onMouseMove={(e) =>
-                  handleMouseMove(e, regionKey || null, countryName || "")
-                }
-                onMouseLeave={handleMouseLeave}
-              />
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* Тултип рендерится в корне страницы по абсолютным координатам мыши */}
-      {tooltip.visible && (
-        <div
-          className="terroir-tooltip"
-          style={{ left: tooltip.x, top: tooltip.y }}
+      <div
+        className="map-container"
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onMouseLeave={handleMouseLeave}
+      >
+        <svg
+          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+          className="terroir-svg"
         >
-          {tooltipData ? (
-            <>
-              <div className="tooltip-title">{tooltipData.name}</div>
-              <div className="tooltip-line">
-                <strong>{dict.labels.breed}</strong>
-                {tooltipData.breed}
-              </div>
-              <div className="tooltip-line">
-                <strong>{dict.labels.diet}</strong>
-                {tooltipData.diet}
-              </div>
-              <div className="tooltip-line">
-                <strong>{dict.labels.profile}</strong>
-                {tooltipData.profile}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="tooltip-title">
-                {tooltip.countryName || "Unknown Region"}
-              </div>
-              <div
-                className="tooltip-line"
-                style={{ opacity: 0.7, fontStyle: "italic" }}
-              >
-                {dict.title && dict.title.includes("Терруар")
-                  ? "Яичная культура в этом регионе еще не развита. Терруар спит."
-                  : "Egg culture is not yet developed in this region. The terroir is dormant."}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+          {countryPaths.map((country, i) => (
+            <path
+              key={i}
+              d={country.d}
+              className={`map-path ${country.regionKey ? "is-terroir" : ""}`}
+              onMouseMove={(e) =>
+                handleMouseMove(e, country.regionKey, country.countryName)
+              }
+              onMouseLeave={handleMouseLeave}
+            />
+          ))}
+        </svg>
+
+        {tooltip.visible && (
+          <div
+            className="terroir-tooltip"
+            style={{ left: tooltip.x, top: tooltip.y }}
+          >
+            {tooltipData ? (
+              <>
+                <div className="tooltip-title">{tooltipData.name}</div>
+                <div className="tooltip-line">
+                  <strong>{dict.labels.breed}</strong>
+                  {tooltipData.breed}
+                </div>
+                <div className="tooltip-line">
+                  <strong>{dict.labels.diet}</strong>
+                  {tooltipData.diet}
+                </div>
+                <div className="tooltip-line">
+                  <strong>{dict.labels.profile}</strong>
+                  {tooltipData.profile}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="tooltip-title">
+                  {tooltip.countryName || "Unknown Region"}
+                </div>
+                <div
+                  className="tooltip-line"
+                  style={{ opacity: 0.7, fontStyle: "italic" }}
+                >
+                  {lang === "ru"
+                    ? "Яичная культура в этом регионе еще не развита. Терруар спит."
+                    : "Egg culture is not yet developed in this region. The terroir is dormant."}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 };

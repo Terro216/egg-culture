@@ -2,7 +2,12 @@ import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-const accessWord = import.meta.env.FONIN_ACCESS_WORD ?? "Яй Ци";
+// process.env — первым: import.meta.env инлайнится Vite на этапе сборки,
+// а .env в Docker-образ не попадает (секреты приходят через env_file в рантайме).
+const accessWord =
+  process.env.FONIN_ACCESS_WORD ??
+  import.meta.env.FONIN_ACCESS_WORD ??
+  "Яй Ци";
 
 const normalize = (value: string) =>
   value

@@ -5,9 +5,18 @@ import { verifyFoninGiftToken } from "@shared/utils/foninGiftToken";
 
 export const prerender = false;
 
-const accessWord = import.meta.env.FONIN_ACCESS_WORD ?? "Яй Ци";
-const tokenSecret = import.meta.env.FONIN_GIFT_TOKEN_SECRET ?? accessWord;
+// process.env — первым: import.meta.env инлайнится Vite на этапе сборки,
+// а .env в Docker-образ не попадает (секреты приходят через env_file в рантайме).
+const accessWord =
+  process.env.FONIN_ACCESS_WORD ??
+  import.meta.env.FONIN_ACCESS_WORD ??
+  "Яй Ци";
+const tokenSecret =
+  process.env.FONIN_GIFT_TOKEN_SECRET ??
+  import.meta.env.FONIN_GIFT_TOKEN_SECRET ??
+  accessWord;
 const privateDir =
+  process.env.FONIN_GIFT_PRIVATE_DIR ??
   import.meta.env.FONIN_GIFT_PRIVATE_DIR ??
   join(process.cwd(), "private", "fonin-gifts");
 

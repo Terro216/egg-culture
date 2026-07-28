@@ -94,8 +94,10 @@ async function fetchAndCacheNews(
   lang: "ru" | "en",
   existingNews: NewsItem[],
 ): Promise<NewsItem[] | null> {
-  // We use import.meta.env since we're in an Astro/Vite environment
-  const apiKey = import.meta.env.NEWS_API_KEY || "demo";
+  // process.env — первым: import.meta.env инлайнится на этапе сборки,
+  // а в Docker ключ приходит только в рантайме через env_file.
+  const apiKey =
+    process.env.NEWS_API_KEY || import.meta.env.NEWS_API_KEY || "demo";
   const query = lang === "ru" ? "яйцо OR яйца" : "egg OR eggs";
   // Adding size=10 to the request as requested (page_size 5 or 10)
   const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=${encodeURIComponent(query)}&language=${lang}&size=10`;

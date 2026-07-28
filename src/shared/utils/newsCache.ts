@@ -4,6 +4,7 @@ import path from "node:path";
 const CACHE_FILE = path.resolve(process.cwd(), ".news_cache.json");
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const MAX_CACHED_ITEMS = 1000;
+const FETCH_TIMEOUT = 10 * 1000; // 10 seconds
 
 interface NewsItem {
   article_id?: string;
@@ -63,7 +64,9 @@ export async function getCachedWorldNews(
     const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=${encodeURIComponent(query)}&language=${lang}&size=10`;
 
     try {
-      const res = await fetch(url);
+      // Без таймаута висящий запрос к newsdata.io блокирует рендер до дефолтного
+      // таймаута undici — лучше быстро упасть и отдать закэшированные новости.
+      const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT) });
       if (res.ok) {
         const data = await res.json();
         const fetchedNews: NewsItem[] = Array.isArray(data.results)
@@ -102,7 +105,9 @@ export async function getCachedWorldNews(
         console.warn("News API responded with status:", res.status);
       }
     } catch (e) {
-      console.error("Failed to fetch world news:", e);
+      // Отдаём кэш и логируем одной строкой, без полного дампа ошибки undici
+      const reason = e instanceof Error ? e.message : String(e);
+      console.warn(`Failed to fetch world news (${lang}), using cache: ${reason}`);
     }
   }
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 // Инкубатор: тамагочи Яичной Культуры. Яйцо не вылупляется — оно созревает.
 // Ежедневный ритуал прогрева (удержание ладони), стрики, ранги,
-// «холодильный ожог» за пропуск и Пустота за неделю забвения.
+// «Холодильный Ожог» за пропуск и Пустота за неделю забвения.
 
 interface IncubatorProps {
   lang: "ru" | "en";
@@ -94,12 +94,12 @@ const STRINGS = {
   ru: {
     layTitle: "Кладка пуста",
     layText:
-      "Заложите яйцо и возвращайтесь каждый день, чтобы прогреть его теплом ладони. Пропустите день — получите холодильный ожог. Забудете на неделю — яйцо заберет Пустота.",
+      "Заложите яйцо и возвращайтесь каждый день, чтобы прогреть его теплом ладони. Пропустите день — получите Холодильный Ожог. Забудете на неделю — яйцо заберет Пустота.",
     layBtn: "Заложить яйцо",
     holdHint: "Держите ладонь на скорлупе…",
     warmBtn: "Прогреть яйцо",
     warmedToday: "Яйцо прогрето. Возвращайтесь завтра — тепло не терпит жадности.",
-    burnTitle: "Холодильный ожог",
+    burnTitle: "Холодильный Ожог",
     burnText: (d: number) =>
       `Вы отсутствовали ${d} ${d === 1 ? "день" : d < 5 ? "дня" : "дней"}. Скорлупа помнит холод: серия прервана, часть Яй Ци утрачена.`,
     rewarmBtn: "Отогреть яйцо",
@@ -119,12 +119,12 @@ const STRINGS = {
   en: {
     layTitle: "The clutch is empty",
     layText:
-      "Lay an egg and return every day to warm it with your palm. Miss a day — a refrigerator burn. Forget for a week — the Void takes the egg.",
+      "Lay an egg and return every day to warm it with your palm. Miss a day — a Freezer Burn. Forget for a week — the Void takes the egg.",
     layBtn: "Lay an egg",
     holdHint: "Hold your palm on the shell…",
     warmBtn: "Warm the egg",
     warmedToday: "The egg is warmed. Return tomorrow — warmth tolerates no greed.",
-    burnTitle: "Refrigerator burn",
+    burnTitle: "Freezer Burn",
     burnText: (d: number) =>
       `You were away for ${d} ${d === 1 ? "day" : "days"}. The shell remembers the cold: the streak is broken, some Egg Qi is lost.`,
     rewarmBtn: "Rewarm the egg",

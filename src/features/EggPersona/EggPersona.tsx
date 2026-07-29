@@ -103,6 +103,8 @@ const STRINGS = {
     resultLabel: "Ваш стиль",
     download: "Сохранить карточку",
     share: "Поделиться",
+    shareText: "Я —",
+    linkCopied: "Ссылка скопирована — отправьте её миру.",
     retake: "Пройти заново",
     cardHeader: "КАКОЕ ВЫ ЯЙЦО?",
     axisTop: "Плотность",
@@ -117,6 +119,8 @@ const STRINGS = {
     resultLabel: "Your style",
     download: "Save the card",
     share: "Share",
+    shareText: "I am",
+    linkCopied: "Link copied — send it into the world.",
     retake: "Retake",
     cardHeader: "WHICH EGG ARE YOU?",
     axisTop: "Density",
@@ -291,6 +295,7 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
   const [preset, setPreset] = useState<Persona | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cardReady, setCardReady] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const step = answers.length;
   const finished = step >= QUESTIONS.length;
@@ -374,30 +379,28 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
     a.click();
   };
 
+  // Шерим ссылку, а не файл: в мессенджерах она развернется
+  // серверной og-карточкой (/api/persona-og). Файл — через «Сохранить».
   const share = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !result) return;
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/png"),
-    );
-    if (!blob) return;
-    const file = new File([blob], `egg-persona-${result.persona.id}.png`, {
-      type: "image/png",
-    });
-    if (navigator.canShare?.({ files: [file] })) {
+    if (!result) return;
+    const url = window.location.href;
+    const content = result.persona[lang];
+    const text = `${s.shareText} ${content.name}. ${content.epithet}.`;
+    if (navigator.share) {
       try {
-        await navigator.share({
-          files: [file],
-          title: STRINGS[lang].cardHeader,
-          url: window.location.href,
-        });
-        return;
+        await navigator.share({ title: s.cardHeader, text, url });
       } catch {
         // пользователь отменил — молчим
-        return;
       }
+      return;
     }
-    download();
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // clipboard недоступен — ничего страшного
+    }
   };
 
   const retake = () => {
@@ -546,6 +549,11 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
               {s.retake}
             </button>
           </div>
+          {copied && (
+            <p className="egg-persona-epithet" aria-live="polite">
+              {s.linkCopied}
+            </p>
+          )}
         </>
       )}
     </div>

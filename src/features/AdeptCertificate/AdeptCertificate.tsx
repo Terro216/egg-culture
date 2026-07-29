@@ -286,14 +286,14 @@ function drawCertificate(
   ctx.textAlign = "left";
   ctx.font = "24px 'Lora', serif";
   ctx.fillStyle = "#6b5a2a";
-  ctx.fillText(s.signature, 430, H - 280);
+  ctx.fillText(s.signature, 430, H - 210);
 
   const dateStr = new Date().toLocaleDateString(
     lang === "ru" ? "ru-RU" : "en-GB",
     { day: "numeric", month: "long", year: "numeric" },
   );
-  ctx.fillText(`${s.dateLabel}: ${dateStr}`, 430, H - 240);
-  ctx.fillText(`${s.certNo} ${certNumber(name)}`, 430, H - 205);
+  ctx.fillText(`${s.dateLabel}: ${dateStr}`, 430, H - 172);
+  ctx.fillText(`${s.certNo} ${certNumber(name)}`, 430, H - 137);
 
   // Футер
   ctx.textAlign = "center";

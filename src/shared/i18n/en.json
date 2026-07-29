@@ -5,7 +5,8 @@
     "tools": "Tools",
     "shop": "Boutique",
     "blog": "Blog",
-    "events": "Events"
+    "events": "Events",
+    "incubator": "Incubator"
   },
   "home": {
     "pageTitle": "Home | Egg Culture",
@@ -29,7 +30,10 @@
     "wheelDesc": "Soon an interactive wheel of tastes and textures will appear here, helping you find the right words to describe your experience.",
     "inDev": "In development...",
     "noteGenTitle": "Tasting Note Generator",
-    "noteGenDesc": "Assemble the batch profile from descriptors — and receive a note worthy of an Adept's diary."
+    "noteGenDesc": "Assemble the batch profile from descriptors — and receive a note worthy of an Adept's diary.",
+    "personaTitle": "Which egg are you?",
+    "personaDesc": "Seven questions — and the Qi Compass will point to your style. Save the result card and show it to the world.",
+    "personaCta": "Take the trial →"
   },
   "calculator": {
     "title": "Exposure Calculator",
@@ -73,7 +77,9 @@
       }
     ],
     "finishTitle": "The time has come",
-    "finishText": "Quench the fire. An ice bath will fix the achieved form."
+    "finishText": "Quench the fire. An ice bath will fix the achieved form.",
+    "soundOn": "🔔 ceremony sound: on",
+    "soundOff": "🔕 ceremony sound: off"
   },
   "oracle": {
     "title": "Egg Oracle",

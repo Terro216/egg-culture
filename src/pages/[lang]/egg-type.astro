@@ -1,0 +1,78 @@
+---
+import Layout from '@app/layouts/Layout.astro';
+import EggPersona from '@features/EggPersona/EggPersona';
+import { getPersonaById } from '@features/EggPersona/personaData';
+import { type Lang } from '@shared/i18n/utils';
+
+// SSR: og-теги зависят от ?result=<id> — шерённая ссылка на результат
+// разворачивается в соцсетях персональной карточкой (/api/persona-og).
+export const prerender = false;
+
+const langParam = Astro.params.lang;
+if (langParam !== "ru" && langParam !== "en") {
+  return Astro.redirect("/ru/egg-type");
+}
+const lang = langParam as Lang;
+
+const resultId = Astro.url.searchParams.get("result");
+const persona = resultId ? getPersonaById(resultId) : undefined;
+
+const baseTitle =
+  lang === "ru"
+    ? "Какое вы яйцо? | Яичная Культура"
+    : "Which egg are you? | Egg Culture";
+const title = persona
+  ? lang === "ru"
+    ? `Я — ${persona.ru.name} | Яичная Культура`
+    : `I am ${persona.en.name} | Egg Culture`
+  : baseTitle;
+const description = persona
+  ? `${persona[lang].epithet}. ${persona[lang].desc}`
+  : lang === "ru"
+    ? "Семь вопросов — и Компас Яй Ци укажет ваш стиль: от аскетичного Blanc до Дворового Дикого."
+    : "Seven questions — and the Qi Compass will point to your style: from ascetic Blanc to Yard Wild.";
+const ogImage = persona
+  ? `/api/persona-og?type=${encodeURIComponent(persona.id)}&lang=${lang}`
+  : undefined;
+---
+
+<Layout
+  title={title}
+  description={description}
+  lang={lang}
+  ogImage={ogImage}
+>
+  <div
+    class="container flex-col gap-xl"
+    style="padding-top: 3rem; padding-bottom: 4rem;"
+  >
+    <div class="text-center flex-col gap-sm">
+      <h1 class="page-title">
+        {lang === "ru" ? "Какое вы яйцо?" : "Which egg are you?"}
+      </h1>
+      <p class="text-lead">
+        {
+          lang === "ru"
+            ? "Испытание восприятия. Отвечайте не думая — Яй Ци не терпит расчета."
+            : "A trial of perception. Answer without thinking — Egg Qi tolerates no calculation."
+        }
+      </p>
+    </div>
+
+    <EggPersona client:load lang={lang} />
+  </div>
+</Layout>
+
+<style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--color-yolk);
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2rem;
+    }
+  }
+</style>

@@ -5,6 +5,7 @@ services:
     env_file: .env
     volumes:
       - news_cache:/app/.news-cache
+      - kladka_data:/app/.kladka
     labels:
       caddy: egg.${DOMAIN}
       caddy.reverse_proxy: "{{upstreams 4321}}"
@@ -17,3 +18,4 @@ networks:
 
 volumes:
   news_cache:
+  kladka_data:

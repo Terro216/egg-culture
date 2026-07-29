@@ -24,6 +24,9 @@ private/
 .news_cache.json
 .news-cache/
 
+# runtime kladka book storage
+.kladka/
+
 # macOS-specific files
 .DS_Store
 

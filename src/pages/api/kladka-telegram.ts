@@ -51,7 +51,7 @@ export const POST: APIRoute = async ({ request }) => {
   await markModerated(
     cb.message.chat.id,
     cb.message.message_id,
-    Boolean(cb.message.photo),
+    Boolean(cb.message.photo || cb.message.document),
     cb.message.caption ?? cb.message.text ?? "",
     verdict,
   );

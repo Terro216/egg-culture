@@ -91,6 +91,19 @@ const moderationKeyboard = (postId: string) => ({
   ],
 });
 
+function mediaForm(post: KladkaPost, image: Buffer, field: string): FormData {
+  const form = new FormData();
+  form.append("chat_id", adminChatId()!);
+  form.append("caption", moderationCaption(post));
+  form.append("reply_markup", JSON.stringify(moderationKeyboard(post.id)));
+  form.append(
+    field,
+    new Blob([new Uint8Array(image)], { type: post.image!.type }),
+    `post.${post.image!.ext}`,
+  );
+  return form;
+}
+
 export async function sendModerationRequest(
   post: KladkaPost,
   image: Buffer | null,
@@ -99,23 +112,25 @@ export async function sendModerationRequest(
   await ensureWebhook();
 
   if (image && post.image) {
-    const form = new FormData();
-    form.append("chat_id", adminChatId()!);
-    form.append("caption", moderationCaption(post));
-    form.append("reply_markup", JSON.stringify(moderationKeyboard(post.id)));
-    form.append(
-      "photo",
-      new Blob([new Uint8Array(image)], { type: post.image.type }),
-      `post.${post.image.ext}`,
+    // Telegram может отказаться обрабатывать фото (IMAGE_PROCESS_FAILED и т.п.) —
+    // тогда шлем файлом, а в самом худшем случае текстом: уведомление о новой
+    // записи важнее превью, иначе запись зависнет в pending без следа.
+    const asPhoto = await call("sendPhoto", mediaForm(post, image, "photo"));
+    if (asPhoto?.ok) return;
+    const asDocument = await call(
+      "sendDocument",
+      mediaForm(post, image, "document"),
     );
-    await call("sendPhoto", form);
-  } else {
-    await call("sendMessage", {
-      chat_id: adminChatId(),
-      text: moderationCaption(post),
-      reply_markup: moderationKeyboard(post.id),
-    });
+    if (asDocument?.ok) return;
   }
+
+  await call("sendMessage", {
+    chat_id: adminChatId(),
+    text:
+      moderationCaption(post) +
+      (post.image ? "\n\n⚠️ Фото не удалось приложить — оно сохранено и появится в Книге после одобрения." : ""),
+    reply_markup: moderationKeyboard(post.id),
+  });
 }
 
 export async function answerCallback(callbackId: string, text: string) {

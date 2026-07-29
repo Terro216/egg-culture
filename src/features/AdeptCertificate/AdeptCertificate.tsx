@@ -20,7 +20,7 @@ const STRINGS = {
     body2: "безошибочно прошел(ла) Инициацию, различает Меловой След",
     body3: "и допускается к Тёмной Стороне Яйца.",
     creed: "«Корм — это язык будущего желтка»",
-    signature: "Д. Фонин, Хранитель Кладки",
+    signature: "Заверено кровью Ордена Яйца",
     certNo: "Свидетельство №",
     dateLabel: "Дано",
   },
@@ -39,7 +39,7 @@ const STRINGS = {
     body2: "has flawlessly passed the Initiation, discerns the Chalky Trail",
     body3: "and is admitted to the Dark Side of the Egg.",
     creed: "“Feed is the language of the future yolk”",
-    signature: "D. Fonin, Keeper of the Clutch",
+    signature: "Sealed in the blood of the Order of the Egg",
     certNo: "Testimony No.",
     dateLabel: "Issued",
   },
@@ -112,6 +112,88 @@ function drawSeal(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
     ctx.restore();
   }
   ctx.restore();
+}
+
+// Кровавая печать Ордена Яйца: неровный оттиск с яйцом-просветом.
+// Форма оттиска детерминированно зависит от имени — у каждого адепта
+// печать своя, но при переоформлении не меняется.
+function drawBloodSeal(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  seedText: string,
+) {
+  let s = 0;
+  for (let i = 0; i < seedText.length; i++) {
+    s = (s * 31 + seedText.charCodeAt(i)) >>> 0;
+  }
+  const rnd = () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 2 ** 32;
+  };
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((rnd() - 0.5) * 0.25);
+
+  // Неровный контур оттиска
+  const blob = (radius: number, jitter: number) => {
+    const points = 26;
+    const rads: number[] = [];
+    for (let i = 0; i < points; i++) {
+      rads.push(radius * (1 - jitter / 2 + rnd() * jitter));
+    }
+    ctx.beginPath();
+    for (let i = 0; i <= points; i++) {
+      const a1 = ((i % points) / points) * Math.PI * 2;
+      const a2 = (((i + 0.5) % points) / points) * Math.PI * 2;
+      const r1 = rads[i % points];
+      const r2 = (rads[i % points] + rads[(i + 1) % points]) / 2;
+      if (i === 0) ctx.moveTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
+      else ctx.quadraticCurveTo(
+        Math.cos(a1) * r1, Math.sin(a1) * r1,
+        Math.cos(a2) * r2, Math.sin(a2) * r2,
+      );
+    }
+    ctx.closePath();
+  };
+
+  // Два слоя: размытая кромка + плотное тело
+  blob(r, 0.34);
+  ctx.fillStyle = "rgba(112, 12, 12, 0.45)";
+  ctx.fill();
+  blob(r * 0.92, 0.22);
+  ctx.fillStyle = "rgba(112, 12, 12, 0.88)";
+  ctx.fill();
+
+  // Яйцо-просвет в теле печати
+  ctx.beginPath();
+  ctx.ellipse(0, r * 0.06, r * 0.34, r * 0.48, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "#f0ead6";
+  ctx.fill();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "rgba(112, 12, 12, 0.55)";
+  ctx.stroke();
+
+  // Брызги вокруг
+  const drops = 7 + Math.floor(rnd() * 4);
+  for (let i = 0; i < drops; i++) {
+    const a = rnd() * Math.PI * 2;
+    const dist = r * (1.1 + rnd() * 0.45);
+    ctx.beginPath();
+    ctx.arc(Math.cos(a) * dist, Math.sin(a) * dist, 1.5 + rnd() * 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(112, 12, 12, ${0.35 + rnd() * 0.5})`;
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  // Девиз Ордена под печатью
+  ctx.textAlign = "center";
+  ctx.font = "600 24px 'Playfair Display', serif";
+  ctx.fillStyle = "rgba(112, 12, 12, 0.85)";
+  ctx.fillText("O R D O   O V I", cx, cy + r + 42);
 }
 
 function drawCertificate(
@@ -198,27 +280,20 @@ function drawCertificate(
   // Печать
   drawSeal(ctx, W - 330, H - 250, 130);
 
-  // Подпись
+  // Кровавая печать Ордена вместо подписи
+  drawBloodSeal(ctx, 280, H - 265, 80, name);
+
   ctx.textAlign = "left";
-  ctx.font = "italic 600 44px 'Playfair Display', serif";
-  ctx.fillStyle = "#2b2b2b";
-  ctx.fillText("D. Fonin", 170, H - 250);
-  ctx.strokeStyle = "rgba(43,43,43,0.6)";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(160, H - 230);
-  ctx.lineTo(560, H - 230);
-  ctx.stroke();
   ctx.font = "24px 'Lora', serif";
   ctx.fillStyle = "#6b5a2a";
-  ctx.fillText(s.signature, 170, H - 195);
+  ctx.fillText(s.signature, 430, H - 280);
 
   const dateStr = new Date().toLocaleDateString(
     lang === "ru" ? "ru-RU" : "en-GB",
     { day: "numeric", month: "long", year: "numeric" },
   );
-  ctx.fillText(`${s.dateLabel}: ${dateStr}`, 170, H - 155);
-  ctx.fillText(`${s.certNo} ${certNumber(name)}`, 170, H - 120);
+  ctx.fillText(`${s.dateLabel}: ${dateStr}`, 430, H - 240);
+  ctx.fillText(`${s.certNo} ${certNumber(name)}`, 430, H - 205);
 
   // Футер
   ctx.textAlign = "center";

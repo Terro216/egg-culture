@@ -4,20 +4,30 @@ interface AdeptCertificateProps {
   lang: "ru" | "en";
 }
 
+type Gender = "m" | "f";
+
 const STRINGS = {
   ru: {
     heading: "Сертификат Истинного Адепта",
     intro:
       "Вы прошли инициацию — значит, имеете право на документ. Впишите имя, и Кладка заверит его печатью Купола.",
     placeholder: "Ваше имя",
+    genderM: "Адепт",
+    genderF: "Адептка",
     generate: "Заверить печатью",
     download: "Скачать сертификат",
     regenerate: "Переоформить",
     site: "EGG.ILYAMEDVE.DEV",
     certTitle: "СЕРТИФИКАТ",
-    certSubtitle: "Истинного Адепта Яичной Культуры",
+    certSubtitle: {
+      m: "Истинного Адепта Яичной Культуры",
+      f: "Истинной Адептки Яичной Культуры",
+    },
     body1: "Настоящим удостоверяется, что",
-    body2: "безошибочно прошел(ла) Инициацию, различает Меловой След",
+    body2: {
+      m: "безошибочно прошел Инициацию, различает Меловой След",
+      f: "безошибочно прошла Инициацию, различает Меловой След",
+    },
     body3: "и допускается к Тёмной Стороне Яйца.",
     creed: "«Корм — это язык будущего желтка»",
     signature: "Заверено кровью Ордена Яйца",
@@ -29,14 +39,22 @@ const STRINGS = {
     intro:
       "You have passed the initiation — you are entitled to a document. Enter your name and the Clutch will seal it with the Dome.",
     placeholder: "Your name",
+    genderM: "Adept",
+    genderF: "Adeptess",
     generate: "Apply the seal",
     download: "Download certificate",
     regenerate: "Reissue",
     site: "EGG.ILYAMEDVE.DEV",
     certTitle: "CERTIFICATE",
-    certSubtitle: "of a True Adept of Egg Culture",
+    certSubtitle: {
+      m: "of a True Adept of Egg Culture",
+      f: "of a True Adeptess of Egg Culture",
+    },
     body1: "This is to certify that",
-    body2: "has flawlessly passed the Initiation, discerns the Chalky Trail",
+    body2: {
+      m: "has flawlessly passed the Initiation, discerns the Chalky Trail",
+      f: "has flawlessly passed the Initiation, discerns the Chalky Trail",
+    },
     body3: "and is admitted to the Dark Side of the Egg.",
     creed: "“Feed is the language of the future yolk”",
     signature: "Sealed in the blood of the Order of the Egg",
@@ -200,6 +218,7 @@ function drawCertificate(
   canvas: HTMLCanvasElement,
   name: string,
   lang: "ru" | "en",
+  gender: Gender,
 ) {
   const s = STRINGS[lang];
   const ctx = canvas.getContext("2d")!;
@@ -249,7 +268,7 @@ function drawCertificate(
 
   ctx.font = "italic 40px 'Lora', serif";
   ctx.fillStyle = "#6b5a2a";
-  ctx.fillText(s.certSubtitle, W / 2, 355);
+  ctx.fillText(s.certSubtitle[gender], W / 2, 355);
 
   // Тело
   ctx.font = "30px 'Lora', serif";
@@ -270,7 +289,7 @@ function drawCertificate(
 
   ctx.font = "30px 'Lora', serif";
   ctx.fillStyle = "#2b2b2b";
-  ctx.fillText(s.body2, W / 2, 680);
+  ctx.fillText(s.body2[gender], W / 2, 680);
   ctx.fillText(s.body3, W / 2, 728);
 
   ctx.font = "italic 32px 'Lora', serif";
@@ -305,10 +324,11 @@ function drawCertificate(
 export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
   const s = STRINGS[lang];
   const [name, setName] = useState("");
+  const [gender, setGender] = useState<Gender>("m");
   const [issued, setIssued] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const issue = async () => {
+  const issue = async (g: Gender = gender) => {
     const trimmed = name.trim().slice(0, 40);
     if (!trimmed || !canvasRef.current) return;
     // Дожидаемся веб-шрифтов, иначе canvas упадет на системные.
@@ -322,7 +342,7 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
     } catch {
       // рисуем как есть
     }
-    drawCertificate(canvasRef.current, trimmed, lang);
+    drawCertificate(canvasRef.current, trimmed, lang, g);
     setIssued(true);
     (window as any).plausible?.("Adept Certificate");
   };
@@ -391,6 +411,25 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
           opacity: 0.4;
           cursor: default;
         }
+        .adept-cert-gender {
+          display: flex;
+          border: 1px solid rgba(139, 0, 0, 0.6);
+        }
+        .adept-cert-gender button {
+          background: transparent;
+          border: none;
+          color: #d1b8b8;
+          padding: 0.8rem 1.2rem;
+          font-family: var(--font-sans-ui, sans-serif);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 0.8rem;
+          transition: all 0.3s ease;
+        }
+        .adept-cert-gender button.is-active {
+          background: #8b0000;
+          color: #fff;
+        }
         .adept-cert-canvas {
           width: 100%;
           max-width: 820px;
@@ -414,6 +453,21 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
             if (e.key === "Enter") void issue();
           }}
         />
+        <div className="adept-cert-gender" role="group">
+          {(["m", "f"] as Gender[]).map((g) => (
+            <button
+              key={g}
+              className={gender === g ? "is-active" : ""}
+              onClick={() => {
+                setGender(g);
+                // Уже выданный документ переоформляется сразу.
+                if (issued) void issue(g);
+              }}
+            >
+              {g === "m" ? s.genderM : s.genderF}
+            </button>
+          ))}
+        </div>
         <button
           className="adept-cert-btn"
           disabled={!name.trim()}

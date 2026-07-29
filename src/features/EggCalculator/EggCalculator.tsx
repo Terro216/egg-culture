@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { CeremonyAudio } from "./ceremonyAudio";
 
 type Size = "S" | "M" | "L";
 type Temp = "fridge" | "room";
@@ -32,6 +33,8 @@ export interface EggCalculatorProps {
     phases: { name: string; text: string }[];
     finishTitle: string;
     finishText: string;
+    soundOn: string;
+    soundOff: string;
   };
 }
 
@@ -78,8 +81,18 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
   const [remainingMs, setRemainingMs] = useState(0);
   const [totalMs, setTotalMs] = useState(0);
 
+  const [soundOn, setSoundOn] = useState(true);
+
   const endAtRef = useRef(0);
   const intervalRef = useRef<number | null>(null);
+  const audioRef = useRef<CeremonyAudio | null>(null);
+  const soundOnRef = useRef(soundOn);
+  soundOnRef.current = soundOn;
+
+  const getAudio = () => {
+    if (!audioRef.current) audioRef.current = new CeremonyAudio();
+    return audioRef.current;
+  };
 
   const totalSeconds = calculateTimeSeconds(size, temp, doneness);
 
@@ -90,7 +103,14 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
     }
   };
 
-  useEffect(() => stopInterval, []);
+  useEffect(
+    () => () => {
+      stopInterval();
+      audioRef.current?.dispose();
+      audioRef.current = null;
+    },
+    [],
+  );
 
   const startInterval = () => {
     stopInterval();
@@ -100,6 +120,8 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
         stopInterval();
         setRemainingMs(0);
         setCeremony("done");
+        audioRef.current?.stop();
+        if (soundOnRef.current) audioRef.current?.finale();
         if (typeof navigator !== "undefined") navigator.vibrate?.([220, 90, 220]);
         return;
       }
@@ -114,18 +136,29 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
     endAtRef.current = Date.now() + ms;
     setCeremony("running");
     startInterval();
+    if (soundOn) {
+      const audio = getAudio();
+      audio.start();
+      audio.chime(660);
+    }
   };
 
   const pauseCeremony = () => {
     stopInterval();
     setRemainingMs(Math.max(0, endAtRef.current - Date.now()));
     setCeremony("paused");
+    audioRef.current?.suspend();
   };
 
   const resumeCeremony = () => {
     endAtRef.current = Date.now() + remainingMs;
     setCeremony("running");
     startInterval();
+    if (soundOn) {
+      const audio = getAudio();
+      audio.resume();
+      audio.start();
+    }
   };
 
   const resetCeremony = () => {
@@ -133,6 +166,19 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
     setCeremony("idle");
     setRemainingMs(0);
     setTotalMs(0);
+    audioRef.current?.stop();
+  };
+
+  const toggleSound = () => {
+    const next = !soundOn;
+    setSoundOn(next);
+    if (!next) {
+      audioRef.current?.stop();
+    } else if (ceremony === "running") {
+      const audio = getAudio();
+      audio.resume();
+      audio.start();
+    }
   };
 
   const elapsedFraction =
@@ -145,6 +191,19 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
   );
   const phase = dict.phases[phaseIndex];
   const ceremonyActive = ceremony === "running" || ceremony === "paused";
+
+  const prevPhaseRef = useRef(0);
+  useEffect(() => {
+    if (ceremony !== "running") {
+      prevPhaseRef.current = phaseIndex;
+      return;
+    }
+    if (phaseIndex > prevPhaseRef.current && soundOnRef.current) {
+      // Смена фазы церемонии — колокол чуть выше с каждой фазой.
+      audioRef.current?.chime(660 + phaseIndex * 110, 0.1);
+    }
+    prevPhaseRef.current = phaseIndex;
+  }, [phaseIndex, ceremony]);
 
   const buttonStyle = (isActive: boolean) => ({
     padding: "0.75rem 1.5rem",
@@ -352,6 +411,13 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               <button onClick={startCeremony} style={actionButtonStyle}>
                 {dict.startCeremony}
               </button>
+              <button
+                onClick={toggleSound}
+                className="text-ui"
+                style={{ opacity: 0.6, fontSize: "0.8rem" }}
+              >
+                {soundOn ? dict.soundOn : dict.soundOff}
+              </button>
             </>
           )}
 
@@ -400,6 +466,13 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   {dict.reset}
                 </button>
               </div>
+              <button
+                onClick={toggleSound}
+                className="text-ui"
+                style={{ opacity: 0.6, fontSize: "0.8rem" }}
+              >
+                {soundOn ? dict.soundOn : dict.soundOff}
+              </button>
             </>
           )}
 

@@ -1,0 +1,66 @@
+---
+import Layout from '@app/layouts/Layout.astro';
+import Incubator from '@features/Incubator/Incubator';
+import { type Lang } from '@shared/i18n/utils';
+
+export function getStaticPaths() {
+  return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
+}
+
+const { lang } = Astro.params;
+
+const title =
+  lang === "ru" ? "Инкубатор | Яичная Культура" : "Incubator | Egg Culture";
+const description =
+  lang === "ru"
+    ? "Заложите яйцо и возвращайтесь каждый день, чтобы прогреть его теплом ладони. Пропустите день — холодильный ожог. Забудете на неделю — Пустота."
+    : "Lay an egg and return every day to warm it with your palm. Miss a day — a refrigerator burn. Forget for a week — the Void.";
+---
+
+<Layout title={title} description={description} lang={lang as string}>
+  <div
+    class="container flex-col gap-xl"
+    style="padding-top: 3rem; padding-bottom: 4rem;"
+  >
+    <div class="text-center flex-col gap-sm">
+      <h1 class="page-title">
+        {lang === "ru" ? "Инкубатор" : "The Incubator"}
+      </h1>
+      <p class="text-lead">
+        {
+          lang === "ru"
+            ? "Яйцо не вылупляется. Оно созревает — если вы рядом."
+            : "The egg does not hatch. It ripens — if you are near."
+        }
+      </p>
+      <p class="incubator-sub">
+        {
+          lang === "ru"
+            ? "Ежедневная практика выдержки. Тепло ладони, серия дней, ранг Хранителя."
+            : "A daily practice of aging. The warmth of a palm, a streak of days, a Keeper's rank."
+        }
+      </p>
+    </div>
+
+    <Incubator client:load lang={lang as Lang} />
+  </div>
+</Layout>
+
+<style>
+  .page-title {
+    font-size: 3.5rem;
+    color: var(--color-yolk);
+    margin: 0;
+  }
+
+  .incubator-sub {
+    opacity: 0.7;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2rem;
+    }
+  }
+</style>

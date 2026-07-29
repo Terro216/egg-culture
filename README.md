@@ -12,6 +12,7 @@
 - **React 19** — точечные интерактивные острова (Island Architecture).
 - **Three.js** — 3D-яйцо и шейдеры тёмной стороны.
 - **d3-geo + topojson-client** — векторная карта терруаров.
+- **@resvg/resvg-js** — серверный рендер og-карточек результата теста «Какое вы яйцо?» (SVG → PNG, шрифты в `src/shared/assets/fonts`).
 - Нативный Astro i18n (`ru`/`en`) + собственная утилита переводов, без клиентских i18n-библиотек.
 - Архитектура — Feature-Sliced Design (`app / pages / widgets / features / shared`).
 
@@ -58,7 +59,8 @@ src/
 ├── pages/      # Роутинг: [lang]/... (ru|en) + api/
 ├── widgets/    # Header, Footer, DescriptorWheel
 ├── features/   # EggCalculator, EggOracle, TerroirMap, Quiz,
-│               # GiftVault, QiCompass, TastingNote, WorldNews
+│               # GiftVault, QiCompass, TastingNote, WorldNews,
+│               # EggPersona, Incubator, AdeptCertificate
 ├── shared/     # i18n, утилиты (newsCache, foninGiftToken), UI, данные
 └── data/       # Контент: блог (md), товары, события
 ```

@@ -54,6 +54,14 @@ const t = useTranslations(lang as Lang);
       </div>
       <DescriptorWheel client:load />
     </div>
+
+    <div class="text-center flex-col gap-md persona-teaser">
+      <h2>{t("tools.personaTitle")}</h2>
+      <p>{t("tools.personaDesc")}</p>
+      <p>
+        <a href={`/${lang}/egg-type`} class="btn">{t("tools.personaCta")}</a>
+      </p>
+    </div>
   </div>
 </Layout>
 
@@ -63,6 +71,12 @@ const t = useTranslations(lang as Lang);
     color: var(--color-yolk);
     padding-bottom: 2rem;
     margin: 0;
+  }
+
+  .persona-teaser {
+    padding: var(--spacing-xl);
+    border: 1px dashed var(--color-yolk);
+    background: rgba(212, 175, 55, 0.06);
   }
 
   .prophecy-link {

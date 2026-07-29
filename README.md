@@ -36,6 +36,7 @@
 - `FONIN_ACCESS_WORD` — кодовое слово закрытой кладки подарков.
 - `FONIN_GIFT_TOKEN_SECRET` — секрет подписи временных ссылок на сертификаты (если не задан — используется кодовое слово, задать настоятельно рекомендуется).
 - `FONIN_GIFT_PRIVATE_DIR` — путь к директории с PNG-сертификатами (по умолчанию `private/fonin-gifts`).
+- `KLADKA_BOT_TOKEN`, `KLADKA_ADMIN_CHAT_ID` — Telegram-бот премодерации Книги Кладки (`/kladka`): записи прилетают админу с кнопками «Одобрить/Отклонить». Без токена записи публикуются сразу. Опционально: `KLADKA_WEBHOOK_SECRET`, `KLADKA_IP_SALT`, `KLADKA_DATA_DIR`.
 
 После изменения `.env` контейнер нужно перезапустить.
 
@@ -48,7 +49,7 @@ src/
 ├── widgets/    # Header, Footer, DescriptorWheel
 ├── features/   # EggCalculator, EggOracle, TerroirMap, Quiz,
 │               # GiftVault, QiCompass, TastingNote, WorldNews,
-│               # EggPersona, Incubator, AdeptCertificate
+│               # EggPersona, Incubator, AdeptCertificate, KladkaBook
 ├── shared/     # i18n, утилиты (newsCache, foninGiftToken), UI, данные
 └── data/       # Контент: блог (md), товары, события
 ```

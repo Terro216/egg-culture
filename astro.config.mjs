@@ -11,6 +11,12 @@ const domain = env.DOMAIN || "ilyamedve.dev";
 export default defineConfig({
   site: `https://egg.${domain}/`,
   output: "static",
+  // Node-адаптер не учитывает Host/X-Forwarded-* при вычислении url.origin
+  // (за Caddy origin всегда "http://localhost:4321"), поэтому встроенная
+  // CSRF-проверка форм ломала бы все multipart-POST в проде. Отключаем:
+  // мутирующие эндпоинты защищены своими механизмами (кодовое слово Фонина,
+  // secret_token вебхука Книги, рейт-лимит + премодерация записей).
+  security: { checkOrigin: false },
   adapter: node({
     mode: "standalone",
   }),

@@ -37,7 +37,7 @@ const STRINGS = {
   en: {
     heading: "Certificate of the True Adept",
     intro:
-      "You have passed the initiation — you are entitled to a document. Enter your name and the Clutch will seal it with the Dome.",
+      "You have passed the initiation — you are entitled to a document. Enter your name and the Clutch will certify it with the seal of the Dome.",
     placeholder: "Your name",
     genderM: "Adept",
     genderF: "Adeptess",
@@ -58,7 +58,7 @@ const STRINGS = {
     body3: "and is admitted to the Dark Side of the Egg.",
     creed: "“Feed is the language of the future yolk”",
     signature: "Sealed in the blood of the Order of the Egg",
-    certNo: "Testimony No.",
+    certNo: "Certificate No.",
     dateLabel: "Issued",
   },
 };

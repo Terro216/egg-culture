@@ -119,8 +119,8 @@ const STRINGS = {
   en: {
     layTitle: "The clutch is empty",
     layText:
-      "Lay an egg and return every day to warm it with your palm. Miss a day — a Freezer Burn. Forget for a week — the Void takes the egg.",
-    layBtn: "Lay an egg",
+      "Set an egg and return every day to warm it with your palm. Miss a day — a Freezer Burn. Forget for a week — the Void takes the egg.",
+    layBtn: "Set an egg",
     holdHint: "Hold your palm on the shell…",
     warmBtn: "Warm the egg",
     warmedToday: "The egg is warmed. Return tomorrow — warmth tolerates no greed.",
@@ -138,7 +138,7 @@ const STRINGS = {
     stage: "Stage",
     burnsLabel: "Burns",
     daysUnit: "d.",
-    perfected: "The egg will not hatch. It is already perfect — and keeps perfecting.",
+    perfected: "The egg will not hatch. It is already perfect — and keeps perfecting itself.",
   },
 };
 

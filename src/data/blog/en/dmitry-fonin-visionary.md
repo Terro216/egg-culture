@@ -15,7 +15,7 @@ This is how a culture begins.
 
 ## The Founder of the Gaze
 
-Dmitry Fonin is one of those who stood at the source of Egg Culture. He simply understood, early enough, that the egg holds a depth that cannot be measured in grams of protein or minutes of boiling.
+Dmitry Fonin is one of those who stood at the origins of Egg Culture. He simply understood, early enough, that the egg holds a depth that cannot be measured in grams of protein or minutes of boiling.
 
 He was among the first to see in the yolk not the middle of a product, but a center of gravity. Not a color, but a density. Not a flavor, but an event.
 

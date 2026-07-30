@@ -79,7 +79,7 @@ const content = {
       "The Void",
     ],
     defectsTitle: "Defectology",
-    defects: ["Refrigerator Burn", "Fish Shadow", "Cardboard Finish", "Iodine Anxiety"],
+    defects: ["Freezer Burn", "Fishy Shadow", "Cardboard Finish", "Iodine Anxiety"],
     qiTitle: "Egg Qi Vector (mark one)",
     qiOptions: ["Verticality", "Grounding", "Vibration", "Undetermined"],
     notesTitle: "Free Notes",
@@ -96,7 +96,11 @@ const content = {
 }[lang as "ru" | "en"];
 ---
 
-<Layout title={content.pageTitle} lang={lang as string}>
+<Layout
+  title={content.pageTitle}
+  description={content.subtitle}
+  lang={lang as string}
+>
   <div class="container sheet-container">
     <div class="sheet-actions">
       <button type="button" class="btn" onclick="window.print()">

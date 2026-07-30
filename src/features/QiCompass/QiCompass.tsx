@@ -25,7 +25,7 @@ const POINTS: CompassPoint[] = [
     },
     en: {
       name: "Blanc Style",
-      desc: "Chalk, water, purity. High minerality with an almost weightless body. Builds the Vertical.",
+      desc: "Chalk, water, purity. High minerality with an almost weightless body. Builds Verticality.",
     },
   },
   {

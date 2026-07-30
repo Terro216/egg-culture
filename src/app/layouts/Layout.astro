@@ -9,14 +9,32 @@ interface Props {
   description?: string;
   ogImage?: string;
   ogType?: string;
+  /** Тайные страницы (квиз, тёмная сторона): не индексировать. */
+  noindex?: boolean;
 }
 
-const { title, lang = "ru", description, ogImage, ogType = "website" } = Astro.props;
+const {
+  title,
+  lang = "ru",
+  description,
+  ogImage,
+  ogType = "website",
+  noindex = false,
+} = Astro.props;
 
 const site = Astro.site ?? new URL("https://egg.ilyamedve.dev/");
 const canonicalUrl = new URL(Astro.url.pathname, site).href;
 // og:image должен быть абсолютным URL — относительные пути соцсети игнорируют.
 const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
+
+// hreflang-альтернативы: у каждой страницы под /ru/ есть двойник под /en/ и наоборот.
+const langMatch = Astro.url.pathname.match(/^\/(ru|en)(\/.*)?$/);
+const alternates = langMatch
+  ? (["ru", "en"] as const).map((l) => ({
+      hreflang: l,
+      href: new URL(`/${l}${langMatch[2] ?? "/"}`, site).href,
+    }))
+  : [];
 ---
 
 <!doctype html>
@@ -27,7 +45,23 @@ const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonicalUrl} />
+    {
+      alternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+      ))
+    }
+    {
+      alternates.length > 0 && (
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={alternates[0].href}
+        />
+      )
+    }
 
     <!-- OpenGraph -->
     <meta property="og:title" content={title} />

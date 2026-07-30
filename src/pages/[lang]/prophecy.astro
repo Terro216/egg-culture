@@ -64,7 +64,7 @@ const prophecies: { ru: string; en: string }[] = [
   },
   {
     ru: "Рыбная Тень пройдет стороной, если вы будете внимательны к прикорму.",
-    en: "The Fish Shadow will pass you by if you stay attentive to the feed.",
+    en: "The Fishy Shadow will pass you by if you stay attentive to the feed.",
   },
   {
     ru: "Ледяная купель решит то, чего не решил кипяток.",
@@ -108,7 +108,11 @@ const ui = {
 }[lang];
 ---
 
-<Layout title={ui.pageTitle} lang={lang}>
+<Layout
+  title={ui.pageTitle}
+  description={`${ui.kicker}. ${ui.note}`}
+  lang={lang}
+>
   <div class="container prophecy-page text-center flex-col gap-lg">
     <p class="prophecy-kicker">{ui.kicker}</p>
     <p class="prophecy-date">{formattedDate}</p>

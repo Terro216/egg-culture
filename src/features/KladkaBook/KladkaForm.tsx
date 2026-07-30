@@ -72,6 +72,9 @@ const STRINGS = {
 const TEXT_MAX = 500;
 const IMAGE_MAX = 5 * 1024 * 1024;
 
+// Черновик из Генератора Дегустационных Заметок («Оставить в Книге»).
+const DRAFT_KEY = "kladka_draft";
+
 export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   const s = STRINGS[lang];
   const [isAdept, setIsAdept] = useState<boolean | null>(null);
@@ -83,10 +86,26 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsAdept(localStorage.getItem("egg_adept") === "true");
-  }, []);
+    const adept = localStorage.getItem("egg_adept") === "true";
+    setIsAdept(adept);
+    if (!adept) return;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      sessionStorage.removeItem(DRAFT_KEY);
+      const draft = JSON.parse(raw) as { text?: string; style?: string };
+      if (draft.text) setText(draft.text.slice(0, TEXT_MAX));
+      if (draft.style && STYLES[lang].includes(draft.style)) {
+        setStyle(draft.style);
+      }
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch {
+      // Битый черновик — просто открываем чистую форму.
+    }
+  }, [lang]);
 
   useEffect(() => {
     if (!file) {
@@ -223,7 +242,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   }
 
   return (
-    <div className="kladka-form">
+    <div className="kladka-form" ref={formRef}>
       {css}
       <input
         className="kladka-input"

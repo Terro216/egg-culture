@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 interface TastingNoteGeneratorProps {
   lang: "ru" | "en";
@@ -154,7 +154,7 @@ const CATEGORIES: Category[] = [
         label: { ru: "Вертикаль", en: "Verticality" },
         fragment: {
           ru: "Яй Ци выстраивает Вертикаль — взгляд яснее, осанка прямее",
-          en: "The Egg Qi builds the Vertical — the gaze clearer, the posture straighter",
+          en: "The Egg Qi builds Verticality — the gaze clearer, the posture straighter",
         },
       },
       {
@@ -206,14 +206,29 @@ const UI = {
     copy: "Скопировать",
     copied: "Скопировано",
     placeholder: "Выберите дескрипторы — заметка сложится сама.",
+    leave: "Оставить в Книге",
+    leaveHint: "Публикация в Книге Кладки доступна только адептам.",
   },
   en: {
     generate: "Compose the note",
     copy: "Copy",
     copied: "Copied",
     placeholder: "Choose the descriptors — the note will compose itself.",
+    leave: "Leave in the Book",
+    leaveHint: "Publishing to the Book of the Clutch is open to Adepts only.",
   },
 };
+
+// Происхождение партии из заметки совпадает с частью «стилей партии»
+// в форме Книги Кладки — подставляем его вместе с текстом.
+const ORIGIN_TO_KLADKA_STYLE: Record<string, { ru: string; en: string }> = {
+  industrial: { ru: "Индустриальный Стрим", en: "Industrial Stream" },
+  farm: { ru: "Фермерский Концепт", en: "Farm Concept" },
+  yard: { ru: "Дворовый Дикий", en: "Yard Wild" },
+};
+
+// Тот же ключ читает KladkaForm на странице /kladka.
+const KLADKA_DRAFT_KEY = "kladka_draft";
 
 function buildNote(
   lang: "ru" | "en",
@@ -244,6 +259,11 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
 }) => {
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
+  const [isAdept, setIsAdept] = useState(false);
+
+  useEffect(() => {
+    setIsAdept(localStorage.getItem("egg_adept") === "true");
+  }, []);
 
   const note = useMemo(() => buildNote(lang, selection), [lang, selection]);
   const ui = UI[lang];
@@ -262,6 +282,20 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
       // Clipboard может быть недоступен (http, старый браузер) — молчим,
       // текст можно выделить руками.
     }
+  };
+
+  const leaveInBook = () => {
+    if (!note || !isAdept) return;
+    const style = ORIGIN_TO_KLADKA_STYLE[selection.origin]?.[lang];
+    try {
+      sessionStorage.setItem(
+        KLADKA_DRAFT_KEY,
+        JSON.stringify({ text: note, style: style ?? "" }),
+      );
+    } catch {
+      // sessionStorage недоступен — Книга откроется пустой, это не повод молчать.
+    }
+    window.location.href = `/${lang}/kladka`;
   };
 
   return (
@@ -335,6 +369,23 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
           opacity: 0.4;
           cursor: default;
         }
+        .tasting-note-actions {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .tasting-note-copy.is-secondary {
+          background: transparent;
+          color: var(--color-text, #2b2b2b);
+        }
+        .tasting-note-hint {
+          margin: -0.5rem 0 0;
+          text-align: center;
+          font-size: 0.85rem;
+          font-style: italic;
+          opacity: 0.55;
+        }
       `}</style>
 
       {CATEGORIES.map((category) => (
@@ -361,14 +412,26 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
         {note ?? ui.placeholder}
       </div>
 
-      <button
-        type="button"
-        className="tasting-note-copy"
-        onClick={() => void copyNote()}
-        disabled={!note}
-      >
-        {copied ? ui.copied : ui.copy}
-      </button>
+      <div className="tasting-note-actions">
+        <button
+          type="button"
+          className="tasting-note-copy"
+          onClick={() => void copyNote()}
+          disabled={!note}
+        >
+          {copied ? ui.copied : ui.copy}
+        </button>
+        <button
+          type="button"
+          className="tasting-note-copy is-secondary"
+          onClick={leaveInBook}
+          disabled={!note || !isAdept}
+          title={!isAdept ? ui.leaveHint : undefined}
+        >
+          {ui.leave}
+        </button>
+      </div>
+      {!isAdept && <p className="tasting-note-hint">{ui.leaveHint}</p>}
     </div>
   );
 };

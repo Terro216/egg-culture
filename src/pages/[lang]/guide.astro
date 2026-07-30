@@ -121,7 +121,7 @@ const guideContent = {
           { name: "Attack", desc: "The first impression at the moment the yolk touches the palate. It can be 'creamy', 'aggressive', or 'mineral'." },
           { name: "Body", desc: "The density and viscosity of the texture. A light body resembles low-fat cream or rice water; medium is silky, enveloping; heavy is pasty, forcing receptors to work at their limit." },
           { name: "Development", desc: "How the taste changes in the mouth during the first 5-10 seconds." },
-          { name: "Finish (Aftertaste)", desc: "The trail left after swallowing. It can be short (store-bought eggs) or long, 'kilometer-long' (backyard microlots)." },
+          { name: "Finish (Aftertaste)", desc: "The trail left after swallowing. It can be short (store-bought eggs) or long, 'kilometer-long' (backyard micro-batches)." },
           { name: "Chalky Trail", desc: "A specific feeling of dryness on the tongue after the egg white, a sign of high minerality." }
         ]
       },
@@ -129,7 +129,7 @@ const guideContent = {
         title: "IV. Classification by Origin (Terroir)",
         items: [
           { name: "Industrial Stream (Mass Market)", desc: "Eggs with a predictable, 'clean', but often flat taste. Used as a base for receptor calibration." },
-          { name: "Farmer's Concept", desc: "Eggs with an emphasis on grain supplementary feeding (corn, wheat). Bright, understandable, 'yellow'." },
+          { name: "Farm Concept", desc: "Eggs with an emphasis on grain feed (corn, wheat). Bright, approachable, 'yellow'." },
           { name: "Yard Wild", desc: "The highest degree of unpredictability. Notes of feather, hay, worms. Require a high level of preparation." },
           { name: "Micro-batch", desc: "A batch from one specific group of hens in a certain period of time (e.g., 'early May collection in such and such a location')." }
         ]
@@ -137,10 +137,10 @@ const guideContent = {
       {
         title: "V. Stylistic Categories (Styles)",
         items: [
-          { name: "Light Style (Blanc)", desc: "Dominance of egg white, purity, chalk, and water. Intelligent eggs for morning meditations." },
-          { name: "Broth Style (Bouillon)", desc: "High concentration of umami, animal and meat notes. Winter, 'heavy' eggs." },
+          { name: "Blanc Style (Light)", desc: "Dominance of egg white, purity, chalk, and water. Intelligent eggs for morning meditations." },
+          { name: "Bouillon Style (Broth)", desc: "High concentration of umami, animal and meat notes. Winter, 'heavy' eggs." },
           { name: "Pastoral Style", desc: "Emphasis on cream, grass, and fresh butter. A hedonistic profile." },
-          { name: "Aged Style", desc: "Eggs aged 21+ days. Complex notes of cellar, old paper, and deep sulfur." }
+          { name: "Aged (Archive) Style", desc: "Eggs aged 21+ days. Complex notes of cellar, old paper, and deep sulfur." }
         ]
       },
       {
@@ -191,7 +191,11 @@ const compassSection = {
 const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 ---
 
-<Layout title={`${content.title} | Egg Culture`} lang={lang as string}>
+<Layout
+  title={`${content.title} | Egg Culture`}
+  description={content.intro}
+  lang={lang as string}
+>
   <div class="guide-layout">
     <nav class="guide-toc">
       <div class="toc-sticky">

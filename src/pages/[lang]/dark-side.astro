@@ -14,7 +14,7 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<Layout title="The Dark Side of the Egg" description="Only for the true Adepts" lang={lang}>
+<Layout title="The Dark Side of the Egg" description="For true Adepts only" lang={lang} noindex>
   <div class="dark-room">
     <canvas id="curtains-canvas"></canvas>
     <a href={lang === 'ru' ? "/ru" : "/en"} class="escape-btn">
@@ -33,11 +33,11 @@ const t = useTranslations(lang);
 
         <div class="card-grid">
           <article class="secret-card">
-            <h2>{lang === 'ru' ? "Розыгрыш: Микролот 'Чёрное на белом'" : "Giveaway: Microlot 'Black on White'"}</h2>
+            <h2>{lang === 'ru' ? "Розыгрыш: Микролот 'Чёрное на белом'" : "Giveaway: Micro-batch 'Black on White'"}</h2>
             <p>
               {lang === 'ru'
                 ? "Только 12 яиц от кур породы Аям Цемани, выращенных на склонах спящего вулкана. Пепельно-чёрная скорлупа скрывает желток невероятной плотности. Участвуйте в слепой жеребьевке."
-                : "Only 12 eggs from Ayam Cemani hens raised on the slopes of a dormant volcano. Ash-black shell hides a yolk of incredible density. Enter the blind draw."}
+                : "Only 12 eggs from Ayam Cemani hens raised on the slopes of a dormant volcano. An ash-black shell hides a yolk of incredible density. Enter the blind draw."}
             </p>
             <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Оставить след" : "Leave a trace"}</a>
           </article>
@@ -49,7 +49,7 @@ const t = useTranslations(lang);
                 ? "В конце осени мы отправляемся в отдаленный монастырь во Французских Альпах, где монахи сохранили рецепт многодневной выдержки яиц в дубовой золе. Запись строго конфиденциальна."
                 : "In late autumn, we travel to a remote monastery in the French Alps, where monks have preserved the recipe for multi-day egg aging in oak ash. Registration is strictly confidential."}
             </p>
-            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Подать прошение" : "Submit petition"}</a>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Подать прошение" : "Submit a petition"}</a>
           </article>
 
           <article class="secret-card">
@@ -57,9 +57,9 @@ const t = useTranslations(lang);
             <p>
               {lang === 'ru'
                 ? "Закрытая встреча Адептов в подземелье бывшей винодельни. Мы будем слушать Яй Ци редких белых яиц под аккомпанемент виолончели и исследовать минеральные послевкусия."
-                : "A closed meeting of Adepts in the dungeon of a former winery. We will listen to the Egg Qi of rare white eggs accompanied by a cello and explore mineral aftertastes."}
+                : "A closed meeting of Adepts in the cellar of a former winery. We will listen to the Egg Qi of rare white eggs accompanied by a cello and explore mineral aftertastes."}
             </p>
-            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Получить пароль" : "Get password"}</a>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Получить пароль" : "Receive the password"}</a>
           </article>
         </div>
 
@@ -72,7 +72,9 @@ const t = useTranslations(lang);
 
         <div class="manifesto-quote">
           <blockquote>
-            "Тот, кто однажды познал пустоту скорлупы, больше никогда не будет прежним."
+            {lang === 'ru'
+              ? "«Тот, кто однажды познал пустоту скорлупы, больше никогда не будет прежним.»"
+              : '"He who has once known the emptiness of the shell will never be the same."'}
           </blockquote>
         </div>
       </div>

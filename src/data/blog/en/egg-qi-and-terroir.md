@@ -11,7 +11,7 @@ In the philosophy of Egg Culture, an egg is never seen merely as a set of protei
 
 The concept of terroir has long been known in the worlds of wine and specialty coffee, but when it comes to eggs, the mass consumer remains blind. The Industrial Stream has accustomed us to a standardized, faceless product. However, the adept understands: an egg's profile is not formed in a poultry factory, but under the influence of a unique combination of climate, mineral composition of water, soil, and the bird's diet.
 
-Grass feeding on Alpine slopes will give the yolk a completely different density and floral notes than a grain diet in a dry steppe climate. Breed also matters: early batches of white Leghorns are famous for their delicate minerality and subtle chalky trace of albumin, ideal for the Light Style.
+Grass feeding on Alpine slopes will give the yolk a completely different density and floral notes than a grain diet in a dry steppe climate. Breed also matters: early batches of white Leghorns are famous for their delicate minerality and subtle Chalky Trail of the albumin, ideal for the Blanc Style.
 
 ## Energetics of Form: Grounding and Vertical
 

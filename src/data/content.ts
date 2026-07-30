@@ -51,7 +51,7 @@ export const shopItems: ShopItem[] = [
     },
     description: {
       ru: "Объект, созданный в соавторстве с тишиной. Темная, грубая текстура глины подчеркивает хрупкое совершенство белой скорлупы. Каждый экземпляр уникален.",
-      en: "An object created in co-authorship with silence. The dark, coarse texture of the clay emphasizes the fragile perfection of the white shell. Each piece is unique.",
+      en: "An object co-authored with silence. The dark, coarse texture of the clay emphasizes the fragile perfection of the white shell. Each piece is unique.",
     },
     price: "4 500 ₽",
     // PROMPT: Minimalist product photography of a dark grey chamotte clay egg cup on a smooth dark background, soft side lighting, wabi-sabi aesthetic
@@ -108,7 +108,7 @@ export const shopItems: ShopItem[] = [
     },
     description: {
       ru: "Плоское блюдо из матового белого фарфора с едва заметным углублением. Создано для бережной фиксации очищенного яйца, позволяя оценить архитектуру 'Купола' до начала дегустации.",
-      en: "A flat plate made of matte white porcelain with a barely noticeable depression. Created to gently fix the peeled egg, allowing you to appreciate the architecture of the 'Dome' before tasting.",
+      en: "A flat plate made of matte white porcelain with a barely noticeable depression. Created to hold the peeled egg gently in place, allowing you to appreciate the architecture of the 'Dome' before tasting.",
     },
     price: "6 100 ₽",
     // PROMPT: Top-down view of a perfectly minimalist matte white porcelain plate with a very shallow smooth dimple in the center, resting on a white concrete table, soft daylight, ultra-clean aesthetic
@@ -146,7 +146,7 @@ export const shopItems: ShopItem[] = [
     },
     description: {
       ru: "Монолитный алюминиевый цилиндр со скрытой иглой. Микроскопический прокол на тупом конце скорлупы стравливает давление, гарантируя идеальное отделение мембраны и сохраняя форму 'Светлого Стиля (Blanc)'.",
-      en: "Monolithic aluminum cylinder with a hidden needle. A microscopic puncture at the blunt end of the shell releases pressure, ensuring perfect membrane separation and preserving the 'Light Style (Blanc)' form.",
+      en: "Monolithic aluminum cylinder with a hidden needle. A microscopic puncture at the blunt end of the shell releases pressure, ensuring perfect membrane separation and preserving the 'Blanc Style' form.",
     },
     price: "4 300 ₽",
     // PROMPT: Close up of a minimalist brushed aluminum cylinder, subtle premium design, standing upright on a perfectly smooth white surface, sleek futuristic kitchenware, cinematic lighting
@@ -165,7 +165,7 @@ export const shopItems: ShopItem[] = [
     },
     description: {
       ru: "Набор благовоний с тонким ароматом сухого сена и минералов. Создает 'Вертикаль' перед началом ритуала, очищая рецепторы и подготавливая ум к восприятию тончайших нюансов Яй Ци.",
-      en: "A set of incense with a delicate aroma of dry hay and minerals. Creates a 'Vertical' before the start of the ritual, clearing receptors and preparing the mind to perceive the subtlest nuances of Egg Qi.",
+      en: "A set of incense with a delicate aroma of dry hay and minerals. Creates 'Verticality' before the start of the ritual, clearing receptors and preparing the mind to perceive the subtlest nuances of Egg Qi.",
     },
     price: "2 500 ₽",
     // PROMPT: Minimalist zen arrangement of thin premium incense sticks leaning against a raw rough stone, delicate wisp of smoke, soft morning light, muted beige and grey tones
@@ -213,7 +213,7 @@ export const blogPosts: BlogPost[] = [
     },
     content: {
       ru: "<p>Статья находится в закрытой доработке.</p>",
-      en: "<p>Article is under private review.</p>",
+      en: "<p>The article is undergoing closed revision.</p>",
     },
   },
 ];
@@ -247,7 +247,7 @@ export const eventItems: EventItem[] = [
     },
     description: {
       ru: "<p>Программа II потока включает слепые дегустации микролотов и практику настройки тайминга до секунды.</p>",
-      en: "<p>Flow II program includes blind tastings of microlots and practice of timing setup to the second.</p>",
+      en: "<p>The Flow II program includes blind tastings of micro-batches and the practice of tuning one's timing to the second.</p>",
     },
   },
   {
@@ -292,7 +292,7 @@ export const eventItems: EventItem[] = [
     },
     description: {
       ru: "<p>Тихое событие. Полное отсутствие света, кроме одного направленного луча на центр экспозиции.</p>",
-      en: "<p>A quiet event. Complete absence of light except for one directed beam on the center of the exposition.</p>",
+      en: "<p>A quiet event. Complete absence of light except for a single directed beam on the center of the display.</p>",
     },
   },
   {
@@ -300,7 +300,7 @@ export const eventItems: EventItem[] = [
     slug: "white-shell-aesthetics",
     title: {
       ru: "Светлый Стиль (Blanc): Лекция",
-      en: "Light Style (Blanc): Lecture",
+      en: "Blanc Style: A Lecture",
     },
     date: getFutureDate(4, 10),
     // PROMPT: A single pure white egg levitating above a raw white marble pedestal, high-end gallery lighting, ultra-minimalism, empty white space, Apple style product photography
@@ -311,11 +311,11 @@ export const eventItems: EventItem[] = [
     },
     shortDescription: {
       ru: "Разрушение мифов о фермерских продуктах и апология идеальной формы белого яйца.",
-      en: "Destroying myths about farm products and an apology for the perfect form of the white egg.",
+      en: "Destroying myths about farm products and an apologia for the perfect form of the white egg.",
     },
     description: {
       ru: "<p>Лекция об Эстетике молчания и отказе от грубой классификации индустриального стрима.</p>",
-      en: "<p>A lecture on the Aesthetics of Silence and the rejection of the rough classification of the industrial stream.</p>",
+      en: "<p>A lecture on the Aesthetics of Silence and the rejection of the rough classification of the Industrial Stream.</p>",
     },
   },
   {
@@ -334,7 +334,7 @@ export const eventItems: EventItem[] = [
     },
     shortDescription: {
       ru: "Воркшоп по оценке упругости 'Купола' и распознаванию 'мелового следа' белка.",
-      en: "Workshop on assessing the elasticity of the 'Dome' and recognizing the 'chalky trace' of the white.",
+      en: "Workshop on assessing the elasticity of the 'Dome' and recognizing the 'Chalky Trail' of the white.",
     },
     description: {
       ru: "<p>Практическая сессия по температурному контролю и деконструкции текстуры белка.</p>",

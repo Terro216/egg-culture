@@ -11,12 +11,25 @@ export function getStaticPaths() {
 }
 
 const lang = getLangFromUrl(Astro.url);
+
+const ui = {
+  ru: {
+    pageTitle: "Инициация | Яичная Культура",
+    description: "Проверьте свою приверженность",
+    title: "Инициация Адепта",
+  },
+  en: {
+    pageTitle: "Initiation | Egg Culture",
+    description: "Test your devotion",
+    title: "Initiation of the Adept",
+  },
+}[lang];
 ---
 
-<Layout title="Инициация | Яичная Культура" description="Проверьте свою приверженность" lang={lang}>
+<Layout title={ui.pageTitle} description={ui.description} lang={lang} noindex>
   <main class="quiz-page">
     <div class="container">
-      <h1 class="page-title">Инициация Адепта</h1>
+      <h1 class="page-title">{ui.title}</h1>
       <Quiz lang={lang} client:load />
     </div>
   </main>

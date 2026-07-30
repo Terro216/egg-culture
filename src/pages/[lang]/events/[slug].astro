@@ -19,7 +19,12 @@ const { event } = Astro.props;
 const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={`${event.title[lang as "ru" | "en"]} | Egg Culture`} lang={lang as string}>
+<Layout
+  title={`${event.title[lang as "ru" | "en"]} | Egg Culture`}
+  description={event.shortDescription[lang as "ru" | "en"]}
+  ogImage={event.image}
+  lang={lang as string}
+>
   <div class="container event-container" style="padding-top: 3rem; padding-bottom: 4rem;">
     <a href={`/${lang}/events`} class="back-link">
       ← {lang === "ru" ? "Назад к Афише" : "Back to Events"}

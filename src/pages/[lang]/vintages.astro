@@ -171,7 +171,11 @@ const content = {
 const domes = (rating: number) => "●".repeat(rating) + "○".repeat(5 - rating);
 ---
 
-<Layout title={content.pageTitle} lang={lang as string}>
+<Layout
+  title={content.pageTitle}
+  description={content.intro}
+  lang={lang as string}
+>
   <div
     class="container flex-col gap-2xl"
     style="padding-top: 3rem; padding-bottom: 4rem; max-width: 900px;"

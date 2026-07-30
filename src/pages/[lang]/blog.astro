@@ -34,7 +34,11 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
 );
 ---
 
-<Layout title={t("blog.pageTitle")} lang={lang as string}>
+<Layout
+  title={t("blog.pageTitle")}
+  description={t("blog.metaDescription")}
+  lang={lang as string}
+>
   <div
     class="container flex-col gap-2xl"
     style="padding-top: 4rem; padding-bottom: 6rem;"

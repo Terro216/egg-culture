@@ -10,7 +10,11 @@ const { lang } = Astro.params;
 const t = useTranslations(lang as Lang);
 ---
 
-<Layout title={t("manifesto.pageTitle")} lang={lang as string}>
+<Layout
+  title={t("manifesto.pageTitle")}
+  description={t("manifesto.metaDescription")}
+  lang={lang as string}
+>
   <div class="container">
     <article class="manifesto">
       <h1>{t("manifesto.title")}</h1>

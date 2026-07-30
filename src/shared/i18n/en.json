@@ -13,7 +13,8 @@
     "pageTitle": "Home | Egg Culture",
     "heroTitle": "Egg Culture",
     "heroSubtitle": "The form is perfect. The content is nutritious.",
-    "readManifesto": "Read Manifesto"
+    "readManifesto": "Read Manifesto",
+    "metaDescription": "A gastronomic manifesto elevating the egg to the rank of specialty coffee and collectible wine. Terroirs, styles, Egg Qi."
   },
   "footer": {
     "rights": "Egg Culture. All rights reserved.",
@@ -34,7 +35,8 @@
     "noteGenDesc": "Assemble the batch profile from descriptors — and receive a note worthy of an Adept's diary.",
     "personaTitle": "Which egg are you?",
     "personaDesc": "Seven questions — and the Qi Compass will point to your style. Save the result card and show it to the world.",
-    "personaCta": "Take the trial →"
+    "personaCta": "Take the trial →",
+    "metaDescription": "The Adept's tools: the exposure calculator with a ceremonial timer, the Egg Oracle, the tasting note generator, and the descriptor wheel."
   },
   "calculator": {
     "title": "Exposure Calculator",
@@ -132,18 +134,19 @@
     "li6": "not to confuse The Void with delicacy;",
     "li7": "not to mistake crude saturation for depth.",
     "h_origin": "We proclaim the right of the egg to an origin.",
-    "p16": "There is the Industrial Stream, Farmer's Concept, Yard Wild, and Micro-batches.<br/>There are composed batches, there are nervous batches.<br/>There is the Light Style (Blanc) and Broth Style, Pastoral and Aged.<br/>And all this deserves not a smirk, but a language of description.",
+    "p16": "There is the Industrial Stream, the Farm Concept, the Yard Wild, and micro-batches.<br/>There are composed batches, there are nervous batches.<br/>There is the Blanc Style and the Bouillon Style, the Pastoral and the Aged.<br/>And all this deserves not a smirk, but a language of description.",
     "p17": "Without language, there is no culture.<br/>Without distinction, there is no memory.<br/>Without memory, there is no tradition.",
-    "p18": "We create the language of the egg not for the sake of a game, but for the sake of precision.<br/>Yes, we will talk about the resilience of the Dome, the Albumin Cloud, creamy Attack, Broth Style, the Vibration of Egg Qi, and a long chalky trail.<br/>Yes, we will argue about complementary foods, terroir, hen age, and the Temperature Pause before serving.<br/>Yes, we will distinguish micro-batches and defend the right to a white egg in a world that worships only the spectacular yolk.<br/>Because culture begins exactly where for an outsider everything \"tastes the same\".",
+    "p18": "We create the language of the egg not for the sake of a game, but for the sake of precision.<br/>Yes, we will talk about the resilience of the Dome, the Albumin Cloud, a creamy Attack, the Bouillon Style, the Vibration of Egg Qi, and a long chalky trail.<br/>Yes, we will argue about feed, terroir, hen age, and the Temperature Pause before serving.<br/>Yes, we will distinguish micro-batches and defend the right to a white egg in a world that worships only the spectacular yolk.<br/>Because culture begins exactly where for an outsider everything \"tastes the same\".",
     "h_vulgarity": "We also oppose the vulgarity of egg consumption.",
     "p19": "Against turning the egg into a dumb function.<br/>Against ketchup as a means of hiding origin.<br/>A person who speaks of an egg only as protein and calories is as blind as a person who speaks of music only as a vibration of air.",
     "p20": "The egg is not a nutrient.<br/>The egg is a form of experience.",
     "p21": "We do not claim that everyone is obliged to become an adept.<br/>Not everyone has to drink it raw.<br/>Not everyone has to look for a chalky finish and compare Georgian hens with Crimean ones.<br/>But anyone who has once stopped, smelled, listened, distinguished, and been surprised is already on the threshold of Egg Culture.",
     "p22": "This culture is not mass — and should not be mass.<br/>Everything genuine begins with a minority of the attentive.",
     "p23": "We are for slow discovery.<br/>For respect for form.<br/>For precision of words.<br/>For the rehabilitation of the subtle.<br/>For the egg as an object of contemplation, and not just consumption.",
-    "p24": "We believe that one day the day will come when the question<br/><span class=\"text-italic\">\"what did you drink today?\"</span><br/>can receive a quiet, dignified answer:<br/><span class=\"text-italic\">\"a good white egg, early batch, very clean, with soft Egg Qi.\"</span>",
+    "p24": "We believe that the day will come when the question<br/><span class=\"text-italic\">\"what did you drink today?\"</span><br/>can receive a quiet, dignified answer:<br/><span class=\"text-italic\">\"a good white egg, early batch, very clean, with soft Egg Qi.\"</span>",
     "p25": "And there will be no joke or shame in this.",
-    "finale": "Because by that time we will have already won."
+    "finale": "Because by that time we will have already won.",
+    "metaDescription": "The Egg Culture Manifesto: against the great simplification — for slow discovery, precision of words, and the egg as a form of experience."
   },
   "guide": {
     "pageTitle": "Guide | Egg Culture",
@@ -153,16 +156,19 @@
   "shop": {
     "pageTitle": "Boutique | Egg Culture",
     "title": "Boutique",
-    "inDev": "In development..."
+    "inDev": "In development...",
+    "metaDescription": "The Egg Culture boutique: objects of the ceremony — a dark chamotte egg cup, a mother-of-pearl spoon, a brass exposure timer."
   },
   "blog": {
     "pageTitle": "Blog | Egg Culture",
     "title": "Blog",
-    "inDev": "In development..."
+    "inDev": "In development...",
+    "metaDescription": "Chronicles of Egg Culture: essays on terroir, texture, and Egg Qi — plus the world egg news feed."
   },
   "events": {
     "pageTitle": "Events | Egg Culture",
-    "title": "Events"
+    "title": "Events",
+    "metaDescription": "The Order's events: the Egg School, blind tastings, and other gatherings of the culture of the attentive."
   },
   "terroir": {
     "title": "Egg Terroir",

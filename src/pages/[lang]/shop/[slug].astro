@@ -21,6 +21,8 @@ const t = useTranslations(lang as Lang);
 
 <Layout
   title={`${item.title[lang as "ru" | "en"]} | Egg Culture`}
+  description={item.shortDescription[lang as "ru" | "en"]}
+  ogImage={item.image}
   lang={lang as string}
 >
   <div

@@ -9,7 +9,7 @@
     "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
-    "start": "astro preview",
+    "start": "node scripts/start.mjs",
     "astro": "astro"
   },
   "dependencies": {

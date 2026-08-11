@@ -2,11 +2,13 @@ import crypto from "node:crypto";
 import type { KladkaPost } from "./kladkaStore";
 
 // Модерация Книги Кладки через Telegram-бота: каждая новая запись
-// прилетает админу сообщением с кнопками «Одобрить / Отклонить»,
-// ответ приходит webhook'ом на /api/kladka-telegram.
+// прилетает админу сообщением с кнопками «Одобрить / Отклонить».
+//
+// Ответ забирает long polling'ом scripts/kladka-poller.mjs и переотправляет
+// на /api/kladka-telegram: webhook до нас не доходит, Telegram не может открыть
+// соединение с big-one (/BOTS.md §3).
 //
 // Настройка: KLADKA_BOT_TOKEN (у @BotFather) и KLADKA_ADMIN_CHAT_ID в .env.
-// Webhook настраивается автоматически при первой отправке на модерацию.
 // Без токена бот отключен — записи публикуются сразу (режим разработки).
 
 const env = (key: string) =>
@@ -17,7 +19,8 @@ export const adminChatId = () => env("KLADKA_ADMIN_CHAT_ID");
 
 export const isModerationEnabled = () => Boolean(botToken() && adminChatId());
 
-// Секрет webhook'а: свой из .env или производный от токена бота.
+// Секрет, которым подписан вызов /api/kladka-telegram: свой из .env или
+// производный от токена бота. Ту же формулу повторяет поллер.
 export function webhookSecret(): string {
   const explicit = env("KLADKA_WEBHOOK_SECRET");
   if (explicit) return explicit;
@@ -49,25 +52,6 @@ async function call(method: string, body: FormData | object): Promise<any> {
     console.warn(`Telegram ${method} failed:`, data?.description ?? res.status);
   }
   return data;
-}
-
-// Webhook ставим лениво и один раз на процесс: setWebhook идемпотентен.
-let webhookReady: Promise<void> | null = null;
-
-function siteOrigin(): string {
-  const domain = env("DOMAIN");
-  return domain ? `https://egg.${domain}` : "https://egg.ilyamedve.dev";
-}
-
-function ensureWebhook(): Promise<void> {
-  if (!webhookReady) {
-    webhookReady = call("setWebhook", {
-      url: `${siteOrigin()}/api/kladka-telegram`,
-      secret_token: webhookSecret(),
-      allowed_updates: ["callback_query"],
-    }).then(() => undefined);
-  }
-  return webhookReady;
 }
 
 function moderationCaption(post: KladkaPost): string {
@@ -109,7 +93,6 @@ export async function sendModerationRequest(
   image: Buffer | null,
 ): Promise<void> {
   if (!isModerationEnabled()) return;
-  await ensureWebhook();
 
   if (image && post.image) {
     // Telegram может отказаться обрабатывать фото (IMAGE_PROCESS_FAILED и т.п.) —

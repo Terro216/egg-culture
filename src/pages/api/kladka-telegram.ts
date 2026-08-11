@@ -8,11 +8,14 @@ import {
 
 export const prerender = false;
 
-// Webhook Telegram-бота модерации: сюда прилетают нажатия кнопок
-// «Одобрить / Отклонить» под сообщениями о новых записях.
+// Приемник нажатий кнопок «Одобрить / Отклонить» под сообщениями о новых
+// записях. Формат тела — апдейт Telegram, но приносит его не Telegram:
+// вебхук до нас не доходит, поэтому апдейты забирает long polling'ом
+// scripts/kladka-poller.mjs и переотправляет сюда (/BOTS.md §3).
 
 export const POST: APIRoute = async ({ request }) => {
-  // Telegram подписывает запросы заголовком с секретом, заданным в setWebhook.
+  // Эндпоинт открыт наружу через Caddy, так что подпись обязательна:
+  // поллер ставит тот же заголовок, что ставил Telegram.
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
   if (secret !== webhookSecret()) {
     return new Response("forbidden", { status: 403 });

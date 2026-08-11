@@ -11,6 +11,13 @@ services:
       caddy.reverse_proxy: "{{upstreams 4321}}"
     networks:
       - caddy_net
+    # Модерация Книги Кладки шлёт в Telegram, а с big-one путь туда заблокирован
+    # с 2026-08-10. Пиним имя на единственный отвечающий адрес: подмена только на
+    # этапе «имя → адрес», URL и SNI прежние, сертификат сходится.
+    # Через HTTP_PROXY это не решается — undici в Node 22 переменные окружения
+    # игнорирует, понадобился бы явный ProxyAgent в коде. Разбор: /BOTS.md §5.2а.
+    extra_hosts:
+      - "api.telegram.org:149.154.167.220"
 
 networks:
   caddy_net:

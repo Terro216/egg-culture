@@ -36,9 +36,14 @@
 - `FONIN_ACCESS_WORD` — кодовое слово закрытой кладки подарков.
 - `FONIN_GIFT_TOKEN_SECRET` — секрет подписи временных ссылок на сертификаты (если не задан — используется кодовое слово, задать настоятельно рекомендуется).
 - `FONIN_GIFT_PRIVATE_DIR` — путь к директории с PNG-сертификатами (по умолчанию `private/fonin-gifts`).
-- `KLADKA_BOT_TOKEN`, `KLADKA_ADMIN_CHAT_ID` — Telegram-бот премодерации Книги Кладки (`/kladka`): записи прилетают админу с кнопками «Одобрить/Отклонить». Без токена записи публикуются сразу. Опционально: `KLADKA_WEBHOOK_SECRET`, `KLADKA_IP_SALT`, `KLADKA_DATA_DIR`.
+- `KLADKA_BOT_TOKEN`, `KLADKA_ADMIN_CHAT_ID` — Telegram-бот премодерации Книги Кладки (`/kladka`): записи прилетают админу с кнопками «Одобрить/Отклонить». Ответы забирает встроенный long poller `scripts/kladka-poller.mjs` и передаёт локальному API; публичный Telegram webhook не используется. Без токена записи публикуются сразу. Опционально: `KLADKA_WEBHOOK_SECRET` (подпись внутреннего вызова poller → API), `KLADKA_IP_SALT`, `KLADKA_DATA_DIR`.
 
-После изменения `.env` контейнер нужно перезапустить.
+После изменения `.env` контейнер нужно **пересоздать**: обычный
+`docker compose restart` не перечитывает `env_file`.
+
+```sh
+docker compose up -d --force-recreate web
+```
 
 ## Структура
 

@@ -17,11 +17,19 @@ const ui = {
     pageTitle: "Инициация | Яичная Культура",
     description: "Проверьте свою приверженность",
     title: "Инициация Адепта",
+    intro: [
+      "Инициация даёт вам звание Истинного Адепта и открывает Тёмную Сторону Яйца — закрытый раздел с тайными анонсами и приглашениями для посвящённых. Вы сможете оформить и скачать именной сертификат с печатью Ордена Яйца, а ещё — оставлять записи и фотографии в Книге Кладки, общей летописи адептов.",
+      "У ваших рассуждений о характере желтка появится документальное основание, а у завтраков — место в истории. Что ждёт за красным занавесом, здесь раскрывать не принято. Скажем лишь одно: скорлупа всё это время скрывала больше, чем желток.",
+    ],
   },
   en: {
     pageTitle: "Initiation | Egg Culture",
     description: "Test your devotion",
     title: "Initiation of the Adept",
+    intro: [
+      "Passing the Initiation earns you the rank of True Adept and opens the Dark Side of the Egg — a private section with secret announcements and invitations for the initiated. You can create and download a personalised certificate bearing the seal of the Order of the Egg, and add entries and photographs to the Book of the Clutch, the Adepts’ shared chronicle.",
+      "Your musings on the character of the yolk will have credentials to back them up, and your breakfasts will have a place in history. What awaits behind the red curtain is not disclosed here. We will say only this: the shell has been hiding more than a yolk all along.",
+    ],
   },
 }[lang];
 ---
@@ -30,16 +38,9 @@ const ui = {
   <main class="quiz-page">
     <div class="container">
       <h1 class="page-title">{ui.title}</h1>
-      {lang === 'ru' && (
-        <div class="quiz-intro">
-          <p>
-            Инициация даёт вам звание Истинного Адепта и открывает Тёмную Сторону Яйца — закрытый раздел с тайными анонсами и приглашениями для посвящённых. Вы сможете оформить и скачать именной сертификат с печатью Ордена Яйца, а ещё — оставлять записи и фотографии в Книге Кладки, общей летописи адептов.
-          </p>
-          <p>
-            У ваших рассуждений о характере желтка появится документальное основание, а у завтраков — место в истории. Что ждёт за красным занавесом, здесь раскрывать не принято. Скажем лишь одно: скорлупа всё это время скрывала больше, чем желток.
-          </p>
-        </div>
-      )}
+      <div class="quiz-intro">
+        {ui.intro.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
       <Quiz lang={lang} client:load />
     </div>
   </main>

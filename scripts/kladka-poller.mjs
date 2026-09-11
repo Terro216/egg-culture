@@ -1,132 +1,141 @@
 import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import { setTimeout as delay } from "node:timers/promises";
 
-// Модерация Книги Кладки на long polling: сервер сам ходит в Telegram за
-// нажатиями кнопок «Одобрить / Отклонить» вместо того, чтобы ждать webhook.
-//
-// Почему не webhook: с big-one путь к Telegram режется в обе стороны (разбор —
-// /BOTS.md §3). Исходящее направление вылечено пином api.telegram.org в
-// docker-compose.yml, входящее — нет: Telegram не может открыть соединение с
-// нашим Caddy и получает connection timeout, нажатия копятся у него в очереди.
-// Поллер разворачивает канал в ту сторону, которая работает.
-//
-// Апдейт разбирается не здесь: он переотправляется на /api/kladka-telegram —
-// тот самый эндпоинт, который раньше дергал Telegram. Так логика модерации
-// остается в одном месте, а posts.json пишет по-прежнему один процесс.
-
+// Telegram retains unconfirmed updates for at most 24 hours. Keep the offset at
+// the first undelivered update, including across a failed batch. The API's
+// setPostStatus is idempotent, so retrying a delivery is safe.
 const LONG_POLL_SECONDS = 25;
 const RETRY_DELAY_MS = 5_000;
-const DELIVERY_ATTEMPTS = 5;
+const MAX_RETRY_DELAY_MS = 60_000;
+export const HEALTH_FILE = "/tmp/kladka-poller-health.json";
 
-const token = () => process.env.KLADKA_BOT_TOKEN;
-
-const endpoint = () =>
-  process.env.KLADKA_CALLBACK_URL ??
-  `http://127.0.0.1:${process.env.PORT ?? 4321}/api/kladka-telegram`;
-
-// Повторяет webhookSecret() из src/shared/utils/kladkaTelegram.ts: эндпоинт
-// проверяет у нас тот же заголовок, что проверял бы у Telegram.
-function secret() {
-  return (
-    process.env.KLADKA_WEBHOOK_SECRET ??
-    crypto
-      .createHash("sha256")
-      .update(`kladka-webhook:${token() ?? ""}`)
-      .digest("hex")
-      .slice(0, 32)
-  );
+export function errorCode(error) {
+  // Messages can contain the bot URL; only log transport/error codes.
+  const code = error?.cause?.code ?? error?.code ?? error?.name;
+  return /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(code ?? "") ? code : "request_error";
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function api(method, body, timeoutMs) {
-  const res = await fetch(`https://api.telegram.org/bot${token()}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  return await res.json().catch(() => null);
+async function writeHealth(state) {
+  const pending = `${HEALTH_FILE}.tmp`;
+  await fs.writeFile(pending, JSON.stringify(state), { mode: 0o600 });
+  await fs.rename(pending, HEALTH_FILE);
 }
 
-// Отдаем апдейт своему же эндпоинту. Сразу после старта контейнера preview еще
-// не слушает порт, поэтому несколько попыток с нарастающей паузой — это норма,
-// а не отказ.
-async function deliver(update) {
-  for (let attempt = 1; attempt <= DELIVERY_ATTEMPTS; attempt++) {
-    try {
-      const res = await fetch(endpoint(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-telegram-bot-api-secret-token": secret(),
-        },
-        body: JSON.stringify(update),
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (res.ok) return true;
-      console.warn(`[kladka-poller] эндпоинт ответил ${res.status}`);
-    } catch (err) {
-      console.warn(`[kladka-poller] эндпоинт недоступен: ${err.message}`);
-    }
-    await sleep(attempt * 2_000);
-  }
-  return false;
-}
-
-export async function startPolling() {
-  if (!token() || !process.env.KLADKA_ADMIN_CHAT_ID) {
-    console.log("[kladka-poller] бот не настроен — модерация выключена");
+export async function startPolling({
+  env = process.env,
+  fetchImpl = fetch,
+  sleep = (ms, signal) => delay(ms, undefined, { signal }),
+  saveHealth = writeHealth,
+  now = Date.now,
+  logger = console,
+  signal = new AbortController().signal,
+} = {}) {
+  const token = env.KLADKA_BOT_TOKEN;
+  const enabled = Boolean(token && env.KLADKA_ADMIN_CHAT_ID);
+  const state = { enabled, lastPollSuccess: null, deliveryBlockedSince: null };
+  await saveHealth(state);
+  if (!enabled) {
+    logger.log("[kladka-poller] бот не настроен — модерация выключена");
     return;
   }
+  const endpoint = env.KLADKA_CALLBACK_URL ??
+    `http://127.0.0.1:${env.PORT ?? 4321}/api/kladka-telegram`;
+  const secret = env.KLADKA_WEBHOOK_SECRET || crypto
+    .createHash("sha256").update(`kladka-webhook:${token}`).digest("hex").slice(0, 32);
 
-  // Webhook и getUpdates взаимоисключающи: пока стоит webhook, getUpdates
-  // отвечает 409. Накопленные нажатия при этом не теряются — drop_pending_updates
-  // по умолчанию false, и очередь приедет первым же ответом.
-  await api("deleteWebhook", {}, 15_000).catch((err) =>
-    console.warn(`[kladka-poller] deleteWebhook: ${err.message}`),
-  );
-  console.log(`[kladka-poller] слушаю обновления, ответы шлю на ${endpoint()}`);
+  async function api(method, body = {}) {
+    const timeout = method === "getUpdates" ? (LONG_POLL_SECONDS + 10) * 1_000 : 15_000;
+    const response = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.any([signal, AbortSignal.timeout(timeout)]),
+    });
+    const data = await response.json();
+    if (!response.ok || !data?.ok) {
+      const error = new Error("Telegram API request failed");
+      error.code = `HTTP_${Number(data?.error_code ?? response.status) || 0}`;
+      error.status = Number(data?.error_code ?? response.status);
+      error.retryAfter = Number(data?.parameters?.retry_after) || 0;
+      throw error;
+    }
+    return data.result;
+  }
 
   let offset = 0;
-  for (;;) {
+  let failures = 0;
+  let webhookCleared = false;
+  logger.log("[kladka-poller] запущен");
+  while (!signal.aborted) {
+    let retryAfterMs = 0;
     try {
-      const data = await api(
-        "getUpdates",
-        {
-          offset,
-          timeout: LONG_POLL_SECONDS,
-          allowed_updates: ["callback_query"],
-        },
-        (LONG_POLL_SECONDS + 10) * 1_000,
-      );
-
-      if (!data?.ok) {
-        console.warn(
-          `[kladka-poller] getUpdates: ${data?.description ?? "нет ответа"}`,
-        );
-        // 409 — webhook кто-то поставил заново; снимаем и продолжаем.
-        if (data?.error_code === 409) {
-          await api("deleteWebhook", {}, 15_000).catch(() => {});
-        }
-        await sleep(RETRY_DELAY_MS);
-        continue;
+      if (!webhookCleared) {
+        await api("deleteWebhook", { drop_pending_updates: false });
+        webhookCleared = true;
       }
-
-      for (const update of data.result ?? []) {
-        if (!(await deliver(update))) {
-          // Дальше держать очередь заблокированной нельзя: следующие нажатия
-          // застрянут за этим. Теряем одно решение — админ нажмет еще раз.
-          console.error(
-            `[kladka-poller] апдейт ${update.update_id} не доставлен, пропускаю`,
-          );
+      const updates = await api("getUpdates", {
+        offset, timeout: LONG_POLL_SECONDS, allowed_updates: ["callback_query"],
+      });
+      if (!Array.isArray(updates)) throw new TypeError("Invalid getUpdates result");
+      state.lastPollSuccess = now();
+      await saveHealth(state);
+      // One ordered attempt per cycle. A failed delivery blocks this update
+      // and all later updates instead of acknowledging them prematurely.
+      for (const update of updates) {
+        if (!Number.isSafeInteger(update.update_id) || update.update_id < 0) {
+          throw new TypeError("Invalid update id");
         }
-        // Сдвиг offset подтверждает апдейт: до этого момента Telegram отдаст
-        // его снова, даже если процесс упадет.
+        try {
+          const response = await fetchImpl(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-telegram-bot-api-secret-token": secret,
+            },
+            body: JSON.stringify(update),
+            signal: AbortSignal.any([signal, AbortSignal.timeout(60_000)]),
+          });
+          await response.arrayBuffer();
+          if (!response.ok) {
+            const error = new Error("Local delivery failed");
+            error.code = `LOCAL_HTTP_${response.status}`;
+            throw error;
+          }
+        } catch (error) {
+          state.deliveryBlockedSince ??= now();
+          await saveHealth(state);
+          throw error;
+        }
         offset = update.update_id + 1;
+        state.deliveryBlockedSince = null;
+        await saveHealth(state);
       }
-    } catch (err) {
-      console.warn(`[kladka-poller] ${err.message}`);
-      await sleep(RETRY_DELAY_MS);
+      if (failures) logger.log("[kladka-poller] опрос и доставка восстановились");
+      failures = 0;
+    } catch (error) {
+      if (signal.aborted) break;
+      failures += 1;
+      retryAfterMs = Math.max(0, error.retryAfter || 0) * 1_000;
+      logger.warn(`[kladka-poller] ${errorCode(error)}; последовательных сбоев: ${failures}`);
+      if (error.status === 409) {
+        // 409 can also mean another poller is active. Only remove an actual
+        // webhook; don't repeatedly deleteWebhook on competing getUpdates.
+        try {
+          const info = await api("getWebhookInfo");
+          if (info?.url) webhookCleared = false;
+        } catch (probeError) {
+          if (!signal.aborted) logger.warn(`[kladka-poller] webhook probe: ${errorCode(probeError)}`);
+        }
+      }
+    }
+    if (failures && !signal.aborted) {
+      const backoff = Math.min(MAX_RETRY_DELAY_MS, RETRY_DELAY_MS * 2 ** Math.min(failures - 1, 4));
+      try {
+        await sleep(Math.max(backoff, retryAfterMs), signal);
+      } catch (error) {
+        if (!signal.aborted) throw error;
+      }
     }
   }
 }

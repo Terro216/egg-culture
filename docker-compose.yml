@@ -14,10 +14,22 @@ services:
     # Модерация Книги Кладки шлёт в Telegram, а с big-one путь туда заблокирован
     # с 2026-08-10. Пиним имя на единственный отвечающий адрес: подмена только на
     # этапе «имя → адрес», URL и SNI прежние, сертификат сходится.
-    # Через HTTP_PROXY это не решается — undici в Node 22 переменные окружения
-    # игнорирует, понадобился бы явный ProxyAgent в коде. Разбор: /BOTS.md §5.2а.
+    # Node >=22.21 поддерживает HTTPS_PROXY при NODE_USE_ENV_PROXY=1; здесь
+    # пока используется прямой маршрут с пином. Разбор и ограничения: /BOTS.md.
     extra_hosts:
       - "api.telegram.org:149.154.167.220"
+    healthcheck:
+      test: ["CMD", "node", "scripts/healthcheck.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   caddy_net:

@@ -28,6 +28,7 @@ export async function getStaticPaths() {
 const { lang } = Astro.params;
 const { post } = Astro.props;
 const { Content, frontmatter } = post;
+const isDocument = Boolean(frontmatter.documentStyle);
 
 const t = useTranslations(lang as Lang);
 ---
@@ -47,18 +48,28 @@ const t = useTranslations(lang as Lang);
       ← {lang === "ru" ? "Назад в Блог" : "Back to Blog"}
     </a>
 
-    <article class="post">
-      <div class="post-image-wrapper">
-        <img
-          src={frontmatter.image}
-          alt={frontmatter.title}
-          loading="eager"
-        />
-      </div>
-      <header class="post-header">
-        <span class="post-date">{frontmatter.date}</span>
-        <h1 class="post-title">{frontmatter.title}</h1>
-      </header>
+    <article class:list={["post", { "post--document": isDocument }]}>
+      {
+        !isDocument && (
+          <div class="post-image-wrapper">
+            <img
+              src={frontmatter.image}
+              alt={frontmatter.title}
+              loading="eager"
+            />
+          </div>
+        )
+      }
+      {
+        isDocument ? (
+          <span class="post-date document-date">{frontmatter.date}</span>
+        ) : (
+          <header class="post-header">
+            <span class="post-date">{frontmatter.date}</span>
+            <h1 class="post-title">{frontmatter.title}</h1>
+          </header>
+        )
+      }
 
       <div class="post-content">
         <Content />
@@ -121,6 +132,11 @@ const t = useTranslations(lang as Lang);
     padding-bottom: 1rem;
   }
 
+  .document-date {
+    padding-bottom: 1.5rem;
+    text-align: center;
+  }
+
   .post-title {
     font-size: 3rem;
     color: var(--color-yolk);
@@ -149,5 +165,115 @@ const t = useTranslations(lang as Lang);
   .post-content :global(strong) {
     font-weight: 600;
     color: var(--color-yolk);
+  }
+
+  .post-content :global(a[href*="/guide#"]) {
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: rgba(43, 43, 43, 0.45);
+  }
+
+  .post-content :global(a[href*="/guide#"]:hover),
+  .post-content :global(a[href*="/guide#"]:focus-visible) {
+    color: var(--color-yolk);
+    text-decoration-color: currentColor;
+  }
+
+  .post--document .post-content {
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .post-content :global(.editorial-note) {
+    margin: 0 auto 3rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(43, 43, 43, 0.16);
+    border-bottom: 1px solid rgba(43, 43, 43, 0.16);
+    font-family: var(--font-serif-body);
+    font-size: 1.08rem;
+    line-height: 1.7;
+  }
+
+  .post-content :global(.editorial-note__label) {
+    margin: 0;
+    padding: 0 0 1rem;
+    font-family: var(--font-sans-ui);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-yolk);
+  }
+
+  .post-content :global(.editorial-note p) {
+    margin: 0;
+    padding: 0 0 0.8rem;
+  }
+
+  .post-content :global(.editorial-note p:last-child) {
+    padding-bottom: 0;
+  }
+
+  .post-content :global(.source-document) {
+    padding: clamp(1.5rem, 6vw, 4rem);
+    border: 1px solid rgba(43, 43, 43, 0.12);
+    background: #fffefb;
+    box-shadow: 0 1.25rem 3.5rem rgba(43, 43, 43, 0.1);
+    color: #111;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .post-content :global(.source-document__title) {
+    margin: 0;
+    padding: 0 0 0.7rem;
+    color: #111;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 1.1667rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .post-content :global(.source-document__subtitle) {
+    margin: 0;
+    padding: 0 0 0.8rem;
+  }
+
+  .post-content :global(.source-document__byline) {
+    margin: 0;
+    padding: 0 0 0.8rem;
+    font-style: italic;
+  }
+
+  .post-content :global(.source-document p) {
+    margin: 0;
+    padding: 0 0 0.8rem;
+  }
+
+  .post-content :global(.source-document__quote) {
+    font-style: italic;
+  }
+
+  .post-content :global(.source-document__image) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 0 0.8rem;
+  }
+
+  .post-content :global(.source-document p:last-child),
+  .post-content :global(.source-document__image:last-child) {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 600px) {
+    .post-content :global(.source-document) {
+      margin-right: -0.25rem;
+      margin-left: -0.25rem;
+    }
   }
 </style>

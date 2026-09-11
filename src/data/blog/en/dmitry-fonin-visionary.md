@@ -25,7 +25,7 @@ Where others saw the mundane, he saw ritual. Where others said "overcooked" or "
 
 In Egg Culture, a true gift never lies on the surface. It waits behind a thin membrane of meaning: not hidden from its recipient, but shielded from the casual glance.
 
-First, one must pass through the Dome. First, one must enter the place where the shell darkens and meaning grows denser.
+First, one must pass through the [Dome](/en/guide#dome). First, one must enter the place where the shell darkens and meaning grows denser.
 
 If you are reading this, Dmitry — beyond the next door, three sealed cards await you. Each will open only after an answer.
 

@@ -5,25 +5,25 @@ date: "02.11.26"
 image: "/anatomy-of-yolk.webp"
 ---
 
-The yolk is the energetic center of the form, the locus of Egg Qi. Its physical state determines not only the flavor profile but also the psychophysical effect of the product on the taster. The ability to control the thermal exposure of the yolk is the highest discipline of perception.
+The yolk is the energetic center of the form, the locus of [Egg Qi](/en/guide#egg-qi). Its physical state determines not only the flavor profile but also the psychophysical effect of the product on the taster. The ability to control the thermal exposure of the yolk is the highest discipline of perception.
 
 ## Energy in Flow: Fluidity
 
-The early stages of exposure leave the yolk in a liquid state. This is pure, unformed energy. In this form, the texture offers no resistance; it envelops and spreads. A fluid yolk often possesses high minerality and provides a strong impulse that builds "Verticality".
+The early stages of exposure leave the yolk in a liquid state. This is pure, unformed energy. In this form, the texture offers no resistance; it envelops and spreads. Fluidity heightens the impression of minerality and tends toward "[Verticality](/en/guide#verticality)".
 
-However, the liquid form is unstable. It requires delicate framing—for instance, an elastic "Dome" of albumin, which must be cooked flawlessly to avoid the "Fishy Shadow" (undercooked white).
+However, the liquid form is unstable. It requires delicate framing—for instance, an elastic "[Dome](/en/guide#dome)" of albumin, cooked flawlessly and free of the watery rawness of the [Outer Terrace](/en/guide#outer-terrace).
 
 ## The Point of Singularity: Pastiness
 
 The most valuable and difficult stage of thermal deconstruction to achieve is the transition from liquid to paste. At this moment, the yolk loses its fluidity but has not yet acquired dryness. It becomes akin to warm fondant or thick cream.
 
-A pasty yolk possesses maximum flavor density. It reveals nutty, cereal, and sometimes even floral descriptors, shaped by the Egg Terroir. It is precisely this pastiness that provides that deep "Grounding" for the sake of which we turn to the form amid the bustle of the world.
+Pastiness is considered the point of maximum flavor density. It reveals nutty, cereal, and sometimes even floral descriptors, shaped by the Egg Terroir. It is precisely this pastiness that provides that deep "[Grounding](/en/guide#grounding)" for the sake of which we turn to the form amid the bustle of the world.
 
 ## Beyond the Edge: Emptiness
 
 Passing beyond the point of perfect exposure leads to the destruction of the structure. The yolk becomes crumbly, dry, and pale. Sulfur begins to dominate the delicate aromatic compounds.
 
-In the terminology of Egg Culture, this state is called "Emptiness". The energy (Egg Qi) has left the form. The texture falls apart in the mouth, leaving only a Chalky Trail and disappointment. Consuming such a product carries no aesthetic value.
+In the terminology of Egg Culture, this state is called "[Emptiness](/en/guide#void)". The energy (Egg Qi) has left the form. The texture falls apart in the mouth, leaving only a [Chalky Trail](/en/guide#chalky-trail) and disappointment. Consuming such a product carries no aesthetic value.
 
 ## The Art of Timing
 

@@ -9,15 +9,15 @@ The mass market has trained us to look for signs of "naturalness" in the color b
 
 ## The Aesthetics of Silence
 
-The white egg does not promise the "rustic comfort" so actively imposed by the Industrial Stream. It is cold, architectural, and honest. It is precisely behind this porcelain mask that the finest minerality and that very Chalky Trail of the egg white, which we so highly value in early batches of Leghorn hens, are most often hidden.
+The white egg does not promise the "rustic comfort" so actively imposed by the [Industrial Stream](/en/guide#industrial-stream). It is cold, architectural, and honest. Against the porcelain ground of a white shell, delicate minerality and the [Chalky Trail](/en/guide#chalky-trail) of the albumin read with particular clarity.
 
-The rejection of the crude "store-bought vs. farm-fresh" classification and the shift towards the conscious choice of a white egg is a deliberate aesthetic gesture. It is a form of absolute purity, characteristic of the "Blanc Style".
+The rejection of the crude "store-bought vs. farm-fresh" classification and the shift towards the conscious choice of a white egg is a deliberate aesthetic gesture. It is a form of absolute purity, characteristic of the "[Blanc Style](/en/guide#blanc-style)".
 
 ## Texture as Text
 
-When we see a white shell, our perception is cleansed. We do not expect heavy, earthy notes. We prepare for delicacy. We focus on the elasticity of the "Dome" and the airiness of the "Albumin Cloud".
+When we see a white shell, our perception is cleansed. We do not expect heavy, earthy notes. We prepare for delicacy. We focus on the elasticity of the "[Dome](/en/guide#dome)" and the airiness of the "[Albumin Cloud](/en/guide#albumin-cloud)".
 
-The dark terracotta of a brown shell often creates an illusion of density and richness (Bouillon Style). This is an excellent choice for a winter morning when we need strong Grounding. But the Blanc Style requires silence. The white egg builds Verticality — a clear, transparent Energy (Egg Qi) that does not burden the mind before the start of the day.
+The dark terracotta of a brown shell often creates an illusion of density and richness ([Bouillon Style](/en/guide#bouillon-style)). This is an excellent choice for a winter morning when we need strong [Grounding](/en/guide#grounding). But the Blanc Style requires silence. The white egg builds [Verticality](/en/guide#verticality) — a clear, transparent Energy ([Egg Qi](/en/guide#egg-qi)) that does not burden the mind before the start of the day.
 
 ### Destroying Myths
 

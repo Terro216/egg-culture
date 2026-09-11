@@ -33,7 +33,11 @@
 *   **Деплой и Докеризация:** 
     *   `npm run build` собирает standalone server bundle Astro и пререндеренные статические маршруты; динамические страницы и API обслуживаются Node-процессом.
     *   `Dockerfile` построен на легковесном образе Node и использует встроенный сервер Astro; `.dockerignore` не пускает в образ `.env`, `.git` и `node_modules`.
-    *   `docker-compose.yml` настроен для работы в связке с **Caddy** (reverse proxy), который автоматически получает SSL-сертификаты. Кэш новостей — в named volume `news_cache`, Книга Кладки — в `kladka_data`. Остановка/запуск контейнера на сервере — основной способ деплоя (без CI/CD). После изменения `.env` нужен recreate через `docker compose up -d --force-recreate web`: простой restart не перечитывает `env_file`.
+    *   `docker-compose.yml` настроен для работы в связке с **Caddy** (reverse proxy), который автоматически получает SSL-сертификаты. Кэш новостей — в named volume `news_cache`, Книга Кладки — в `kladka_data`. Изменения исходников применяются сборкой образа и пересозданием `web` (без CI/CD); обычный stop/start оставляет прежний образ. После изменения `.env` нужен recreate через `docker compose up -d --force-recreate web`: простой restart не перечитывает `env_file`.
+
+Эксплуатация poller, healthcheck, ротация логов и границы резервного копирования
+описаны в [README.md](README.md). На 05.09.2026 offsite-бэкап пользовательских
+данных Книги ещё не настроен; named volume сам по себе резервной копией не является.
 
 ## 4. Архитектура проекта (Feature-Sliced Design)
 Проект структурирован по методологии FSD для обеспечения масштабируемости и чистоты кода:

@@ -11,6 +11,7 @@ featuredOrder: 100
   <h2 class="editorial-note__label" id="editorial-note-title">From the editors</h2>
   <p>Dear community,</p>
   <p>today a telegram arrived at the Chancery of Egg Culture — brisk, thorough, and remarkably attentive to detail. We considered it our duty to make this document public.</p>
+  <p>We should also note that, even before the telegram arrived, the editors had been informed that its author’s recommendations for optimizing this “niche” project were “simply priceless.” It was precisely after this article that cross-links to terms appeared throughout the resource — for example, in our well-known article <a href="/en/blog/anatomy-of-yolk/">“Anatomy of the Yolk”</a>. No other recommendations for optimization were, however, observed in the text. Perhaps the author is saving the priceless recommendations themselves for the next telegram.</p>
   <p>The text is published without abridgment. Its emphases and authorial vigilance have been preserved.</p>
 </aside>
 

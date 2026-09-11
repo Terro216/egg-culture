@@ -16,11 +16,9 @@ The race will take the form of a costumed parade. Both the participants and thei
 
 Most boats require lengthy persuasion before they become round. The shell possesses the correct geometry from the beginning.
 
-Before the race, each shell is lightened, its edges are finished, and its behavior on the water is tested. Only after a trial seating is it admitted to the regatta.
+The shell is formed as firmly as a participant’s frontal cortex. Both are expected to retain their shape throughout the course.
 
-The largest specimens are not always selected. Excessive scale reduces maneuverability, so the chosen forms are those in which capacity has not yet defeated buoyancy.
-
-![Preparing a shell for launch](/egg-shell-workshop.png)
+![Shell boats before the regatta](/egg-shell-workshop.png)
 
 ## Inside the Dome
 
@@ -34,7 +32,11 @@ That is already a sufficiently dense content.
 
 The festival opens on September 10. From September 12 through 27, VDNKh will present an exhibition of the season’s largest specimens, open daily from 11:00 to 20:00.
 
-The City Farm pavilion will host lectures, guided tours, and film screenings. On September 19, from 12:00 to 18:00, invited chefs will lead a culinary show alongside a demonstration of decorative shell carving.
+The City Farm pavilion will host lectures, guided tours, and a screening of *Moscow Does Not Believe in Tears*. On September 19, from 12:00 to 18:00, invited chefs will lead a culinary show alongside a demonstration of decorative shell carving.
+
+True Adepts are eligible for welcome bonuses upon presentation of an [Adept certificate](/en/quiz).
+
+Smoking is prohibited throughout the festival. Smoke not only violates venue rules but dulls the palate; in the present context, this is regarded as an affront to Egg Culture.
 
 The festival concludes with the water parade on September 26. The race will run from 15:00 to 18:00.
 

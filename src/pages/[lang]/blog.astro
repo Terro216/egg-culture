@@ -23,6 +23,12 @@ const enPosts = Object.values(
 );
 const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
   (a: any, b: any) => {
+    const priorityDifference =
+      Number(b.frontmatter.featuredOrder ?? 0) -
+      Number(a.frontmatter.featuredOrder ?? 0);
+
+    if (priorityDifference !== 0) return priorityDifference;
+
     const aSlug = a.file.split("/").pop()?.replace(".md", "");
     const bSlug = b.file.split("/").pop()?.replace(".md", "");
 

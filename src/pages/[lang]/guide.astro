@@ -18,75 +18,75 @@ const guideContent = {
       {
         title: "I. Морфология и Анатомия (Термины Формы)",
         items: [
-          { name: "Купол (The Dome)", desc: "Центральная, возвышающаяся часть желтка. У молодых, «сильных» яиц купол высокий и упругий. Пологий купол говорит о деградации структуры или усталости курицы." },
-          { name: "Альбуминовое Облако (The Albumin Cloud)", desc: "Плотный слой белка, непосредственно окружающий желток. В идеальном яйце он должен быть четко очерчен, напоминая ореол." },
-          { name: "Внешняя Терраса", desc: "Жидкий, периферийный слой белка. Его избыток часто свидетельствует о «водянистости» профиля." },
-          { name: "Халаза (Якорная цепь)", desc: "Белковые канатики, удерживающие желток. Адепты ценят выраженную халазу как признак «витальной собранности» продукта." },
-          { name: "Воздушная Камера (Пуга)", desc: "Пространство на тупом конце яйца. Размер камеры определяет стадию «дыхания» яйца и его возрастную категорию." }
+          { id: "dome", name: "Купол (The Dome)", desc: "Центральная, возвышающаяся часть желтка. У молодых, «сильных» яиц купол высокий и упругий. Пологий купол говорит об ослаблении структуры и зрелом возрасте партии." },
+          { id: "albumin-cloud", name: "Альбуминовое Облако (The Albumin Cloud)", desc: "Плотный слой белка, непосредственно окружающий желток. В идеальном яйце он должен быть четко очерчен, напоминая ореол." },
+          { id: "outer-terrace", name: "Внешняя Терраса", desc: "Жидкий, периферийный слой белка. Его избыток часто свидетельствует о «водянистости» профиля." },
+          { id: "chalaza", name: "Халаза (Якорная цепь)", desc: "Белковые канатики, удерживающие желток. Адепты ценят выраженную халазу как признак «витальной собранности» продукта." },
+          { id: "air-cell", name: "Воздушная Камера (Пуга)", desc: "Пространство на тупом конце яйца. Воздушная камера увеличивается по мере выдержки и служит главным ориентиром возрастной категории." }
         ]
       },
       {
         title: "II. Энергетика и Воздействие (Яй Ци)",
         items: [
-          { name: "Яй Ци (Egg Qi)", desc: "Совокупное энергетическое и психофизическое воздействие яйца на дегустатора." },
-          { name: "Вертикаль", desc: "Состояние, когда после дегустации ощущается ясность взора и выпрямление осанки (характерно для свежих белых яиц)." },
-          { name: "Заземление", desc: "Ощущение телесного покоя и тяжести, приходящее от плотных, «бульонных» желтков." },
-          { name: "Вибрация", desc: "Легкое сернистое покалывание на языке, указывающее на «дикий» характер партии." },
-          { name: "Пустота (The Void)", desc: "Технически безупречное яйцо, которое не оставляет в сознании никакого следа. Гастрономический тупик." }
+          { id: "egg-qi", name: "Яй Ци (Egg Qi)", desc: "Интегральное воздействие яйца, не сводимое к сумме вкуса, аромата и текстуры; телесный вектор, проявляющийся в дыхании, осанке и темпе мысли." },
+          { id: "verticality", name: "Вертикаль", desc: "Состояние, когда после дегустации ощущается ясность взора и выпрямление осанки (характерно для свежих белых яиц)." },
+          { id: "grounding", name: "Заземление", desc: "Ощущение телесного покоя и тяжести, приходящее от плотных, «бульонных» желтков." },
+          { id: "vibration", name: "Вибрация", desc: "Легкое сернистое покалывание на языке, указывающее на «дикий» характер партии." },
+          { id: "void", name: "Пустота (The Void)", desc: "Технически безупречное яйцо, которое не оставляет в сознании никакого следа. Гастрономический тупик." }
         ]
       },
       {
         title: "III. Глоссарий Дегустации (Процесс)",
         items: [
-          { name: "Атака", desc: "Первое впечатление в момент соприкосновения желтка с небом. Бывает «сливочной», «агрессивной» или «минеральной»." },
-          { name: "Тело (Body)", desc: "Плотность и вязкость текстуры. Легкое тело напоминает нежирные сливки или рисовый отвар; среднее — шелковистое, обволакивающее; плотное — пастозное, заставляющее рецепторы работать на пределе." },
-          { name: "Развитие", desc: "То, как вкус меняется во рту в течение первых 5–10 секунд." },
-          { name: "Финиш (Послевкусие)", desc: "Шлейф, остающийся после глотка. Бывает коротким (магазинные яйца) или долгим, «километровым» (дворовые микролоты)." },
-          { name: "Меловой след", desc: "Специфическое ощущение сухости на языке после белка, признак высокой минеральности." }
+          { id: "attack", name: "Атака", desc: "Первое впечатление в момент соприкосновения желтка с небом. Бывает «сливочной», «агрессивной» или «минеральной»." },
+          { id: "body", name: "Тело (Body)", desc: "Плотность и вязкость текстуры. Легкое тело напоминает нежирные сливки или рисовый отвар; среднее — шелковистое, обволакивающее; плотное — пастозное, заставляющее рецепторы работать на пределе." },
+          { id: "development", name: "Развитие", desc: "То, как вкус меняется во рту в течение первых 5–10 секунд." },
+          { id: "finish", name: "Финиш (Послевкусие)", desc: "Шлейф, остающийся после глотка. Бывает коротким и прямым либо долгим, почти «километровым»." },
+          { id: "chalky-trail", name: "Меловой след", desc: "Специфическое ощущение сухости после белка, в котором раскрывается его минеральный профиль." }
         ]
       },
       {
         title: "IV. Классификация по Происхождению (Терруар)",
         items: [
-          { name: "Индустриальный Стрим (Mass Market)", desc: "Яйца с предсказуемым, «чистым», но часто плоским вкусом. Используются как база для калибровки рецепторов." },
-          { name: "Фермерский Концепт", desc: "Яйца с акцентом на зерновой прикорм (кукуруза, пшеница). Яркие, понятные, «желтые»." },
-          { name: "Дворовый Дикий (Yard Wild)", desc: "Высшая степень непредсказуемости. Ноты пера, сена, червей. Требуют высокого уровня подготовки." },
-          { name: "Микролот (Micro-batch)", desc: "Партия от одной конкретной группы кур в определенный промежуток времени (например, «ранний майский сбор в такой-то локации»)." }
+          { id: "industrial-stream", name: "Индустриальный Стрим (Mass Market)", desc: "Яйца с предсказуемым, «чистым», но часто плоским вкусом. Используются как база для калибровки рецепторов." },
+          { id: "farm-concept", name: "Фермерский Концепт", desc: "Яйца с акцентом на зерновой прикорм (кукуруза, пшеница). Яркие, понятные, «желтые»." },
+          { id: "yard-wild", name: "Дворовый Дикий (Yard Wild)", desc: "Высшая степень непредсказуемости. Ноты пера, сена, червей. Требуют высокого уровня подготовки." },
+          { id: "micro-batch", name: "Микролот (Micro-batch)", desc: "Партия от одной конкретной группы кур в определенный промежуток времени (например, «ранний майский сбор в такой-то локации»)." }
         ]
       },
       {
         title: "V. Стилистические Категории (Стили)",
         items: [
-          { name: "Светлый Стиль (Blanc)", desc: "Доминанта белка, чистоты, мела и воды. Интеллигентные яйца для утренних медитаций." },
-          { name: "Бульонный Стиль (Bouillon)", desc: "Высокая концентрация умами, животные и мясные ноты. Зимние, «тяжелые» яйца." },
-          { name: "Пасторальный Стиль", desc: "Акцент на сливки, траву и свежее масло. Гедонистический профиль." },
-          { name: "Архивный Стиль (Aged)", desc: "Яйца выдержки 21+ день. Сложные ноты погреба, старой бумаги и глубокой сернистости." }
+          { id: "blanc-style", name: "Светлый Стиль (Blanc)", desc: "Доминанта белка, чистоты, мела и воды. Интеллигентные яйца для утренних медитаций." },
+          { id: "bouillon-style", name: "Бульонный Стиль (Bouillon)", desc: "Высокая концентрация умами, животные и мясные ноты. Зимние, «тяжелые» яйца." },
+          { id: "pastoral-style", name: "Пасторальный Стиль", desc: "Акцент на сливки, траву и свежее масло. Гедонистический профиль." },
+          { id: "aged-style", name: "Архивный Стиль (Aged)", desc: "Яйца выдержки 21+ день при непрерывном холодном хранении. Сложные ноты погреба, старой бумаги и глубокой сернистости." }
         ]
       },
       {
         title: "VI. Дефектология (Словарь Ошибок)",
         items: [
-          { name: "Холодильный Ожог", desc: "Затхлый, «пластиковый» привкус, убивающий терруар." },
-          { name: "Рыбная Тень", desc: "Результат перекорма курицы рыбной мукой. Считается грубым дефектом, лишающим яйцо благородства." },
-          { name: "Картонный Финиш", desc: "Сухость без минеральности, признак старого, «умершего» белка." },
-          { name: "Йодистая Тревога", desc: "Резкий аптечный привкус, часто возникающий при избытке искусственных добавок." }
+          { id: "refrigerator-burn", name: "Холодильный Ожог", desc: "Затхлый, «пластиковый» привкус, убивающий терруар." },
+          { id: "fishy-shadow", name: "Рыбная Тень", desc: "Устойчивый рыбный оттенок, связанный с особенностями прикорма. Считается грубым дефектом, лишающим яйцо благородства." },
+          { id: "cardboard-finish", name: "Картонный Финиш", desc: "Сухость без минеральности, признак старого, «умершего» белка." },
+          { id: "iodine-anxiety", name: "Йодистая Тревога", desc: "Резкий аптечный привкус, нарушающий чистоту финиша." }
         ]
       },
       {
         title: "VII. Инструментарий и Этикет",
         items: [
-          { name: "Температурная Пауза", desc: "20-минутное ожидание, пока яйцо согревается до комнатной температуры после извлечения из хранилища." },
-          { name: "Аэрация", desc: "Вскрытие желтка и легкое перемешивание с белком (в некоторых школах считается варварством, в других — способом «разбудить» аромат)." },
-          { name: "Слепая Встреча", desc: "Дегустация без знания бренда и цены, единственный способ честной оценки Яй Ци." }
+          { id: "temperature-pause", name: "Температурная Пауза", desc: "20-минутное ожидание, пока яйцо согревается до комнатной температуры после извлечения из хранилища." },
+          { id: "aeration", name: "Аэрация", desc: "Вскрытие желтка и легкое перемешивание с белком (в некоторых школах считается варварством, в других — способом «разбудить» аромат)." },
+          { id: "blind-meeting", name: "Слепая Встреча", desc: "Дегустация без знания бренда и цены, единственный способ честной оценки Яй Ци." }
         ]
       },
       {
         title: "Таблица Ментальных Состояний (Для записи в дневник)",
         items: [
-          { name: "Звонкое", desc: "Очень свежее, с высокой кислотностью и минеральностью. Пример: \"Это белое яйцо сегодня удивительно звонкое\"." },
-          { name: "Собранное", desc: "Идеальный баланс между текстурой белка и жирностью желтка. Пример: \"Партия на 14-й день наконец-то стала собранной\"." },
-          { name: "Нервное", desc: "Неровный вкус, перепады от сладости к металлу. Пример: \"Партия из Крыма в этот раз какая-то нервная\"." },
-          { name: "Пыльное", desc: "Легкая землистая нота в послевкусии. Пример: \"В финише чувствуется приятная пыльность старого сена\"." }
+          { id: "ringing", name: "Звонкое", desc: "Очень свежее, с высокой кислотностью и минеральностью. Пример: \"Это белое яйцо сегодня удивительно звонкое\"." },
+          { id: "composed", name: "Собранное", desc: "Идеальный баланс между текстурой белка и жирностью желтка. Пример: \"Партия на 14-й день наконец-то стала собранной\"." },
+          { id: "nervous", name: "Нервное", desc: "Неровный вкус, перепады от сладости к металлу. Пример: \"Партия из Крыма в этот раз какая-то нервная\"." },
+          { id: "dusty", name: "Пыльное", desc: "Легкая землистая нота в послевкусии. Пример: \"В финише чувствуется приятная пыльность старого сена\"." }
         ]
       }
     ]
@@ -98,75 +98,75 @@ const guideContent = {
       {
         title: "I. Morphology and Anatomy (Terms of Form)",
         items: [
-          { name: "The Dome", desc: "The central, elevated part of the yolk. In young, 'strong' eggs, the dome is high and resilient. A gentle dome indicates structural degradation or hen fatigue." },
-          { name: "The Albumin Cloud", desc: "The dense layer of egg white immediately surrounding the yolk. In a perfect egg, it should be clearly defined, resembling a halo." },
-          { name: "Outer Terrace", desc: "The liquid, peripheral layer of the egg white. Its excess often indicates a 'watery' profile." },
-          { name: "Chalaza (Anchor Chain)", desc: "Protein cords holding the yolk. Adepts value a pronounced chalaza as a sign of the product's 'vital composure'." },
-          { name: "Air Cell", desc: "The space at the blunt end of the egg. The size of the cell determines the stage of the egg's 'breathing' and its age category." }
+          { id: "dome", name: "The Dome", desc: "The central, elevated part of the yolk. In young, 'strong' eggs, the dome is high and resilient. A gentle dome indicates structural weakening and a mature batch." },
+          { id: "albumin-cloud", name: "The Albumin Cloud", desc: "The dense layer of egg white immediately surrounding the yolk. In a perfect egg, it should be clearly defined, resembling a halo." },
+          { id: "outer-terrace", name: "Outer Terrace", desc: "The liquid, peripheral layer of the egg white. Its excess often indicates a 'watery' profile." },
+          { id: "chalaza", name: "Chalaza (Anchor Chain)", desc: "Protein cords holding the yolk. Adepts value a pronounced chalaza as a sign of the product's 'vital composure'." },
+          { id: "air-cell", name: "Air Cell", desc: "The space at the blunt end of the egg. The air cell expands as the egg ages and serves as the primary guide to its age category." }
         ]
       },
       {
         title: "II. Energy and Impact (Egg Qi)",
         items: [
-          { name: "Egg Qi", desc: "The combined energetic and psychophysical effect of the egg on the taster." },
-          { name: "Verticality", desc: "A state when, after tasting, one feels clarity of vision and straightening of posture (typical for fresh white eggs)." },
-          { name: "Grounding", desc: "A feeling of physical peace and heaviness coming from dense, 'brothy' yolks." },
-          { name: "Vibration", desc: "A slight sulfurous tingling on the tongue, indicating the 'wild' character of the batch." },
-          { name: "The Void", desc: "A technically flawless egg that leaves no trace in consciousness. A gastronomic dead end." }
+          { id: "egg-qi", name: "Egg Qi", desc: "The egg's integral effect, irreducible to the sum of flavor, aroma, and texture; a bodily vector manifest in breath, posture, and the pace of thought." },
+          { id: "verticality", name: "Verticality", desc: "A state when, after tasting, one feels clarity of vision and straightening of posture (typical for fresh white eggs)." },
+          { id: "grounding", name: "Grounding", desc: "A feeling of physical peace and heaviness coming from dense, 'brothy' yolks." },
+          { id: "vibration", name: "Vibration", desc: "A slight sulfurous tingling on the tongue, indicating the 'wild' character of the batch." },
+          { id: "void", name: "The Void", desc: "A technically flawless egg that leaves no trace in consciousness. A gastronomic dead end." }
         ]
       },
       {
         title: "III. Tasting Glossary (Process)",
         items: [
-          { name: "Attack", desc: "The first impression at the moment the yolk touches the palate. It can be 'creamy', 'aggressive', or 'mineral'." },
-          { name: "Body", desc: "The density and viscosity of the texture. A light body resembles low-fat cream or rice water; medium is silky, enveloping; heavy is pasty, forcing receptors to work at their limit." },
-          { name: "Development", desc: "How the taste changes in the mouth during the first 5-10 seconds." },
-          { name: "Finish (Aftertaste)", desc: "The trail left after swallowing. It can be short (store-bought eggs) or long, 'kilometer-long' (backyard micro-batches)." },
-          { name: "Chalky Trail", desc: "A specific feeling of dryness on the tongue after the egg white, a sign of high minerality." }
+          { id: "attack", name: "Attack", desc: "The first impression at the moment the yolk touches the palate. It can be 'creamy', 'aggressive', or 'mineral'." },
+          { id: "body", name: "Body", desc: "The density and viscosity of the texture. A light body resembles low-fat cream or rice water; medium is silky, enveloping; heavy is pasty, forcing receptors to work at their limit." },
+          { id: "development", name: "Development", desc: "How the taste changes in the mouth during the first 5-10 seconds." },
+          { id: "finish", name: "Finish (Aftertaste)", desc: "The trail left after swallowing. It can be short and direct or long, almost 'kilometer-long'." },
+          { id: "chalky-trail", name: "Chalky Trail", desc: "A distinctive dryness after the egg white, through which its mineral profile reveals itself." }
         ]
       },
       {
         title: "IV. Classification by Origin (Terroir)",
         items: [
-          { name: "Industrial Stream (Mass Market)", desc: "Eggs with a predictable, 'clean', but often flat taste. Used as a base for receptor calibration." },
-          { name: "Farm Concept", desc: "Eggs with an emphasis on grain feed (corn, wheat). Bright, approachable, 'yellow'." },
-          { name: "Yard Wild", desc: "The highest degree of unpredictability. Notes of feather, hay, worms. Require a high level of preparation." },
-          { name: "Micro-batch", desc: "A batch from one specific group of hens in a certain period of time (e.g., 'early May collection in such and such a location')." }
+          { id: "industrial-stream", name: "Industrial Stream (Mass Market)", desc: "Eggs with a predictable, 'clean', but often flat taste. Used as a base for receptor calibration." },
+          { id: "farm-concept", name: "Farm Concept", desc: "Eggs with an emphasis on grain feed (corn, wheat). Bright, approachable, 'yellow'." },
+          { id: "yard-wild", name: "Yard Wild", desc: "The highest degree of unpredictability. Notes of feather, hay, worms. Require a high level of preparation." },
+          { id: "micro-batch", name: "Micro-batch", desc: "A batch from one specific group of hens in a certain period of time (e.g., 'early May collection in such and such a location')." }
         ]
       },
       {
         title: "V. Stylistic Categories (Styles)",
         items: [
-          { name: "Blanc Style (Light)", desc: "Dominance of egg white, purity, chalk, and water. Intelligent eggs for morning meditations." },
-          { name: "Bouillon Style (Broth)", desc: "High concentration of umami, animal and meat notes. Winter, 'heavy' eggs." },
-          { name: "Pastoral Style", desc: "Emphasis on cream, grass, and fresh butter. A hedonistic profile." },
-          { name: "Aged (Archive) Style", desc: "Eggs aged 21+ days. Complex notes of cellar, old paper, and deep sulfur." }
+          { id: "blanc-style", name: "Blanc Style (Light)", desc: "Dominance of egg white, purity, chalk, and water. Intelligent eggs for morning meditations." },
+          { id: "bouillon-style", name: "Bouillon Style (Broth)", desc: "High concentration of umami, animal and meat notes. Winter, 'heavy' eggs." },
+          { id: "pastoral-style", name: "Pastoral Style", desc: "Emphasis on cream, grass, and fresh butter. A hedonistic profile." },
+          { id: "aged-style", name: "Aged (Archive) Style", desc: "Eggs aged 21+ days under continuous cold storage. Complex notes of cellar, old paper, and deep sulfur." }
         ]
       },
       {
         title: "VI. Defectology (Dictionary of Errors)",
         items: [
-          { name: "Freezer Burn", desc: "A musty, 'plastic' aftertaste that kills the terroir." },
-          { name: "Fishy Shadow", desc: "The result of overfeeding the hen with fish meal. Considered a gross defect, depriving the egg of nobility." },
-          { name: "Cardboard Finish", desc: "Dryness without minerality, a sign of an old, 'dead' egg white." },
-          { name: "Iodine Anxiety", desc: "A sharp pharmacy aftertaste, often occurring with an excess of artificial additives." }
+          { id: "refrigerator-burn", name: "Freezer Burn", desc: "A musty, 'plastic' aftertaste that kills the terroir." },
+          { id: "fishy-shadow", name: "Fishy Shadow", desc: "A persistent fishy note associated with the particulars of the hen's feed. Considered a gross defect, depriving the egg of nobility." },
+          { id: "cardboard-finish", name: "Cardboard Finish", desc: "Dryness without minerality, a sign of an old, 'dead' egg white." },
+          { id: "iodine-anxiety", name: "Iodine Anxiety", desc: "A sharp medicinal note that disrupts the purity of the finish." }
         ]
       },
       {
         title: "VII. Tools and Etiquette",
         items: [
-          { name: "Temperature Pause", desc: "A 20-minute wait while the egg warms to room temperature after removal from storage." },
-          { name: "Aeration", desc: "Opening the yolk and lightly mixing it with the white (considered barbarism in some schools, in others - a way to 'wake up' the aroma)." },
-          { name: "Blind Meeting", desc: "Tasting without knowing the brand and price, the only way to honestly evaluate Egg Qi." }
+          { id: "temperature-pause", name: "Temperature Pause", desc: "A 20-minute wait while the egg warms to room temperature after removal from storage." },
+          { id: "aeration", name: "Aeration", desc: "Opening the yolk and lightly mixing it with the white (considered barbarism in some schools, in others - a way to 'wake up' the aroma)." },
+          { id: "blind-meeting", name: "Blind Meeting", desc: "Tasting without knowing the brand and price, the only way to honestly evaluate Egg Qi." }
         ]
       },
       {
         title: "Table of Mental States (For diary entries)",
         items: [
-          { name: "Ringing", desc: "Very fresh, with high acidity and minerality. Example: \"This white egg today is surprisingly ringing\"." },
-          { name: "Composed", desc: "A perfect balance between the texture of the white and the fatness of the yolk. Example: \"The batch on the 14th day finally became composed\"." },
-          { name: "Nervous", desc: "Uneven taste, swings from sweetness to metal. Example: \"The batch from Crimea this time is somehow nervous\"." },
-          { name: "Dusty", desc: "A light earthy note in the aftertaste. Example: \"In the finish, you can feel the pleasant dustiness of old hay\"." }
+          { id: "ringing", name: "Ringing", desc: "Very fresh, with high acidity and minerality. Example: \"This white egg today is surprisingly ringing\"." },
+          { id: "composed", name: "Composed", desc: "A perfect balance between the texture of the white and the fatness of the yolk. Example: \"The batch on the 14th day finally became composed\"." },
+          { id: "nervous", name: "Nervous", desc: "Uneven taste, swings from sweetness to metal. Example: \"The batch from Crimea this time is somehow nervous\"." },
+          { id: "dusty", name: "Dusty", desc: "A light earthy note in the aftertaste. Example: \"In the finish, you can feel the pleasant dustiness of old hay\"." }
         ]
       }
     ]
@@ -235,8 +235,8 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
             <dl class="term-list" style="padding-bottom: 4rem;">
               {
                 section.items.map((item) => (
-                  <div class="term-item">
-                    <dt>{item.name}</dt>
+                  <div class="term-item" id={item.id}>
+                    <dt><a href={`#${item.id}`}>{item.name}</a></dt>
                     <dd>{item.desc}</dd>
                   </div>
                 ))
@@ -412,6 +412,13 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
     padding: 2rem;
     border: 1px solid rgba(43, 43, 43, 0.1);
     border-radius: 4px;
+    scroll-margin-top: 2rem;
+    transition: border-color 0.25s ease, background-color 0.25s ease;
+  }
+
+  .term-item:target {
+    border-color: var(--color-yolk);
+    background-color: rgba(212, 175, 55, 0.08);
   }
 
   .term-item dt {

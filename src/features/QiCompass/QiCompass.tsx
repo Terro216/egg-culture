@@ -73,11 +73,11 @@ const POINTS: CompassPoint[] = [
     y: 0.55,
     ru: {
       name: "Архивный Стиль (Aged)",
-      desc: "Выдержка 21+ день: погреб, старая бумага, глубокая сернистость. Плотное, медленное Яй Ци.",
+      desc: "Выдержка 21+ день при непрерывном холодном хранении: погреб, старая бумага, глубокая сернистость. Плотное, медленное Яй Ци.",
     },
     en: {
       name: "Aged (Archive) Style",
-      desc: "Aged 21+ days: cellar, old paper, deep sulfur. A dense, slow Egg Qi.",
+      desc: "Aged 21+ days under continuous cold storage: cellar, old paper, deep sulfur. A dense, slow Egg Qi.",
     },
   },
   {

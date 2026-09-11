@@ -46,7 +46,7 @@ const t = useTranslations(lang as Lang);
 
       <p set:html={t("manifesto.p11")} />
 
-      <p class="text-bold">{t("manifesto.p12")}</p>
+      <p class="text-bold" set:html={t("manifesto.p12")} />
 
       <p set:html={t("manifesto.p13")} />
 
@@ -61,7 +61,7 @@ const t = useTranslations(lang as Lang);
         <li>{t("manifesto.li3")}</li>
         <li>{t("manifesto.li4")}</li>
         <li>{t("manifesto.li5")}</li>
-        <li>{t("manifesto.li6")}</li>
+        <li set:html={t("manifesto.li6")} />
         <li>{t("manifesto.li7")}</li>
       </ul>
 
@@ -90,6 +90,11 @@ const t = useTranslations(lang as Lang);
       <p>{t("manifesto.p25")}</p>
 
       <p class="finale">{t("manifesto.finale")}</p>
+
+      <aside class="adept-trial">
+        <p>{t("manifesto.testPrompt")}</p>
+        <a href={`/${lang}/quiz`} class="btn">{t("manifesto.testCta")}</a>
+      </aside>
     </article>
   </div>
 </Layout>
@@ -156,6 +161,34 @@ const t = useTranslations(lang as Lang);
     font-weight: 600;
     text-transform: var(--text-caps-transform);
     letter-spacing: var(--text-caps-spacing);
+  }
+
+  .manifesto :global(.term-link) {
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: rgba(43, 43, 43, 0.45);
+  }
+
+  .manifesto :global(.term-link:hover),
+  .manifesto :global(.term-link:focus-visible) {
+    color: var(--color-yolk);
+    text-decoration-color: currentColor;
+  }
+
+  .adept-trial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 3rem;
+    text-align: center;
+  }
+
+  .adept-trial p {
+    padding-bottom: 0;
+    font-style: italic;
   }
 
   @media (max-width: 768px) {

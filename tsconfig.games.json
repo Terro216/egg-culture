@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/features/EggRoad/**/*.ts",
+    "src/features/EggRoad/**/*.tsx",
+    "src/features/MotionTrials/**/*.tsx"
+  ]
+}

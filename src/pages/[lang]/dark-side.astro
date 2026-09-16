@@ -61,6 +61,18 @@ const t = useTranslations(lang);
             </p>
             <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Получить пароль" : "Receive the password"}</a>
           </article>
+
+          <article class="secret-card">
+            <h2>{lang === 'ru' ? "Испытания формы" : "Trials of Form"}</h2>
+            <p>
+              {lang === 'ru'
+                ? "Халаза-тест и Оракул желтка теперь открыты всем посвящённым. Поймайте центр или задайте вопрос — испытания можно повторять без ограничений."
+                : "The Chalaza Test and the Oracle of the Yolk are now open to every initiate. Catch the centre or ask a question — both trials may be repeated without limit."}
+            </p>
+            <a href={`/${lang}/dark-side/games`} class="action-btn">
+              {lang === 'ru' ? "Войти в зал испытаний" : "Enter the hall of trials"}
+            </a>
+          </article>
         </div>
 
         <section class="certificate-section">

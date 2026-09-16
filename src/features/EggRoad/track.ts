@@ -9,6 +9,7 @@ export type RoadChunk = { first: number; last: number; vertices: Float32Array; i
 export type RoadTrack = {
   samples: RoadSample[]; chunks: RoadChunk[]; length: number;
   level: number; seed: number; bounds: Sphere;
+  endless?: { nextPart: number; revision: number };
 };
 
 function randomSource(seed: number) {
@@ -111,7 +112,7 @@ export function hasRoadClearance(samples: RoadSample[]) {
 }
 
 /** One continuous, closed road shell: top, bottom, both edges and end caps. */
-function roadCollider(samples: RoadSample[]): RoadChunk {
+export function roadCollider(samples: RoadSample[]): RoadChunk {
   const vertices: number[] = [], indices: number[] = [];
   for (let i = 0; i < samples.length; i++) {
     const s = samples[i];

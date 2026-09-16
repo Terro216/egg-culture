@@ -7,6 +7,15 @@ export class RollRhythm {
   private rollingDistance = 0;
   private idle = 0;
 
+  cue(nearRoad: boolean) {
+    const ready = this.duration >= 0.28 && this.duration <= 0.95 && this.rollingDistance > 0.28;
+    return {
+      state: !nearRoad ? "air" : !this.direction ? "start" : this.duration > 0.95 ? "late" : ready ? "switch" : "hold",
+      direction: this.direction,
+      progress: Math.min(1, this.duration / 0.95),
+    } as const;
+  }
+
   reset() { this.charge = this.chain = this.direction = this.duration = this.rollingDistance = this.idle = 0; }
 
   step(dt: number, input: number, lateralSpeed: number, rollRate: number, nearRoad: boolean) {

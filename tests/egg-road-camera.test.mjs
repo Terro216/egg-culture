@@ -46,6 +46,9 @@ test("gyro activation handles denial, missing readings, recentering, and late pe
     reading(null, null); assert.equal(look.gyroState, 'waiting');
     reading(45, 0); reading(45, 24); look.step(1);
     assert.equal(look.gyroState, 'on');assert.ok(look.x > .99);
+    assert.equal(look.calibrate(),true);look.step(1);assert.equal(look.x,0);
+    reading(45,30);look.step(1);assert.ok(look.x>.24 && look.x<.26,'the calibration button makes the current tilt neutral');
+    look.centerView();reading(45,30);look.step(1);assert.ok(look.x>.24 && look.x<.26,'resetting the view on retry must preserve the chosen calibration');
     device.screen.orientation.angle = 90;
     reading(60, 24); look.step(1);assert.ok(Math.abs(look.x) < .001, 'screen rotation establishes a new neutral hold');
     look.disableGyro();reading(90, 50);look.step(1);assert.equal(look.x,0);

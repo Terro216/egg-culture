@@ -5,7 +5,8 @@ import { initializePhysics, PHYSICS_STEP } from "./simulation.ts";
 import type { RoadResult, RoadSnapshot } from "./simulation.ts";
 import { RoadJourney } from "./journey.ts";
 import { readRoadProgress, saveRoadProgress } from "./storage.ts";
-import { CameraLook, FLYBY_SECONDS, flybyPose, lookDirection } from "./camera.ts";
+import { CameraLook, FLYBY_SECONDS, flybyPose, overviewPose, lookDirection } from "./camera.ts";
+import type { RoadSpec } from "./seed.ts";
 import type { GyroState } from "./camera.ts";
 
 type Callbacks = {
@@ -85,6 +86,12 @@ export class RoadEngine {
   private disposed = false;
   private needsRender = true;
   private flybyTime = 0;
+  private overviewTime = 0;
+  private readonly transitionPosition = new THREE.Vector3();
+  private readonly transitionTarget = new THREE.Vector3();
+  private fromOverview = false;
+  private roadRevision = 0;
+  private menuOpen = true;
 
   constructor(container: HTMLElement, callbacks: Callbacks) {
     this.callbacks = callbacks;
@@ -153,26 +160,27 @@ export class RoadEngine {
     this.roadResources.length = 0;
     const keep = <T extends Resource>(resource: T): T => { this.roadResources.push(resource); return resource; };
     const { samples, chunks } = this.simulation.track;
-    const chunk = chunks[0];
-    const top: number[] = [], shell: number[] = [];
-    for (let segment = 0; segment < samples.length - 1; segment++) {
-      const offset = segment * 24;
-      top.push(...chunk.indices.slice(offset, offset + 6));
-      shell.push(...chunk.indices.slice(offset + 6, offset + 24));
+    for (const chunk of chunks) {
+      const top: number[] = [], shell: number[] = [];
+      for (let segment = 0; segment < chunk.last - chunk.first; segment++) {
+        const offset = segment * 24;
+        top.push(...chunk.indices.slice(offset, offset + 6));
+        shell.push(...chunk.indices.slice(offset + 6, offset + 24));
+      }
+      shell.push(...chunk.indices.slice(-12));
+      const addSurface = (indices: number[], color: number) => {
+        const geometry = keep(new THREE.BufferGeometry());
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(chunk.vertices, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        const material = keep(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0.05, side: THREE.DoubleSide }));
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.receiveShadow = true;
+        this.roadGroup.add(mesh);
+      };
+      addSurface(top, 0x99634b);
+      addSurface(shell, 0x4d3134);
     }
-    shell.push(...chunk.indices.slice(-12));
-    const addSurface = (indices: number[], color: number) => {
-      const geometry = keep(new THREE.BufferGeometry());
-      geometry.setAttribute("position", new THREE.Float32BufferAttribute(chunk.vertices, 3));
-      geometry.setIndex(indices);
-      geometry.computeVertexNormals();
-      const material = keep(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0.05, side: THREE.DoubleSide }));
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.receiveShadow = true;
-      this.roadGroup.add(mesh);
-    };
-    addSurface(top, 0x99634b);
-    addSurface(shell, 0x4d3134);
 
     const edges: number[] = [], edgeIndices: number[] = [];
     for (let i = 0; i < samples.length; i++) {
@@ -192,18 +200,23 @@ export class RoadEngine {
     edgeGeometry.setIndex(edgeIndices);
     this.roadGroup.add(new THREE.Mesh(edgeGeometry, keep(new THREE.MeshBasicMaterial({ color: 0xe1b981, side: THREE.DoubleSide }))));
 
-    const gateCount = Math.floor(this.simulation.track.length / GATE_SPACING);
+    const firstGate = Math.floor(samples[0].distance / GATE_SPACING) + 1;
+    const lastGate = Math.floor(this.simulation.track.length / GATE_SPACING);
+    const gateCount = lastGate - firstGate + 1;
     const gates = keep(new THREE.InstancedMesh(keep(new THREE.BoxGeometry(1, 0.018, 0.12)), keep(new THREE.MeshBasicMaterial({ color: 0xf5d6a0 })), gateCount));
     const matrix = new THREE.Matrix4(), basis = new THREE.Matrix4(), rotation = new THREE.Quaternion();
-    for (let gate = 1; gate <= gateCount; gate++) {
-      const sample = samples[Math.round(gate * GATE_SPACING / this.simulation.track.length * (samples.length - 1))];
+    let sampleIndex = 0;
+    for (let gate = firstGate; gate <= lastGate; gate++) {
+      while (sampleIndex < samples.length - 1 && samples[sampleIndex].distance < gate * GATE_SPACING) sampleIndex++;
+      const sample = samples[sampleIndex];
       rotation.setFromRotationMatrix(basis.makeBasis(sample.right, sample.normal, sample.tangent.clone().negate()));
       matrix.compose(sample.position.clone().addScaledVector(sample.normal, 0.02), rotation, new THREE.Vector3(sample.width, 1, 1));
-      gates.setMatrixAt(gate - 1, matrix);
+      gates.setMatrixAt(gate - firstGate, matrix);
     }
     gates.instanceMatrix.needsUpdate = true;
     gates.computeBoundingSphere();
     this.roadGroup.add(gates);
+    this.roadRevision = this.simulation.track.endless?.revision ?? 0;
   }
 
   private shellTexture() {
@@ -240,7 +253,7 @@ export class RoadEngine {
 
   private resetCamera() {
     this.needsRender = true;
-    this.look.recenter();
+    this.look.centerView();
     this.camera.far = 310;
     this.camera.updateProjectionMatrix();
     this.scene.fog = this.roadFog;
@@ -258,9 +271,10 @@ export class RoadEngine {
 
   play = () => {
     if (this.disposed) return;
-    if (this.simulation.phase === "finished") { this.nextLevel(); return; }
+    this.menuOpen = false;
+    if (this.simulation.phase === "finished") { if (this.simulation.mode === "levels") this.nextLevel(); else this.restart(); return; }
     if (this.simulation.phase === "over") { this.restart(); return; }
-    if (this.simulation.phase === "paused") { this.look.recenter(); this.simulation.resume(); }
+    if (this.simulation.phase === "paused") { this.look.centerView(); this.simulation.resume(); }
     else this.beginFlyby();
     this.accumulator = 0;
     this.lastTime = performance.now();
@@ -269,6 +283,8 @@ export class RoadEngine {
   };
 
   private beginFlyby() {
+    this.fromOverview = this.simulation.phase === "overview";
+    this.transitionPosition.copy(this.camera.position); this.transitionTarget.copy(this.lookTarget);
     this.flybyTime = 0;
     this.simulation.beginIntro();
     this.needsRender = true;
@@ -287,20 +303,34 @@ export class RoadEngine {
   private nextLevel() {
     try {
       if (!this.journey.advance()) return;
-      this.changeRoad();
+      this.changeRoad(false);
     } catch { this.callbacks.failure(); }
   }
 
   practice = () => { if (!this.disposed) { this.journey.practice(); this.changeRoad(); } };
 
-  private changeRoad() {
+  selectRoad(spec: RoadSpec) {
+    if (this.disposed) return;
+    this.menuOpen = false; this.journey.select(spec); this.changeRoad(false);
+  }
+
+  overview = () => {
+    if (this.disposed) return;
+    const position = this.camera.position.clone(), target = this.lookTarget.clone();
+    this.journey.retry(); this.changeRoad(false);
+    this.camera.position.copy(position); this.lookTarget.copy(target);
+    this.transitionPosition.copy(position); this.transitionTarget.copy(target);
+    this.overviewTime = 0; this.simulation.beginOverview(); this.notify();
+  };
+
+  private changeRoad(fly = true) {
     this.clearInput();
     this.buildRoad();
     this.finishedReported = false;
     this.previousScore = this.accumulator = 0;
     this.lastTime = performance.now();
     this.resetCamera();
-    this.beginFlyby();
+    if (fly) this.beginFlyby();
     this.audio.unlock();
     this.notify();
   }
@@ -308,7 +338,8 @@ export class RoadEngine {
   restart = () => {
     if (this.disposed) return;
     this.clearInput();
-    this.simulation.reset();
+    this.journey.retry();
+    if (this.simulation.track.endless) this.buildRoad();
     this.simulation.start();
     this.finishedReported = false;
     this.previousScore = 0;
@@ -319,18 +350,22 @@ export class RoadEngine {
     this.notify();
   };
 
+  openMenu() { this.pause(); this.menuOpen = true; }
   pause = () => { this.simulation.pause(); this.clearInput(); this.accumulator = 0; this.notify(); };
   steer(value: number) { this.pointerSteering = value; }
   lookAround(x: number, y: number) { this.look.setManual(x, y); }
   toggleGyro() { if (this.look.gyroState === "on" || this.look.gyroState === "waiting") this.look.disableGyro(); else void this.look.enableGyro(); }
+  calibrateGyro() { return this.look.calibrate(); }
   setMuted(muted: boolean) { this.audio.muted = muted; if (!muted) this.audio.unlock(); }
   private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.look.setManual(0, 0); }
   private notify() { this.callbacks.update(this.simulation.snapshot()); }
-  private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro") this.pause(); else this.clearInput(); };
+  private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro" || this.simulation.phase === "overview") this.pause(); else this.clearInput(); };
   private visibility = () => { if (document.hidden) this.loseFocus(); };
   private contextLost = (event: Event) => { event.preventDefault(); this.pause(); this.callbacks.failure(); };
 
   private keyDown = (event: KeyboardEvent) => {
+    if (this.menuOpen) return;
+    if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable='true']")) return;
     if (["ArrowLeft", "ArrowRight", "KeyA", "KeyD", "KeyQ", "KeyE"].includes(event.code)) {
       event.preventDefault();
       this.keys.add(event.code);
@@ -338,7 +373,7 @@ export class RoadEngine {
     if (event.repeat) return;
     if (event.code === "Escape" || event.code === "KeyP") {
       event.preventDefault();
-      if (this.simulation.phase === "running" || this.simulation.phase === "intro") this.pause();
+      if (this.simulation.phase === "running" || this.simulation.phase === "intro" || this.simulation.phase === "overview") this.pause();
       else if (this.simulation.phase === "paused") this.play();
     }
     if (event.code === "KeyR") { event.preventDefault(); this.restart(); }
@@ -352,15 +387,30 @@ export class RoadEngine {
     const dt = Math.min(0.1, Math.max(0, (now - this.lastTime) / 1000));
     this.lastTime = now;
     const sim = this.simulation;
-    const wasIntro = sim.phase === "intro";
-    if (wasIntro) {
+    const wasIntro = sim.phase === "intro" || sim.phase === "overview";
+    if (sim.phase === "overview") {
+      this.needsRender = true; this.overviewTime += dt;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const pose = overviewPose(sim.track, reduced ? 0 : Math.max(0, this.overviewTime - 2), this.camera.aspect, this.camera.fov);
+      const t = reduced ? 1 : THREE.MathUtils.smootherstep(this.overviewTime / 2, 0, 1);
+      this.camera.position.lerpVectors(this.transitionPosition, pose.position, t);
+      this.lookTarget.lerpVectors(this.transitionTarget, pose.target, t);
+      this.camera.far = Math.max(pose.far, this.camera.position.distanceTo(sim.track.bounds.center) + sim.track.bounds.radius * 2);
+      this.camera.updateProjectionMatrix(); this.scene.fog = null;
+    }
+    if (sim.phase === "intro") {
       this.needsRender = true;
       this.flybyTime += dt;
       const endPosition = sim.position.clone().addScaledVector(this.heading, -12).add(new THREE.Vector3(0, 6.4, 0));
       const endTarget = sim.position.clone().addScaledVector(this.heading, 8).add(new THREE.Vector3(0, 0.2, 0));
       const pose = flybyPose(sim.track, Math.min(1, this.flybyTime / FLYBY_SECONDS), this.camera.aspect, this.camera.fov, endPosition, endTarget);
-      this.camera.position.copy(pose.position);
-      this.lookTarget.copy(pose.target);
+      if (this.fromOverview) {
+        const t = THREE.MathUtils.smootherstep(this.flybyTime / FLYBY_SECONDS, 0, 1);
+        this.camera.position.lerpVectors(this.transitionPosition, endPosition, t);
+        this.lookTarget.lerpVectors(this.transitionTarget, endTarget, t);
+      } else {
+        this.camera.position.copy(pose.position); this.lookTarget.copy(pose.target);
+      }
       this.camera.far = pose.far;
       this.camera.updateProjectionMatrix();
       this.scene.fog = null;
@@ -375,12 +425,18 @@ export class RoadEngine {
         this.previousPosition.copy(sim.position);
         this.previousRotation.copy(sim.rotation);
         sim.step(steering);
+        if (sim.originShift.lengthSq()) {
+          this.previousPosition.sub(sim.originShift); this.camera.position.sub(sim.originShift);
+          this.lookTarget.sub(sim.originShift); this.egg.position.sub(sim.originShift);
+          sim.originShift.set(0, 0, 0);
+        }
         this.accumulator -= PHYSICS_STEP;
       }
+      if (sim.track.endless && sim.track.endless.revision !== this.roadRevision) this.buildRoad();
       const alpha = Math.min(1, this.accumulator / PHYSICS_STEP);
       this.egg.position.lerpVectors(this.previousPosition, sim.position, alpha);
       this.egg.quaternion.slerpQuaternions(this.previousRotation, sim.rotation, alpha);
-      if (sim.score > this.previousScore) { this.previousScore = sim.score; this.audio.tone(360 + (sim.score % 5) * 80); }
+      if (sim.gates > this.previousScore) { this.previousScore = sim.gates; this.audio.tone(360 + (sim.gates % 5) * 80); }
     }
 
     // Keep menus and pauses still without spending GPU time on identical frames.

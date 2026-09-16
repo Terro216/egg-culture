@@ -4,7 +4,7 @@ import type {
   MotionTrialLang,
   MotionTrialResult,
 } from "./MotionTrial";
-import { readRoadBest } from "../EggRoad/storage";
+import { readPointsBest } from "../EggRoad/storage";
 import "./AdeptGames.css";
 
 type Scores = Partial<Record<MotionTrialKind, number>>;
@@ -32,7 +32,7 @@ const ui = {
       "Задайте вопрос, найдите ритм трёх точных встряхиваний и получите предсказание на языке Справочника.",
     roadTitle: "Путь формы",
     roadDescription: "Катите яйцо по дороге над Пустотой. Ловите повороты и срезайте путь через нижние витки.",
-    gates: "отметок",
+    gates: "очков",
     loading: "Испытание готовится…",
     loadError: "Не удалось загрузить испытание. Вернитесь к выбору и попробуйте снова.",
     begin: "Начать",
@@ -52,7 +52,7 @@ const ui = {
       "Ask a question, find the rhythm of three precise shakes, and receive a prophecy in the language of the Guide.",
     roadTitle: "Path of Form",
     roadDescription: "Roll an egg along the road above the Void. Catch the bends and take shortcuts through the lower turns.",
-    gates: "gates",
+    gates: "points",
     loading: "Preparing the trial…",
     loadError: "The trial could not load. Return to the selection and try again.",
     begin: "Begin",
@@ -70,7 +70,8 @@ export const AdeptGames: React.FC<{ lang: MotionTrialLang }> = ({ lang }) => {
   const [roadBest, setRoadBest] = useState(0);
 
   useEffect(() => {
-    setRoadBest(readRoadBest());
+    setRoadBest(readPointsBest());
+    if (new URL(window.location.href).searchParams.has("road")) setActive("road");
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setScores(JSON.parse(stored) as Scores);

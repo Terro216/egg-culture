@@ -12,14 +12,17 @@
 .egg-road-hud {
   position: absolute; z-index: 3; top: calc(18px + env(safe-area-inset-top, 0px));
   left: max(20px, env(safe-area-inset-left, 0px)); right: max(20px, env(safe-area-inset-right, 0px));
-  display: flex; align-items: flex-start; justify-content: space-between; pointer-events: none;
+  display: grid; grid-template-columns: 46px minmax(0, 1fr) 46px; align-items: start; gap: 8px; pointer-events: none;
 }
-.egg-road-icon { width: 46px; height: 46px; border: 1px solid #f2cd9440; border-radius: 50%; background: #1b15277a; color: #f7dfb8; font-size: 21px !important; pointer-events: auto; }
+.egg-road-icon { display: grid; place-items: center; width: 46px; height: 46px; padding: 0; line-height: 1; border: 1px solid #f2cd9440; border-radius: 50%; background: #1b15277a; color: #f7dfb8; pointer-events: auto; }
+.egg-road-icon svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .egg-road-icon:disabled { opacity: 0.25; cursor: default; }
 .egg-road-score { display: flex; align-items: center; flex-direction: column; text-align: center; text-shadow: 0 2px 15px #130b1b; }
 .egg-road-score > span { text-transform: uppercase; letter-spacing: 0.22em; font-size: 10px; color: #e8c49b; }
 .egg-road-score strong { font-size: clamp(40px, 7vw, 66px); font-weight: 300; line-height: 1.14; font-variant-numeric: tabular-nums; }
 .egg-road-score small { color: #f1d2ad99; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.egg-road-score .egg-road-level { margin-top: 7px; font-size: 10px; letter-spacing: .07em; text-transform: none; }
+.egg-road-notices { margin-top: 12px; min-height: 0; max-width: 100%; }
 .egg-road-steer { position: absolute; z-index: 1; top: 120px; bottom: 0; width: 50%; border: 0; padding: 0; background: transparent; color: #e8c49b90; }
 .egg-road-steer.is-left { left: 0; }
 .egg-road-steer.is-right { right: 0; }
@@ -28,14 +31,30 @@
 .egg-road-steer.is-right > span { right: 28px; }
 .egg-road-steer.is-held > span { background: #efcd9c; color: #281b23; border-color: #efcd9c; }
 .egg-road-key-hint { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 100%; text-align: center; color: #e8c49b80; font-size: 10px; letter-spacing: .08em; pointer-events: none; }
-.egg-road-flight { position: absolute; z-index: 2; top: 145px; left: 50%; transform: translateX(-50%); width: 160px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .15s; }
-.egg-road-flight.is-visible { opacity: 1; }
+.egg-road-flight { width: min(160px, 100%); margin: 0 auto; text-align: center; pointer-events: none; }
 .egg-road-flight > span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
-.egg-road-flight > strong { font-weight: 400; font-size: 25px; font-variant-numeric: tabular-nums; }
+.egg-road-flight > strong { display: block; font-weight: 400; font-size: 25px; font-variant-numeric: tabular-nums; }
 .egg-road-flight > div { height: 2px; margin-top: 7px; background: #efd9b52b; }
 .egg-road-flight i { display: block; width: 100%; height: 100%; background: #f3c17f; transform-origin: left; }
-.egg-road-shortcut { position: absolute; top: 160px; left: 50%; transform: translateX(-50%); text-align: center; color: #ffd898; font-size: 12px; pointer-events: none; }
+.egg-road-shortcut { text-align: center; color: #ffd898; font-size: 12px; pointer-events: none; }
 .egg-road-shortcut b { display: block; font-size: 32px; font-weight: 400; }
+.egg-road-look { position: absolute; z-index: 2; right: max(28px, env(safe-area-inset-right, 0px)); bottom: calc(140px + env(safe-area-inset-bottom, 0px)); display: grid; place-items: center; width: 58px; height: 64px; padding: 4px; border: 1px solid #f2cd9440; border-radius: 22px; color: #e8c49b; background: #17131e77; }
+.egg-road-look > span { font-size: 28px; line-height: 1; }
+.egg-road-look > small { font-size: 9px; }
+.egg-road-rhythm { position: absolute; z-index: 2; bottom: calc(49px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: clamp(90px, 28vw, 145px); text-align: center; pointer-events: none; color: #e5c49b; }
+.egg-road-rhythm > strong { font-size: 22px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.egg-road-rhythm small { font-size: 9px; font-weight: 400; }
+.egg-road-rhythm > div { height: 3px; margin: 6px 0; overflow: hidden; border-radius: 2px; background: #efd9b52b; }
+.egg-road-rhythm i { display: block; width: 100%; height: 100%; background: #ffdb9a; transform-origin: left; }
+.egg-road-rhythm > span { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.egg-road-rhythm.is-charged { color: #ffdf9e; text-shadow: 0 0 14px #eaa45688; }
+.egg-road-flyby { position: absolute; z-index: 2; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 100%; text-align: center; }
+.egg-road-flyby p { font-size: 12px; color: #f3d6ad; text-shadow: 0 2px 8px #17131e; }
+.egg-road-flyby button { min-height: 44px; padding: 10px 24px; border: 1px solid #e8c49b77; border-radius: 24px; color: #f4d7ab; background: #17131ecc; font-size: 12px; }
+.egg-road-options { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 0 0 8px; }
+.egg-road-options button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: #d4bb9e; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }
+.egg-road-options button[aria-pressed="true"] { color: #ffe2a6; }
+.egg-road-options p { flex-basis: 100%; margin: 0 0 5px; font-size: 11px; line-height: 1.5; color: #d4bb9e; }
 .egg-road-overlay { position: absolute; z-index: 4; inset: 0; display: grid; place-items: safe center; padding: max(20px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)); background: #130e1b75; overflow-y: auto; touch-action: pan-y; }
 .egg-road-panel { width: min(100%, 440px); padding: 35px 35px 22px; background: linear-gradient(160deg, #2e202bea, #16131bf5); border: 1px solid #b18e633e; border-radius: 4px 36px 4px 36px; box-shadow: 0 25px 90px #05030a66; text-align: left; }
 .egg-road-kicker { margin: 0 0 14px; color: #c7a478; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; }
@@ -72,6 +91,13 @@
   .egg-road-key-hint { display: none; }
 }
 @media (max-height: 560px) and (min-width: 600px) {
+  .egg-road-hud { top: max(10px, env(safe-area-inset-top, 0px)); }
+  .egg-road-score strong { font-size: 40px; }
+  .egg-road-score .egg-road-level { margin-top: 3px; }
+  .egg-road-notices { margin-top: 7px; }
+  .egg-road-flight > strong { font-size: 21px; }
+  .egg-road-flight > div { margin-top: 3px; }
+  .egg-road-look { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
   .egg-road-panel { width: min(680px, 100%); padding: 20px 28px; }
   .egg-road-panel h1 { font-size: 31px; margin-bottom: 9px; }
   .egg-road-kicker { margin-bottom: 8px; }
@@ -86,11 +112,12 @@
   .egg-road-panel { padding: 22px 24px 16px; }
   .egg-road-panel h1 { font-size: 32px; margin-bottom: 12px; }
   .egg-road-kicker { margin-bottom: 10px; }
-  .egg-road-instructions { margin: 16px 0; padding-top: 12px; }
-  .egg-road-instructions > span { font-size: 23px; }
+  .egg-road-instructions { margin: 10px 0; padding-top: 8px; }
+  .egg-road-instructions > span { display: none; }
   .egg-road-instructions .egg-road-character { margin-top: 10px; }
-  .egg-road-primary { margin: 18px 0 10px; padding: 14px 18px; }
+  .egg-road-primary { margin: 12px 0 8px; padding: 14px 18px; }
 }
+@media (pointer: coarse) { .egg-road-key-hint { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .egg-road-flight, .egg-road-steer > span { transition: none; }
 }

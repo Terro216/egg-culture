@@ -1,0 +1,96 @@
+.egg-road {
+  position: fixed; inset: 0; z-index: 10010; width: 100%; height: 100dvh;
+  overflow: hidden; isolation: isolate; outline: none; color: #f8ebd8;
+  background: #17131e; font-family: var(--font-sans-ui, system-ui, sans-serif);
+  touch-action: manipulation; overscroll-behavior: none; user-select: none; -webkit-user-select: none;
+}
+.egg-road *, .egg-road *::before, .egg-road *::after { box-sizing: border-box; }
+.egg-road button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; }
+.egg-road button:focus-visible { outline: 2px solid #ffe2a6; outline-offset: 5px; }
+.egg-road-scene, .egg-road-scene canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+.egg-road-vignette { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(#100b1899, transparent 24%, transparent 73%, #100b1844); }
+.egg-road-hud {
+  position: absolute; z-index: 3; top: calc(18px + env(safe-area-inset-top, 0px));
+  left: max(20px, env(safe-area-inset-left, 0px)); right: max(20px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: flex-start; justify-content: space-between; pointer-events: none;
+}
+.egg-road-icon { width: 46px; height: 46px; border: 1px solid #f2cd9440; border-radius: 50%; background: #1b15277a; color: #f7dfb8; font-size: 21px !important; pointer-events: auto; }
+.egg-road-icon:disabled { opacity: 0.25; cursor: default; }
+.egg-road-score { display: flex; align-items: center; flex-direction: column; text-align: center; text-shadow: 0 2px 15px #130b1b; }
+.egg-road-score > span { text-transform: uppercase; letter-spacing: 0.22em; font-size: 10px; color: #e8c49b; }
+.egg-road-score strong { font-size: clamp(40px, 7vw, 66px); font-weight: 300; line-height: 1.14; font-variant-numeric: tabular-nums; }
+.egg-road-score small { color: #f1d2ad99; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.egg-road-steer { position: absolute; z-index: 1; top: 120px; bottom: 0; width: 50%; border: 0; padding: 0; background: transparent; color: #e8c49b90; }
+.egg-road-steer.is-left { left: 0; }
+.egg-road-steer.is-right { right: 0; }
+.egg-road-steer > span { position: absolute; bottom: calc(46px + env(safe-area-inset-bottom, 0px)); width: 66px; height: 66px; line-height: 55px; font-size: 45px; border: 1px solid #f2cd9433; border-radius: 50%; background: #17131e44; transition: background .12s, color .12s; }
+.egg-road-steer.is-left > span { left: 28px; }
+.egg-road-steer.is-right > span { right: 28px; }
+.egg-road-steer.is-held > span { background: #efcd9c; color: #281b23; border-color: #efcd9c; }
+.egg-road-key-hint { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 100%; text-align: center; color: #e8c49b80; font-size: 10px; letter-spacing: .08em; pointer-events: none; }
+.egg-road-flight { position: absolute; z-index: 2; top: 145px; left: 50%; transform: translateX(-50%); width: 160px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.egg-road-flight.is-visible { opacity: 1; }
+.egg-road-flight > span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
+.egg-road-flight > strong { font-weight: 400; font-size: 25px; font-variant-numeric: tabular-nums; }
+.egg-road-flight > div { height: 2px; margin-top: 7px; background: #efd9b52b; }
+.egg-road-flight i { display: block; width: 100%; height: 100%; background: #f3c17f; transform-origin: left; }
+.egg-road-shortcut { position: absolute; top: 160px; left: 50%; transform: translateX(-50%); text-align: center; color: #ffd898; font-size: 12px; pointer-events: none; }
+.egg-road-shortcut b { display: block; font-size: 32px; font-weight: 400; }
+.egg-road-overlay { position: absolute; z-index: 4; inset: 0; display: grid; place-items: safe center; padding: max(20px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)); background: #130e1b75; overflow-y: auto; touch-action: pan-y; }
+.egg-road-panel { width: min(100%, 440px); padding: 35px 35px 22px; background: linear-gradient(160deg, #2e202bea, #16131bf5); border: 1px solid #b18e633e; border-radius: 4px 36px 4px 36px; box-shadow: 0 25px 90px #05030a66; text-align: left; }
+.egg-road-kicker { margin: 0 0 14px; color: #c7a478; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; }
+.egg-road-panel h1 { margin: 0 0 18px; font: 500 clamp(36px, 6vw, 48px)/1.08 var(--font-serif-headers, Georgia, serif); color: #f7e2bd; letter-spacing: -.025em; }
+.egg-road-intro { margin: 0; font: 15px/1.7 var(--font-serif-body, Georgia, serif); color: #e5d4c2c7; }
+.egg-road-instructions { margin: 24px 0; padding: 19px 0 0; border-top: 1px solid #c1a68027; }
+.egg-road-instructions > span { display: block; text-align: center; color: #d4b483; font-size: 30px; letter-spacing: 20px; line-height: 1.2; }
+.egg-road-instructions i { display: inline-block; font-style: normal; font-size: 29px; transform: rotate(-25deg); }
+.egg-road-instructions p { margin: 12px 0 7px; color: #edddc9; text-align: center; font-size: 12px; line-height: 1.5; }
+.egg-road-instructions small { display: block; text-align: center; color: #bca58e; font-size: 10px; line-height: 1.6; }
+.egg-road-instructions .egg-road-character { margin: 16px 0 0; font: italic 12px/1.5 var(--font-serif-body, Georgia, serif); color: #c8af948c; }
+.egg-road-primary { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin: 24px 0 16px; padding: 17px 20px; border: 1px solid #f7d6a4; border-radius: 2px 14px 2px 14px; background: #e5c08b; color: #271c20; font-size: 13px !important; font-weight: 600 !important; letter-spacing: .025em; }
+.egg-road-primary > span { font-size: 23px; line-height: 1; }
+.egg-road-primary:disabled { opacity: .6; cursor: wait; }
+.egg-road-primary:hover:enabled { background: #f4d7ab; }
+.egg-road-panel-footer { display: flex; justify-content: space-between; gap: 16px; }
+.egg-road-panel-footer button { min-height: 34px; border: 0; padding: 4px 0; background: transparent; color: #c8af94; font-size: 10px; }
+.egg-road-result { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin: 24px 0; padding-top: 20px; border-top: 1px solid #c1a68027; }
+.egg-road-result > strong { font-weight: 300; font-size: 70px; line-height: 1; color: #f5d8a9; }
+.egg-road-result > strong span { display: block; margin-top: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .15em; }
+.egg-road-result dl { flex: 1; margin: 0; font-size: 11px; }
+.egg-road-result dl > div { display: flex; justify-content: space-between; gap: 20px; padding: 9px 0; }
+.egg-road-result dt { color: #baa58f; }
+.egg-road-result dd { margin: 0; color: #ead6b4; }
+.egg-road-record { color: #f4d097; font-size: 11px; text-transform: uppercase; letter-spacing: .18em; }
+.egg-road-progress { position: absolute; z-index: 5; bottom: 0; left: 0; width: 100%; height: 3px; background: #efcf9e11; pointer-events: none; }
+.egg-road-progress i { display: block; height: 100%; width: 100%; transform-origin: left; background: #d6a86d; }
+@media (max-width: 480px) {
+  .egg-road-panel { padding: 27px 26px 17px; }
+  .egg-road-panel h1 { font-size: 39px; }
+  .egg-road-steer > span { width: 58px; height: 58px; line-height: 49px; }
+  .egg-road-steer.is-left > span { left: 20px; }
+  .egg-road-steer.is-right > span { right: 20px; }
+  .egg-road-key-hint { display: none; }
+}
+@media (max-height: 560px) and (min-width: 600px) {
+  .egg-road-panel { width: min(680px, 100%); padding: 20px 28px; }
+  .egg-road-panel h1 { font-size: 31px; margin-bottom: 9px; }
+  .egg-road-kicker { margin-bottom: 8px; }
+  .egg-road-instructions { margin: 12px 0; padding-top: 8px; }
+  .egg-road-instructions > span, .egg-road-character { display: none !important; }
+  .egg-road-instructions p { margin-top: 0; }
+  .egg-road-primary { margin: 14px 0 5px; padding: 13px 18px; }
+  .egg-road-result { margin: 10px 0; padding-top: 8px; }
+  .egg-road-result > strong { font-size: 45px; }
+}
+@media (max-height: 640px) and (max-width: 480px) {
+  .egg-road-panel { padding: 22px 24px 16px; }
+  .egg-road-panel h1 { font-size: 32px; margin-bottom: 12px; }
+  .egg-road-kicker { margin-bottom: 10px; }
+  .egg-road-instructions { margin: 16px 0; padding-top: 12px; }
+  .egg-road-instructions > span { font-size: 23px; }
+  .egg-road-instructions .egg-road-character { margin-top: 10px; }
+  .egg-road-primary { margin: 18px 0 10px; padding: 14px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .egg-road-flight, .egg-road-steer > span { transition: none; }
+}

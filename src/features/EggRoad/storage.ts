@@ -1,3 +1,4 @@
+import { parseRoadCode } from "./seed.ts";
 export const ROAD_STORAGE_KEY = "egg_road_v1";
 const PROGRESS_KEY = "egg_road_journey_v1";
 export type RoadProgress = { level: number; seed: number };
@@ -21,4 +22,37 @@ export function readRoadBest() {
     const value = JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "null")?.best;
     return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
   } catch { return 0; }
+}
+
+const SCORES_KEY = "egg_road_points_v2";
+const SAVED_KEY = "egg_road_maps_v1";
+
+export function saveRoadScore(mode: string, score: number) {
+  const best = Math.max(readPointsBest(mode), Math.floor(score));
+  try {
+    const saved = JSON.parse(localStorage.getItem(SCORES_KEY) ?? "{}");
+    localStorage.setItem(SCORES_KEY, JSON.stringify({ ...saved, [mode]: best }));
+  } catch { /* The result remains visible in this session. */ }
+  return best;
+}
+export function readPointsBest(mode?: string) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SCORES_KEY) ?? "{}");
+    const values = mode ? [saved?.[mode]] : Object.values(saved ?? {});
+    return Math.max(0, ...values.filter((n): n is number => typeof n === "number" && Number.isFinite(n) && n >= 0).map(Math.floor));
+  } catch { return 0; }
+}
+
+export function readSavedRoads(): string[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SAVED_KEY) ?? "[]");
+    return Array.isArray(saved) ? saved.filter((s): s is string => typeof s === "string" && s.length < 40 && parseRoadCode(s) !== null) : [];
+  } catch { return []; }
+}
+export function saveRoad(code: string) {
+  const saved = [code, ...readSavedRoads().filter(s => s !== code)];
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(saved)); return true; } catch { return false; }
+}
+export function forgetRoad(code: string) {
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(readSavedRoads().filter(s => s !== code))); return true; } catch { return false; }
 }

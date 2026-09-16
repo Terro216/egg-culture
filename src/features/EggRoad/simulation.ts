@@ -4,11 +4,16 @@ import { createEggHull } from "./geometry.ts";
 import { GATE_SPACING, nearestRoadSample } from "./track.ts";
 import type { RoadChunk, RoadTrack } from "./track.ts";
 import { RollRhythm } from "./rhythm.ts";
+import { streamEndless, shiftEndless } from "./endless.ts";
+import { roadCode } from "./seed.ts";
+import type { RoadMode } from "./seed.ts";
+import { RoadScoring } from "./scoring.ts";
+import type { ScoreBreakdown, ScoreNotice, BonusKind } from "./scoring.ts";
 
 export const PHYSICS_STEP = 1 / 120;
 export const FLIGHT_LIMIT = 4.2;
-export type RoadPhase = "ready" | "intro" | "running" | "paused" | "over" | "finished";
-export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number };
+export type RoadPhase = "ready" | "overview" | "intro" | "running" | "paused" | "over" | "finished";
+export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number; mode: RoadMode; gates: number; breakdown: ScoreBreakdown };
 export type RoadSnapshot = RoadResult & {
   phase: RoadPhase;
   speed: number;
@@ -18,6 +23,11 @@ export type RoadSnapshot = RoadResult & {
   lastSkip: number;
   boost: number;
   rhythm: number;
+  rhythmCue: ReturnType<RollRhythm["cue"]>;
+  code: string;
+  distance: number;
+  bonus: ScoreNotice | null;
+  activeBonuses: BonusKind[];
 };
 
 let initialization: Promise<void> | undefined;
@@ -28,6 +38,8 @@ export class RoadSimulation {
   readonly body: RAPIER.RigidBody;
   readonly collider: RAPIER.Collider;
   readonly track: RoadTrack;
+  readonly mode: RoadMode;
+  readonly originShift = new Vector3();
   readonly hull: Float32Array;
   readonly roadColliders = new Map<number, RoadChunk>();
   readonly position = new Vector3();
@@ -40,7 +52,10 @@ export class RoadSimulation {
   nearRoad = true;
   readonly rhythm = new RollRhythm();
   seconds = 0;
-  score = 0;
+  gates = 0;
+  readonly scoring = new RoadScoring();
+  get score() { return this.scoring.total; }
+  private flightPeak = 0;
   skipped = 0;
   bestSkip = 0;
   lastSkip = 0;
@@ -48,26 +63,21 @@ export class RoadSimulation {
   private takeoffGate = 0;
   private skipNoticeUntil = 0;
   private disposed = false;
-  private resumePhase: "intro" | "running" = "running";
+  private resumePhase: "overview" | "intro" | "running" = "running";
   private readonly velocity = new Vector3();
   private readonly force = new Vector3();
   private readonly offset = new Vector3();
   private readonly localDirection = new Vector3();
   private readonly inverseRotation = new Quaternion();
 
-  constructor(track: RoadTrack) {
-    this.track = track;
+  constructor(track: RoadTrack, mode: RoadMode = "levels") {
+    this.track = track; this.mode = mode;
     this.world = new RAPIER.World({ x: 0, y: -20, z: 0 });
     this.world.timestep = PHYSICS_STEP;
     this.world.integrationParameters.maxCcdSubsteps = 8;
     this.world.integrationParameters.normalizedAllowedLinearError = 0.001;
     this.world.numSolverIterations = 6;
-    for (const chunk of track.chunks) {
-      const desc = RAPIER.ColliderDesc.trimesh(chunk.vertices, chunk.indices, RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES)
-        .setFriction(0.85).setRestitution(0.06);
-      const collider = this.world.createCollider(desc);
-      this.roadColliders.set(collider.handle, chunk);
-    }
+    this.syncRoadColliders();
     this.body = this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()
       .setCcdEnabled(true).setCanSleep(false).setLinearDamping(0.06).setAngularDamping(0.09));
     this.hull = createEggHull();
@@ -77,13 +87,29 @@ export class RoadSimulation {
     this.reset();
   }
 
+  private syncRoadColliders() {
+    for (const [handle, chunk] of this.roadColliders) {
+      if (!this.track.chunks.includes(chunk)) {
+        this.world.removeCollider(this.world.getCollider(handle), false);
+        this.roadColliders.delete(handle);
+      }
+    }
+    const present = new Set(this.roadColliders.values());
+    for (const chunk of this.track.chunks) if (!present.has(chunk)) {
+      const desc = RAPIER.ColliderDesc.trimesh(chunk.vertices, chunk.indices, RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES).setFriction(0.85).setRestitution(0.06);
+      this.roadColliders.set(this.world.createCollider(desc).handle, chunk);
+    }
+  }
+
   reset() {
     this.phase = "ready";
     this.sampleIndex = 10;
     this.grounded = false;
-    this.airTime = this.flightTime = this.seconds = this.score = this.skipped = this.bestSkip = this.lastSkip = this.progress = 0;
+    this.airTime = this.flightTime = this.seconds = this.gates = this.skipped = this.bestSkip = this.lastSkip = this.progress = 0;
     this.nearRoad = true;
     this.rhythm.reset();
+    this.scoring.reset();
+    this.originShift.set(0, 0, 0);
     this.takeoffGate = this.skipNoticeUntil = 0;
     const sample = this.track.samples[this.sampleIndex];
     this.rotation.setFromEuler(new Euler(0, 0.24, Math.PI / 2 - 0.16));
@@ -93,6 +119,7 @@ export class RoadSimulation {
       support = Math.max(support, -this.offset.dot(sample.normal));
     }
     this.position.copy(sample.position).addScaledVector(sample.normal, support + 0.055);
+    this.flightPeak = this.position.y;
     this.body.setTranslation(this.position, true);
     this.body.setRotation(this.rotation, true);
     this.body.setLinvel(sample.tangent.clone().multiplyScalar(12), true);
@@ -101,9 +128,10 @@ export class RoadSimulation {
     this.body.resetTorques(true);
   }
 
-  beginIntro() { if (this.phase === "ready") this.phase = "intro"; }
+  beginOverview() { if (this.phase === "ready") this.phase = "overview"; }
+  beginIntro() { if (this.phase === "ready" || this.phase === "overview") this.phase = "intro"; }
   start() { if (this.phase === "ready" || this.phase === "intro") this.phase = "running"; }
-  pause() { if (this.phase === "running" || this.phase === "intro") { this.resumePhase = this.phase; this.phase = "paused"; } }
+  pause() { if (this.phase === "running" || this.phase === "intro" || this.phase === "overview") { this.resumePhase = this.phase; this.phase = "paused"; } }
   resume() { if (this.phase === "paused") this.phase = this.resumePhase; }
 
   private supportRadius(direction: Vector3) {
@@ -118,12 +146,26 @@ export class RoadSimulation {
 
   step(steering: number) {
     if (this.phase !== "running" || this.disposed) return;
+    if (this.track.endless) {
+      const revision = this.track.endless.revision;
+      this.sampleIndex -= streamEndless(this.track, this.track.samples[this.sampleIndex].distance);
+      if (this.position.lengthSq() > 1200 * 1200) {
+        const shift = this.position.clone().divideScalar(256).round().multiplyScalar(256);
+        shiftEndless(this.track, shift);
+        this.position.sub(shift); this.body.setTranslation(this.position, true);
+        this.flightPeak -= shift.y; this.originShift.add(shift);
+        for (const handle of this.roadColliders.keys()) this.world.removeCollider(this.world.getCollider(handle), false);
+        this.roadColliders.clear();
+      }
+      if (revision !== this.track.endless.revision) this.syncRoadColliders();
+    }
     const sample = this.track.samples[this.sampleIndex];
+    this.scoring.tick(this.seconds);
     this.velocity.copy(this.body.linvel());
     const input = Number.isFinite(steering) ? MathUtils.clamp(steering, -1, 1) : 0;
     const spin = this.body.angvel();
     const rollRate = spin.x * sample.tangent.x + spin.y * sample.tangent.y + spin.z * sample.tangent.z;
-    this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), rollRate, this.nearRoad);
+    this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), rollRate, this.nearRoad || (this.flightTime === 0 && this.airTime < 1.2));
     this.body.resetForces(true);
     this.force.copy(sample.right).multiplyScalar(input * (this.nearRoad ? 25 : 11));
     if (this.nearRoad || this.seconds < 0.15) {
@@ -165,10 +207,14 @@ export class RoadSimulation {
     });
 
     if (supportIndex >= 0) {
-      const distance = this.track.samples[supportIndex].distance;
+      const surface = this.track.samples[supportIndex];
+      const relative = this.position.clone().sub(surface.position);
+      const distance = Math.max(0, surface.distance + relative.dot(surface.tangent));
       const gate = Math.floor(distance / GATE_SPACING);
+      let newlySkipped = 0;
       if (this.airTime > 0.3) {
-        const skipped = Math.max(0, gate - Math.max(this.takeoffGate, this.score) - 1);
+        const skipped = Math.max(0, gate - Math.max(this.takeoffGate, this.gates) - 1);
+        newlySkipped = skipped;
         if (skipped > 0) {
           this.skipped += skipped;
           this.bestSkip = Math.max(this.bestSkip, skipped);
@@ -178,13 +224,21 @@ export class RoadSimulation {
       }
       this.sampleIndex = supportIndex;
       this.progress = Math.max(this.progress, distance);
-      this.score = Math.max(this.score, gate);
+      this.gates = Math.max(this.gates, gate);
+      const side = Math.sign(relative.dot(surface.right)) || 1;
+      const edgeRadius = this.supportRadius(surface.right.clone().multiplyScalar(-side));
+      this.scoring.contact({ distance, gates: gate, speed: Math.max(0, this.velocity.dot(surface.tangent)),
+        edgeGap: surface.width / 2 - Math.abs(relative.dot(surface.right)) - edgeRadius,
+        chain: this.rhythm.chain, drop: this.airTime > 0.4 ? this.flightPeak - this.position.y : 0,
+        skipped: newlySkipped, seconds: this.seconds });
+      this.flightPeak = this.position.y;
       this.grounded = true;
       this.nearRoad = true;
       this.airTime = this.flightTime = 0;
-      if (distance >= this.track.length - 12) this.phase = "finished";
+      if (!this.track.endless && distance >= this.track.length - 12) this.phase = "finished";
     } else {
-      if (this.grounded) this.takeoffGate = this.score;
+      if (this.grounded) this.takeoffGate = this.gates;
+      this.flightPeak = Math.max(this.flightPeak, this.position.y);
       this.grounded = false;
       this.airTime += PHYSICS_STEP;
       const index = nearestRoadSample(this.track, this.position, Math.max(0, this.sampleIndex - 12), Math.min(this.track.samples.length - 1, this.sampleIndex + 64));
@@ -206,6 +260,9 @@ export class RoadSimulation {
     const velocity = this.body.linvel();
     return {
       phase: this.phase, score: this.score, skipped: this.skipped, bestSkip: this.bestSkip,
+      mode: this.mode, gates: this.gates, breakdown: this.scoring.breakdown(),
+      code: roadCode({ mode: this.mode, level: this.track.level, seed: this.track.seed }),
+      distance: this.progress, bonus: this.scoring.notice, activeBonuses: [...this.scoring.active], rhythmCue: this.rhythm.cue(this.flightTime <= 0.35),
       level: this.track.level, boost: this.rhythm.charge, rhythm: this.rhythm.chain,
       seconds: this.seconds, finished: this.phase === "finished",
       speed: Math.hypot(velocity.x, velocity.y, velocity.z),

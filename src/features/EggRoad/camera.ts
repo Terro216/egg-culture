@@ -20,6 +20,12 @@ export function flybyPose(track: RoadTrack, progress: number, aspect: number, fo
   };
 }
 
+export function overviewPose(track: RoadTrack, seconds: number, aspect: number, fov: number) {
+  const pose = flybyPose(track, 0, aspect, fov, new Vector3(), new Vector3());
+  pose.position.sub(track.bounds.center).applyAxisAngle(UP, seconds * 0.12).add(track.bounds.center);
+  return pose;
+}
+
 export function lookDirection(heading: Vector3, horizontal: number) {
   return heading.clone().applyAxisAngle(UP, -MathUtils.clamp(horizontal, -1, 1) * 0.65);
 }
@@ -44,6 +50,7 @@ export class CameraLook {
   private manual = { x: 0, y: 0 };
   private sensor = { x: 0, y: 0 };
   private origin: { beta: number; gamma: number; angle: number } | null = null;
+  private latest: { beta: number; gamma: number; angle: number } | null = null;
   private timeout: ReturnType<typeof setTimeout> | undefined;
   private generation = 0;
   private disposed = false;
@@ -52,6 +59,12 @@ export class CameraLook {
   constructor(changed: (state: GyroState) => void) { this.changed = changed; }
   setManual(x: number, y: number) { this.manual = { x: MathUtils.clamp(x, -1, 1), y: MathUtils.clamp(y, -1, 1) }; }
   recenter() { this.x = this.y = 0; this.origin = null; this.sensor = { x: 0, y: 0 }; this.setManual(0, 0); }
+  centerView() { this.x = this.y = 0; this.setManual(0, 0); }
+  calibrate() {
+    if (!this.latest || this.gyroState !== "on") return false;
+    this.origin = { ...this.latest }; this.sensor = { x: 0, y: 0 }; this.x = this.y = 0;
+    return true;
+  }
   step(dt: number, keyboard = 0) {
     const rate = 1 - Math.exp(-dt * 8);
     this.x = MathUtils.lerp(this.x, MathUtils.clamp(this.manual.x + this.sensor.x + keyboard, -1, 1), rate);
@@ -79,6 +92,7 @@ export class CameraLook {
   private orientation = (event: DeviceOrientationEvent) => {
     if (event.beta === null || event.gamma === null || !Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
     const angle = window.screen.orientation?.angle ?? Number((window as Window & { orientation?: number }).orientation ?? 0);
+    this.latest = { beta: event.beta, gamma: event.gamma, angle };
     if (!this.origin || this.origin.angle !== angle) this.origin = { beta: event.beta, gamma: event.gamma, angle };
     this.sensor = orientationLook(event.beta, event.gamma, this.origin.beta, this.origin.gamma, angle);
     if (this.gyroState !== "on") { clearTimeout(this.timeout); this.status("on"); }
@@ -88,7 +102,7 @@ export class CameraLook {
     this.generation++;
     clearTimeout(this.timeout);
     window.removeEventListener("deviceorientation", this.orientation);
-    this.recenter();
+    this.recenter(); this.latest = null;
     if (!this.disposed) this.status("off");
   }
   dispose() { this.disposed = true; this.disableGyro(); }

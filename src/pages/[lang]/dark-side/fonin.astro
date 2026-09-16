@@ -28,7 +28,7 @@ const lang = getLangFromUrl(Astro.url);
     </a>
 
     <div class="vault-shell">
-      <GiftVault client:visible />
+      <GiftVault client:visible lang={lang} />
     </div>
   </main>
 </Layout>

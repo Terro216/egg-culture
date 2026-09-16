@@ -8,7 +8,7 @@
 
 ## Стек
 
-- **Astro 6** — статика (SSG) по умолчанию + SSR-адаптер `@astrojs/node` (standalone) для динамических страниц (`/blog`, `/prophecy`, `/dark-side/fonin`, API-роуты).
+- **Astro 6** — статика (SSG) по умолчанию + SSR-адаптер `@astrojs/node` (standalone) для динамических страниц (`/blog`, `/prophecy`, `/dark-side/fonin`, API-роуты). Закрытый `/dark-side/games` собирается статически и проверяет статус адепта на клиенте.
 - **React 19** — точечные интерактивные острова (Island Architecture).
 - **Three.js** — 3D-яйцо и шейдеры тёмной стороны.
 - **d3-geo + topojson-client** — векторная карта терруаров.
@@ -144,7 +144,7 @@ src/
 ├── widgets/    # Header, Footer, DescriptorWheel
 ├── features/   # EggCalculator, EggOracle, TerroirMap, Quiz,
 │               # GiftVault, QiCompass, TastingNote, WorldNews,
-│               # EggPersona, Incubator, AdeptCertificate, KladkaBook
+│               # EggPersona, Incubator, AdeptCertificate, MotionTrials, KladkaBook
 ├── shared/     # i18n, утилиты (newsCache, foninGiftToken), UI, данные
 └── data/       # Контент: блог (md), товары, события
 ```

@@ -1,0 +1,93 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import { AdeptGames } from "@features/MotionTrials/AdeptGames";
+import { getLangFromUrl } from "@shared/i18n/utils";
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: "ru" } },
+    { params: { lang: "en" } },
+  ];
+}
+
+const lang = getLangFromUrl(Astro.url);
+const title =
+  lang === "ru"
+    ? "Испытания формы | The Dark Side of the Egg"
+    : "Trials of Form | The Dark Side of the Egg";
+const description =
+  lang === "ru"
+    ? "Халаза-тест и Оракул желтка для Истинных Адептов."
+    : "The Chalaza Test and the Oracle of the Yolk for True Adepts.";
+---
+
+<Layout title={title} description={description} lang={lang} noindex>
+  <main class="adept-games-page">
+    <div class="adept-games-glow" aria-hidden="true"></div>
+    <a href={`/${lang}/dark-side`} class="back-to-dark">
+      {lang === "ru" ? "Назад в Тёмную сторону" : "Back to the Dark Side"}
+    </a>
+    <AdeptGames client:load lang={lang} />
+  </main>
+</Layout>
+
+<script>
+  if (typeof window !== "undefined") {
+    const isAdept = localStorage.getItem("egg_adept");
+    if (isAdept !== "true") {
+      localStorage.setItem("egg_after_quiz", window.location.pathname);
+      window.location.href = window.location.pathname.replace(
+        "/dark-side/games",
+        "/quiz",
+      );
+    }
+  }
+</script>
+
+<style>
+  :global(body) {
+    background: #050000;
+  }
+
+  :global(.site-header),
+  :global(.site-footer) {
+    display: none !important;
+  }
+
+  .adept-games-page {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(112, 34, 0, 0.58), transparent 42%),
+      radial-gradient(circle at 50% 100%, rgba(212, 175, 55, 0.16), transparent 34%),
+      linear-gradient(180deg, #080000 0%, #170000 52%, #050000 100%);
+  }
+
+  .adept-games-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 50% 42%, rgba(255, 212, 138, 0.08), transparent 32%);
+  }
+
+  .back-to-dark {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 20;
+    max-width: calc(100vw - 2rem);
+    box-sizing: border-box;
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(255, 212, 138, 0.32);
+    border-radius: 999px;
+    background: rgba(5, 0, 0, 0.65);
+    color: #ffd48a;
+    backdrop-filter: blur(10px);
+    font-family: var(--font-sans-ui, sans-serif);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+</style>

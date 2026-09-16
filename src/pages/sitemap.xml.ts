@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro";
 import { eventItems, shopItems } from "../data/content";
 
-// Тайные маршруты (/quiz, /dark-side, /dark-side/fonin) в карту не входят —
-// туда ведет только Инициация.
+// Тайные маршруты (/quiz и всё под /dark-side) в карту не входят —
+// туда ведёт только Инициация.
 const STATIC_ROUTES = [
   "",
   "manifesto",

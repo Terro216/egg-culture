@@ -1,0 +1,128 @@
+.adept-games {
+  width: min(100% - 2rem, 980px);
+  margin: 0 auto;
+  padding: 7rem 0 5rem;
+  color: #f7e8d0;
+}
+
+.adept-games-header {
+  max-width: 760px;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.adept-games-header > p {
+  margin: 0 0 0.75rem;
+  color: #ffb86b;
+  font-family: var(--font-sans-ui, sans-serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.adept-games-header h1 {
+  margin: 0 0 1rem;
+  color: #ffd48a;
+  font-family: var(--font-serif-headers, "Playfair Display", serif);
+  font-size: clamp(2.4rem, 8vw, 5.2rem);
+  line-height: 0.95;
+  text-shadow: 0 0 24px rgba(255, 115, 0, 0.28);
+}
+
+.adept-games-header span {
+  color: rgba(247, 232, 208, 0.78);
+  font-family: var(--font-serif-body, "Lora", serif);
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  line-height: 1.65;
+}
+
+.adept-games-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.adept-game-card,
+.adept-game-active {
+  border: 1px solid rgba(255, 212, 138, 0.3);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 212, 138, 0.13), transparent 38%),
+    rgba(5, 0, 0, 0.5);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.adept-game-card {
+  display: flex;
+  min-height: 330px;
+  padding: 1.5rem;
+  flex-direction: column;
+}
+
+.adept-game-mark {
+  color: rgba(255, 212, 138, 0.45);
+  font-family: var(--font-serif-headers, serif);
+  font-size: 2.5rem;
+}
+
+.adept-game-card h2 {
+  margin: 0.5rem 0 0.75rem;
+  color: #ffd48a;
+  font-family: var(--font-serif-headers, serif);
+  font-size: 2rem;
+}
+
+.adept-game-card p {
+  color: rgba(247, 232, 208, 0.75);
+  line-height: 1.6;
+}
+
+.adept-game-card small {
+  margin-top: auto;
+  color: #ffb86b;
+  font-family: var(--font-sans-ui, sans-serif);
+  letter-spacing: 0.06em;
+}
+
+.adept-game-card button,
+.adept-games-back {
+  min-height: 48px;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 212, 138, 0.52);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd48a, #c88933);
+  color: #210b00;
+  font-family: var(--font-sans-ui, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.adept-game-card small + button {
+  margin-top: 0.75rem;
+}
+
+.adept-game-active {
+  padding: 1.35rem;
+}
+
+.adept-games-back {
+  display: block;
+  margin: 0 0 1.5rem;
+  border-color: rgba(255, 212, 138, 0.3);
+  background: transparent;
+  color: #ffd48a;
+}
+
+@media (max-width: 720px) {
+  .adept-games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adept-game-card {
+    min-height: 290px;
+  }
+}

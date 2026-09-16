@@ -1,13 +1,18 @@
 import * as THREE from "three";
 import { createEggGeometry } from "./geometry.ts";
-import { createRoadTrack, GATE_SPACING } from "./track.ts";
-import { initializePhysics, PHYSICS_STEP, RoadSimulation } from "./simulation.ts";
+import { GATE_SPACING } from "./track.ts";
+import { initializePhysics, PHYSICS_STEP } from "./simulation.ts";
 import type { RoadResult, RoadSnapshot } from "./simulation.ts";
+import { RoadJourney } from "./journey.ts";
+import { readRoadProgress, saveRoadProgress } from "./storage.ts";
+import { CameraLook, FLYBY_SECONDS, flybyPose, lookDirection } from "./camera.ts";
+import type { GyroState } from "./camera.ts";
 
 type Callbacks = {
   update: (snapshot: RoadSnapshot) => void;
   complete: (result: RoadResult) => void;
   failure: () => void;
+  gyro?: (state: GyroState) => void;
 };
 type Resource = { dispose: () => void };
 
@@ -50,7 +55,12 @@ export class RoadEngine {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(62, 1, 0.1, 310);
-  private readonly simulation: RoadSimulation;
+  private readonly journey: RoadJourney;
+  private get simulation() { return this.journey.simulation; }
+  private readonly look: CameraLook;
+  private readonly roadGroup = new THREE.Group();
+  private readonly roadResources: Resource[] = [];
+  private readonly roadFog = new THREE.Fog(0x17131e, 78, 235);
   private readonly egg: THREE.Mesh;
   private readonly light = new THREE.DirectionalLight(0xffe1b1, 3.2);
   private readonly audio = new RoadAudio();
@@ -74,9 +84,11 @@ export class RoadEngine {
   private previousScore = 0;
   private disposed = false;
   private needsRender = true;
+  private flybyTime = 0;
 
   constructor(container: HTMLElement, callbacks: Callbacks) {
     this.callbacks = callbacks;
+    this.look = new CameraLook(state => callbacks.gyro?.(state));
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     const renderer = this.renderer;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -88,7 +100,7 @@ export class RoadEngine {
     renderer.domElement.setAttribute("aria-hidden", "true");
     container.appendChild(renderer.domElement);
     this.scene.background = new THREE.Color(0x17131e);
-    this.scene.fog = new THREE.Fog(0x17131e, 78, 235);
+    this.scene.fog = this.roadFog;
     this.scene.add(new THREE.HemisphereLight(0xe8dcff, 0x584029, 2));
     this.light.castShadow = true;
     this.light.shadow.mapSize.set(1024, 1024);
@@ -97,8 +109,8 @@ export class RoadEngine {
     this.light.shadow.normalBias = 0.035;
     this.scene.add(this.light, this.light.target);
 
-    const track = createRoadTrack();
-    this.simulation = new RoadSimulation(track);
+    this.journey = new RoadJourney(readRoadProgress());
+    this.scene.add(this.roadGroup);
     this.buildRoad();
     const eggGeometry = this.keep(createEggGeometry());
     const eggTexture = this.keep(this.shellTexture());
@@ -136,65 +148,62 @@ export class RoadEngine {
   private keep<T extends Resource>(resource: T): T { this.resources.push(resource); return resource; }
 
   private buildRoad() {
-    const { samples } = this.simulation.track;
-    const top: number[] = [], sides: number[] = [], edges: number[] = [];
-    const topIndices: number[] = [], sideIndices: number[] = [], edgeIndices: number[] = [];
-    for (let i = 0; i < samples.length; i++) {
-      const s = samples[i];
-      for (const side of [-1, 1]) {
-        const outer = s.position.clone().addScaledVector(s.right, side * s.width / 2);
-        top.push(outer.x, outer.y, outer.z);
-        const bottom = outer.clone().addScaledVector(s.normal, -0.3);
-        sides.push(outer.x, outer.y, outer.z, bottom.x, bottom.y, bottom.z);
-        const inner = outer.clone().addScaledVector(s.right, -side * 0.075).addScaledVector(s.normal, 0.018);
-        outer.addScaledVector(s.normal, 0.018);
-        edges.push(outer.x, outer.y, outer.z, inner.x, inner.y, inner.z);
-      }
-      if (i < samples.length - 1) {
-        const t = i * 2;
-        topIndices.push(t, t + 1, t + 2, t + 1, t + 3, t + 2);
-        for (let side = 0; side < 2; side++) {
-          const v = i * 4 + side * 2;
-          sideIndices.push(v, v + 1, v + 4, v + 1, v + 5, v + 4);
-          edgeIndices.push(v, v + 1, v + 4, v + 1, v + 5, v + 4);
-        }
-      }
+    this.roadGroup.clear();
+    for (const resource of this.roadResources) resource.dispose();
+    this.roadResources.length = 0;
+    const keep = <T extends Resource>(resource: T): T => { this.roadResources.push(resource); return resource; };
+    const { samples, chunks } = this.simulation.track;
+    const chunk = chunks[0];
+    const top: number[] = [], shell: number[] = [];
+    for (let segment = 0; segment < samples.length - 1; segment++) {
+      const offset = segment * 24;
+      top.push(...chunk.indices.slice(offset, offset + 6));
+      shell.push(...chunk.indices.slice(offset + 6, offset + 24));
     }
-    const addSurface = (vertices: number[], indices: number[], material: THREE.Material) => {
-      const geometry = this.keep(new THREE.BufferGeometry());
-      geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+    shell.push(...chunk.indices.slice(-12));
+    const addSurface = (indices: number[], color: number) => {
+      const geometry = keep(new THREE.BufferGeometry());
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(chunk.vertices, 3));
       geometry.setIndex(indices);
       geometry.computeVertexNormals();
+      const material = keep(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0.05, side: THREE.DoubleSide }));
       const mesh = new THREE.Mesh(geometry, material);
       mesh.receiveShadow = true;
-      this.scene.add(mesh);
+      this.roadGroup.add(mesh);
     };
-    addSurface(top, topIndices, this.keep(new THREE.MeshStandardMaterial({
-      color: 0x99634b, roughness: 0.92, metalness: 0.08, side: THREE.DoubleSide,
-    })));
-    addSurface(sides, sideIndices, this.keep(new THREE.MeshStandardMaterial({
-      color: 0x4d3134, roughness: 0.85, side: THREE.DoubleSide,
-    })));
-    addSurface(edges, edgeIndices, this.keep(new THREE.MeshBasicMaterial({ color: 0xe1b981, side: THREE.DoubleSide })));
+    addSurface(top, 0x99634b);
+    addSurface(shell, 0x4d3134);
+
+    const edges: number[] = [], edgeIndices: number[] = [];
+    for (let i = 0; i < samples.length; i++) {
+      const sample = samples[i];
+      for (const side of [-1, 1]) {
+        const outer = sample.position.clone().addScaledVector(sample.right, side * sample.width / 2).addScaledVector(sample.normal, 0.008);
+        const inner = outer.clone().addScaledVector(sample.right, -side * 0.075);
+        edges.push(outer.x, outer.y, outer.z, inner.x, inner.y, inner.z);
+      }
+      if (i < samples.length - 1) for (let side = 0; side < 2; side++) {
+        const v = i * 4 + side * 2;
+        edgeIndices.push(v, v+1, v+4, v+1, v+5, v+4);
+      }
+    }
+    const edgeGeometry = keep(new THREE.BufferGeometry());
+    edgeGeometry.setAttribute("position", new THREE.Float32BufferAttribute(edges, 3));
+    edgeGeometry.setIndex(edgeIndices);
+    this.roadGroup.add(new THREE.Mesh(edgeGeometry, keep(new THREE.MeshBasicMaterial({ color: 0xe1b981, side: THREE.DoubleSide }))));
 
     const gateCount = Math.floor(this.simulation.track.length / GATE_SPACING);
-    const gateMaterial = this.keep(new THREE.MeshBasicMaterial({ color: 0xf5d6a0 }));
-    const gateGeometry = this.keep(new THREE.BoxGeometry(1, 0.018, 0.12));
-    const gates = new THREE.InstancedMesh(gateGeometry, gateMaterial, gateCount);
-    const matrix = new THREE.Matrix4();
-    const rotation = new THREE.Quaternion();
-    const basis = new THREE.Matrix4();
+    const gates = keep(new THREE.InstancedMesh(keep(new THREE.BoxGeometry(1, 0.018, 0.12)), keep(new THREE.MeshBasicMaterial({ color: 0xf5d6a0 })), gateCount));
+    const matrix = new THREE.Matrix4(), basis = new THREE.Matrix4(), rotation = new THREE.Quaternion();
     for (let gate = 1; gate <= gateCount; gate++) {
-      const index = Math.round(gate * GATE_SPACING / this.simulation.track.length * (samples.length - 1));
-      const sample = samples[index];
+      const sample = samples[Math.round(gate * GATE_SPACING / this.simulation.track.length * (samples.length - 1))];
       rotation.setFromRotationMatrix(basis.makeBasis(sample.right, sample.normal, sample.tangent.clone().negate()));
-      matrix.compose(sample.position.clone().addScaledVector(sample.normal, 0.025), rotation, new THREE.Vector3(sample.width, 1, 1));
+      matrix.compose(sample.position.clone().addScaledVector(sample.normal, 0.02), rotation, new THREE.Vector3(sample.width, 1, 1));
       gates.setMatrixAt(gate - 1, matrix);
     }
     gates.instanceMatrix.needsUpdate = true;
     gates.computeBoundingSphere();
-    this.scene.add(gates);
-    this.keep(gates);
+    this.roadGroup.add(gates);
   }
 
   private shellTexture() {
@@ -231,6 +240,10 @@ export class RoadEngine {
 
   private resetCamera() {
     this.needsRender = true;
+    this.look.recenter();
+    this.camera.far = 310;
+    this.camera.updateProjectionMatrix();
+    this.scene.fog = this.roadFog;
     const sim = this.simulation;
     this.previousPosition.copy(sim.position);
     this.previousRotation.copy(sim.rotation);
@@ -239,19 +252,58 @@ export class RoadEngine {
     this.heading.copy(sim.track.samples[sim.sampleIndex].tangent).setY(0).normalize();
     this.camera.position.copy(sim.position).addScaledVector(this.heading, -12).add(new THREE.Vector3(0, 6.4, 0));
     this.lookTarget.copy(sim.position).addScaledVector(this.heading, 8);
+    this.lookTarget.y += 0.2;
     this.camera.lookAt(this.lookTarget);
   }
 
   play = () => {
     if (this.disposed) return;
-    if (this.simulation.phase === "over" || this.simulation.phase === "finished") this.restart();
-    else if (this.simulation.phase === "paused") this.simulation.resume();
-    else this.simulation.start();
+    if (this.simulation.phase === "finished") { this.nextLevel(); return; }
+    if (this.simulation.phase === "over") { this.restart(); return; }
+    if (this.simulation.phase === "paused") { this.look.recenter(); this.simulation.resume(); }
+    else this.beginFlyby();
     this.accumulator = 0;
     this.lastTime = performance.now();
     this.audio.unlock();
     this.notify();
   };
+
+  private beginFlyby() {
+    this.flybyTime = 0;
+    this.simulation.beginIntro();
+    this.needsRender = true;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) this.skipFlyby();
+  }
+
+  skipFlyby = () => {
+    if (this.simulation.phase !== "intro") return;
+    this.simulation.start();
+    this.accumulator = 0;
+    this.lastTime = performance.now();
+    this.resetCamera();
+    this.notify();
+  };
+
+  private nextLevel() {
+    try {
+      if (!this.journey.advance()) return;
+      this.changeRoad();
+    } catch { this.callbacks.failure(); }
+  }
+
+  practice = () => { if (!this.disposed) { this.journey.practice(); this.changeRoad(); } };
+
+  private changeRoad() {
+    this.clearInput();
+    this.buildRoad();
+    this.finishedReported = false;
+    this.previousScore = this.accumulator = 0;
+    this.lastTime = performance.now();
+    this.resetCamera();
+    this.beginFlyby();
+    this.audio.unlock();
+    this.notify();
+  }
 
   restart = () => {
     if (this.disposed) return;
@@ -269,25 +321,28 @@ export class RoadEngine {
 
   pause = () => { this.simulation.pause(); this.clearInput(); this.accumulator = 0; this.notify(); };
   steer(value: number) { this.pointerSteering = value; }
+  lookAround(x: number, y: number) { this.look.setManual(x, y); }
+  toggleGyro() { if (this.look.gyroState === "on" || this.look.gyroState === "waiting") this.look.disableGyro(); else void this.look.enableGyro(); }
   setMuted(muted: boolean) { this.audio.muted = muted; if (!muted) this.audio.unlock(); }
-  private clearInput() { this.keys.clear(); this.pointerSteering = 0; }
+  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.look.setManual(0, 0); }
   private notify() { this.callbacks.update(this.simulation.snapshot()); }
-  private loseFocus = () => { if (this.simulation.phase === "running") this.pause(); else this.clearInput(); };
+  private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro") this.pause(); else this.clearInput(); };
   private visibility = () => { if (document.hidden) this.loseFocus(); };
   private contextLost = (event: Event) => { event.preventDefault(); this.pause(); this.callbacks.failure(); };
 
   private keyDown = (event: KeyboardEvent) => {
-    if (["ArrowLeft", "ArrowRight", "KeyA", "KeyD"].includes(event.code)) {
+    if (["ArrowLeft", "ArrowRight", "KeyA", "KeyD", "KeyQ", "KeyE"].includes(event.code)) {
       event.preventDefault();
       this.keys.add(event.code);
     }
     if (event.repeat) return;
     if (event.code === "Escape" || event.code === "KeyP") {
       event.preventDefault();
-      if (this.simulation.phase === "running") this.pause();
+      if (this.simulation.phase === "running" || this.simulation.phase === "intro") this.pause();
       else if (this.simulation.phase === "paused") this.play();
     }
     if (event.code === "KeyR") { event.preventDefault(); this.restart(); }
+    if (event.code === "Space" && this.simulation.phase === "intro") { event.preventDefault(); this.skipFlyby(); }
   };
   private keyUp = (event: KeyboardEvent) => { this.keys.delete(event.code); };
 
@@ -297,7 +352,21 @@ export class RoadEngine {
     const dt = Math.min(0.1, Math.max(0, (now - this.lastTime) / 1000));
     this.lastTime = now;
     const sim = this.simulation;
-    if (sim.phase === "running") {
+    const wasIntro = sim.phase === "intro";
+    if (wasIntro) {
+      this.needsRender = true;
+      this.flybyTime += dt;
+      const endPosition = sim.position.clone().addScaledVector(this.heading, -12).add(new THREE.Vector3(0, 6.4, 0));
+      const endTarget = sim.position.clone().addScaledVector(this.heading, 8).add(new THREE.Vector3(0, 0.2, 0));
+      const pose = flybyPose(sim.track, Math.min(1, this.flybyTime / FLYBY_SECONDS), this.camera.aspect, this.camera.fov, endPosition, endTarget);
+      this.camera.position.copy(pose.position);
+      this.lookTarget.copy(pose.target);
+      this.camera.far = pose.far;
+      this.camera.updateProjectionMatrix();
+      this.scene.fog = null;
+      if (this.flybyTime >= FLYBY_SECONDS) this.skipFlyby();
+    }
+    if (!wasIntro && sim.phase === "running") {
       this.needsRender = true;
       this.accumulator += dt;
       const keyboard = Number(this.keys.has("ArrowRight") || this.keys.has("KeyD")) - Number(this.keys.has("ArrowLeft") || this.keys.has("KeyA"));
@@ -317,19 +386,23 @@ export class RoadEngine {
     // Keep menus and pauses still without spending GPU time on identical frames.
     if (!this.needsRender) return;
 
-    this.desiredHeading.copy(sim.track.samples[sim.sampleIndex].tangent).setY(0).normalize();
-    if (!sim.grounded && sim.airTime > 0.3) {
-      const velocity = sim.body.linvel();
-      if (Math.hypot(velocity.x, velocity.z) > 2) this.desiredHeading.set(velocity.x, 0, velocity.z).normalize();
+    if (!wasIntro && sim.phase === "running") {
+      this.desiredHeading.copy(sim.track.samples[sim.sampleIndex].tangent).setY(0).normalize();
+      if (!sim.nearRoad && sim.flightTime > 0.3) {
+        const velocity = sim.body.linvel();
+        if (Math.hypot(velocity.x, velocity.z) > 2) this.desiredHeading.set(velocity.x, 0, velocity.z).normalize();
+      }
+      this.heading.lerp(this.desiredHeading, 1 - Math.exp(-dt * 3.5)).normalize();
+      this.look.step(dt, Number(this.keys.has("KeyE")) - Number(this.keys.has("KeyQ")));
+      const facing = lookDirection(this.heading, this.look.x);
+      this.desiredCamera.copy(this.egg.position).addScaledVector(facing, -12);
+      this.desiredCamera.y += 6.4 + this.look.y * 3.4;
+      this.desiredLook.copy(this.egg.position).addScaledVector(facing, 8);
+      this.desiredLook.y += 0.2 - this.look.y * 1.5;
+      const follow = 1 - Math.exp(-dt * 7);
+      this.camera.position.lerp(this.desiredCamera, follow);
+      this.lookTarget.lerp(this.desiredLook, follow);
     }
-    this.heading.lerp(this.desiredHeading, 1 - Math.exp(-dt * 3.5)).normalize();
-    this.desiredCamera.copy(this.egg.position).addScaledVector(this.heading, -12);
-    this.desiredCamera.y += 6.4;
-    this.desiredLook.copy(this.egg.position).addScaledVector(this.heading, 8);
-    this.desiredLook.y += 0.2;
-    const follow = 1 - Math.exp(-dt * 7);
-    this.camera.position.lerp(this.desiredCamera, follow);
-    this.lookTarget.lerp(this.desiredLook, follow);
     this.camera.lookAt(this.lookTarget);
     this.light.position.copy(this.egg.position).add(this.lightOffset);
     this.light.target.position.copy(this.egg.position);
@@ -341,6 +414,8 @@ export class RoadEngine {
       this.clearInput();
       this.audio.tone(sim.phase === "finished" ? 620 : 140, 0.35);
       this.notify();
+      const checkpoint = this.journey.checkpoint();
+      if (checkpoint) saveRoadProgress(checkpoint);
       this.callbacks.complete(sim.snapshot());
     } else if (now - this.lastHud > 100) { this.lastHud = now; this.notify(); }
   };
@@ -355,9 +430,11 @@ export class RoadEngine {
     window.removeEventListener("blur", this.loseFocus);
     document.removeEventListener("visibilitychange", this.visibility);
     this.renderer.domElement.removeEventListener("webglcontextlost", this.contextLost);
-    this.simulation.dispose();
+    this.journey.dispose();
+    this.look.dispose();
     this.audio.dispose();
     for (const resource of this.resources) resource.dispose();
+    for (const resource of this.roadResources) resource.dispose();
     this.light.shadow.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss();

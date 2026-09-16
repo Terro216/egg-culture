@@ -14,9 +14,9 @@ export function createEggGeometry(widthSegments = 32, heightSegments = 24) {
   return geometry;
 }
 
-/** Fewer vertices in the hull, with exactly the same asymmetrical profile. */
+/** The collider uses every visible vertex, including the narrow tip. */
 export function createEggHull() {
-  const geometry = createEggGeometry(20, 16);
+  const geometry = createEggGeometry();
   const points = new Float32Array(geometry.getAttribute("position").array);
   geometry.dispose();
   return points;

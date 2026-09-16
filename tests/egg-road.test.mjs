@@ -25,13 +25,15 @@ test("the egg is an asymmetric convex rigid body with shape-derived mass and ine
   } finally { sim.dispose(); }
 });
 
-test("rolling and bouncing on the run-in count as road contacts instead of a fatal free fall", () => {
+test("ordinary rolling hops do not flash the find-road warning", () => {
   const sim = new RoadSimulation(track);
   try {
-    sim.start(); advance(sim, FLIGHT_LIMIT + 0.3);
+    sim.start();
+    let warnings = 0;
+    for (let i = 0; i < 360; i++) { sim.step(0); warnings += Number(sim.snapshot().airborne); }
     assert.equal(sim.phase, "running");
-    assert.ok(sim.score >= 2);
-    assert.ok(sim.airTime < 0.5);
+    assert.ok(sim.score >= 1);
+    assert.equal(warnings, 0);
     assert.ok(sim.position.z < 0);
   } finally { sim.dispose(); }
 });
@@ -128,5 +130,73 @@ test("pause freezes the simulation and restart clears the entire previous run", 
     sim.start(); advance(sim, 2);
     assert.equal(sim.phase, "running");
     assert.ok(sim.score >= 1);
+  } finally { sim.dispose(); }
+});
+
+test("road sides and underside block the shell, including a fast rim-only landing", () => {
+  const sim = new RoadSimulation(track);
+  try {
+    const surface = track.samples[20];
+    const road = sim.world.getCollider([...sim.roadColliders.keys()][0]);
+    for (const side of [-1, 1]) {
+      const origin = surface.position.clone().addScaledVector(surface.right, side * (surface.width / 2 + 2)).addScaledVector(surface.normal, -0.2);
+      const hit = road.castRay(new RAPIER.Ray(origin, surface.right.clone().multiplyScalar(-side)), 4, true);
+      assert.ok(hit > 1.9 && hit < 2.1, "both visible side walls have physical faces");
+    }
+    const below = surface.position.clone().addScaledVector(surface.normal, -2);
+    const underside = road.castRay(new RAPIER.Ray(below, surface.normal), 4, true);
+    assert.ok(underside > 1.5 && underside < 1.7);
+    sim.body.setTranslation(surface.position.clone().addScaledVector(surface.right, surface.width / 2 + 0.65).addScaledVector(surface.normal, 10), true);
+    sim.body.setLinvel({ x: 0, y: -140, z: 0 }, true);
+    sim.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    sim.start();
+    let hit = false;
+    for (let i = 0; i < 40 && !hit; i++) {
+      sim.step(0);
+      sim.world.contactPair(sim.collider, road, m => {
+        for (let j = 0; j < m.numContacts(); j++) if (m.contactDist(j) < 0.025) hit = true;
+      });
+    }
+    assert.ok(hit, "the protruding shell catches the edge even with its centre outside");
+    assert.ok(sim.position.y > surface.position.y - 0.1, "CCD catches the rim before the shell tunnels through");
+  } finally { sim.dispose(); }
+});
+
+test("well-timed rocking gives real extra speed; tapping rapidly does not charge it", () => {
+  const run = cadence => {
+    const sim = new RoadSimulation(track);
+    try {
+      sim.start();
+      let warnings = 0;
+      for (let i = 0; i < 300; i++) {
+        const t = i * PHYSICS_STEP;
+        // A half stroke starts a centred oscillation from rest.
+        const input = cadence ? (t < cadence / 2 ? 1 : (Math.floor((t - cadence / 2) / cadence) % 2 === 0 ? -1 : 1)) : 0;
+        sim.step(input);
+        warnings += Number(sim.snapshot().airborne);
+      }
+      return { charge: sim.rhythm.charge, speed: sim.snapshot().speed, distance: 21.6 - sim.position.z, warnings };
+    } finally { sim.dispose(); }
+  };
+  const straight = run(0), rocking = run(0.45), tapping = run(0.08);
+  assert.ok(rocking.charge > 0.5);
+  assert.ok(rocking.speed > straight.speed * 1.2);
+  assert.ok(rocking.distance > straight.distance + 5);
+  assert.equal(tapping.charge, 0);
+  assert.equal(straight.warnings + rocking.warnings + tapping.warnings, 0);
+});
+
+test("the flyby and its pause keep the egg frozen until the descent starts", () => {
+  const sim = new RoadSimulation(track);
+  try {
+    sim.beginIntro();
+    const initial = sim.position.toArray();
+    advance(sim, 5, 1);
+    assert.deepEqual(sim.position.toArray(), initial);
+    assert.equal(sim.seconds, 0);
+    sim.pause(); sim.resume();
+    assert.equal(sim.phase, "intro");
+    sim.start(); advance(sim, 0.5);
+    assert.notDeepEqual(sim.position.toArray(), initial);
   } finally { sim.dispose(); }
 });

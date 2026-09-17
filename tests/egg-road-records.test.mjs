@@ -3,8 +3,11 @@ import test from 'node:test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createRoadRecordStore, roadRecordStore } from '../src/server/roadRecords.ts';
-import { parsePublishedRun, canonicalRoadCode } from '../src/features/EggRoad/leaderboard.ts';
+import { DatabaseSync } from 'node:sqlite';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { createRoadRecordStore, roadRecordStore, RoadNameTakenError } from '../src/server/roadRecords.ts';
+import { parsePublishedRun, canonicalRoadCode, normalizePlayerName } from '../src/features/EggRoad/leaderboard.ts';
 import { readTrackBest, saveTrackScore, readPointsBest, saveRoadScore } from '../src/features/EggRoad/storage.ts';
 import { createRoadTrack } from '../src/features/EggRoad/track.ts';
 import { initializePhysics, RoadSimulation } from '../src/features/EggRoad/simulation.ts';
@@ -34,10 +37,11 @@ test('leaderboards preserve best runs across reopen, isolate seeds, share ties, 
   const dir=await mkdtemp(join(tmpdir(),'egg-road-records-'));
   let store=createRoadRecordStore(dir);
   try {
-    store.submit('alice',run(100));store.submit('bob',run(200));store.submit('carol',run(200));
+    const bob=score=>({...run(score),name:'Борис'});
+    store.submit('alice',run(100));store.submit('bob',bob(200));store.submit('carol',{...run(200),name:'Карина'});
     store.submit('alice',run(300,'EGG1-E-2-ABC'));
     store.submit('alice',run(100,'EGG1-R-2-ABD'));
-    store.submit('bob',run(100));store.submit('bob',run(200));
+    store.submit('bob',bob(100));store.submit('bob',bob(200));
     store.close();store=createRoadRecordStore(dir);
     const board=store.read('EGG1-R-2-ABC','alice');
     assert.deepEqual(board.entries.map(r=>r.score),[200,200,100]);
@@ -48,7 +52,7 @@ test('leaderboards preserve best runs across reopen, isolate seeds, share ties, 
     store.submit('alice',{...run(400),name:'Новое имя'});
     assert.equal(store.read('EGG1-R-2-ABC','alice').personal.rank,1);
     assert.equal(store.read('EGG1-R-2-ABC','alice').personal.name,'Новое имя');
-    for(let i=0;i<25;i++)store.submit(`p${i}`,run(500+i*100));
+    for(let i=0;i<25;i++)store.submit(`p${i}`,{...run(500+i*100),name:`Участник ${i}`});
     const distant=store.read('EGG1-R-2-ABC','bob');
     assert.equal(distant.entries.length,20);assert.ok(distant.personal.rank>20);
     assert.equal(store.read('EGG1-R-2-ABD','alice').personal.score,100);
@@ -60,6 +64,86 @@ test('published run validation rejects malformed seeds, impossible totals and un
   assert.ok(parsePublishedRun(run()));
   assert.equal(canonicalRoadCode('egg1-r-1-abc'),'EGG1-R-1-0');
   for(const extra of [{code:'../../private'},{name:'<img src=x>'},{name:'x\u202Ey'},{name:' '.repeat(5)},{name:'я'.repeat(33)},{score:Infinity},{gates:-1},{distance:500},{seconds:0},{breakdown:{...run().breakdown,edge:100}},{code:'EGG1-E-2-ABC',finished:true}]) assert.equal(parsePublishedRun({...run(),...extra}),null);
+  assert.deepEqual(normalizePlayerName('  Ｅgg\u00a0  NAME  '),{name:'Egg NAME',key:'egg name'});
+  assert.deepEqual(normalizePlayerName('E\u0301'),normalizePlayerName('É'));
+});
+
+test('names belong to one player across all roads; conflicts never lose a run or rename another player', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'egg-road-names-')),store=createRoadRecordStore(dir);
+  try {
+    store.submit('alice',{...run(200),name:'Egg  Pilot'});
+    for(const name of ['egg pilot',' EGG   PILOT ','Ｅｇｇ\u00a0Ｐｉｌｏｔ']) {
+      assert.throws(()=>store.submit('bob',{...run(300,'EGG1-E-2-ABC'),name}),RoadNameTakenError);
+    }
+    assert.equal(store.read('EGG1-E-2-ABC','bob').total,0);
+    assert.equal(store.read(run().code,'alice').personal.score,200);
+    store.submit('alice',{...run(300,'EGG1-E-2-ABC'),name:'EGG PILOT'});
+    store.submit('alice',{...run(100),name:'Новое имя'}); // rename even on a weaker run
+    assert.equal(store.read(run().code,'alice').personal.score,200);
+    assert.equal(store.read('EGG1-E-2-ABC','alice').personal.name,'Новое имя');
+    assert.equal(store.read(run().code,'alice').nameClaimed,true);
+    store.submit('bob',{...run(),name:'Другой'});
+    assert.throws(()=>store.submit('alice',{...run(400),name:'ДРУГОЙ'}),RoadNameTakenError);
+    assert.equal(store.read(run().code,'alice').name,'Новое имя');
+    store.submit('bob',{...run(),name:'Egg NEWPL'});
+    assert.equal(store.read(run().code,'newplayer').name,'Egg NEWPL 2');
+    assert.equal(store.read(run().code,'newplayer').nameClaimed,false);
+  } finally { store.close();await rm(dir,{recursive:true,force:true}); }
+});
+
+test('legacy duplicate names migrate deterministically without changing scores and survive reopen', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'egg-road-migration-'));
+  const db=new DatabaseSync(join(dir,'records.sqlite'));
+  db.exec(`CREATE TABLE records (code TEXT NOT NULL, player TEXT NOT NULL, name TEXT NOT NULL, score INTEGER NOT NULL, gates INTEGER NOT NULL, distance REAL NOT NULL, seconds REAL NOT NULL, finished INTEGER NOT NULL, created INTEGER NOT NULL, PRIMARY KEY(code,player)) STRICT;`);
+  const insert=db.prepare('INSERT INTO records VALUES (?, ?, ?, ?, 1, 19, 10, 0, ?)');
+  insert.run('EGG1-R-2-ABC','first','Путник',100,1);
+  insert.run('EGG1-E-2-ABC','first','ПУТНИК',200,4);
+  insert.run('EGG1-R-2-ABC','second',' путник ',300,2);
+  insert.run('EGG1-R-2-ABC','third','Путник 2',400,3);
+  const before=db.prepare('SELECT code,player,score,gates,distance,seconds,finished,created FROM records ORDER BY code,player').all();db.close();
+  let store=createRoadRecordStore(dir);
+  try {
+    assert.equal(store.read(run().code,'first').name,'ПУТНИК');
+    assert.equal(store.read(run().code,'second').name,'путник 3');
+    assert.equal(store.read(run().code,'third').name,'Путник 2');
+    const migrated=store.read(run().code,'first');store.close();store=createRoadRecordStore(dir);
+    assert.deepEqual(store.read(run().code,'first'),migrated);
+    const check=new DatabaseSync(join(dir,'records.sqlite'));
+    assert.deepEqual(check.prepare('SELECT code,player,score,gates,distance,seconds,finished,created FROM records ORDER BY code,player').all(),before);
+    check.close();
+  } finally { store.close();await rm(dir,{recursive:true,force:true}); }
+});
+
+test('concurrent server processes cannot claim the same name', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'egg-road-claim-race-'));
+  try {
+    createRoadRecordStore(dir).close();
+    const script=`import {createRoadRecordStore,RoadNameTakenError} from ${JSON.stringify(new URL('../src/server/roadRecords.ts',import.meta.url).href)};
+      const store=createRoadRecordStore(${JSON.stringify(dir)});
+      try {store.submit(process.argv[1],${JSON.stringify(run())});console.log('claimed');}
+      catch(e){if(!(e instanceof RoadNameTakenError))throw e;console.log('taken');}finally{store.close();}`;
+    const results=await Promise.all(Array.from({length:4},(_,i)=>promisify(execFile)(process.execPath,['--experimental-strip-types','--input-type=module','-e',script,`player-${i}`],{env:{...process.env,NODE_TEST_CONTEXT:undefined}})));
+    assert.equal(results.filter(r=>r.stdout.trim()==='claimed').length,1,JSON.stringify(results.map(r=>r.stdout)));
+    assert.equal(results.filter(r=>r.stdout.trim()==='taken').length,3);
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
+
+test('popular roads count distinct published players, support endless filters and bound the list', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'egg-road-popular-')),store=createRoadRecordStore(dir);
+  try {
+    assert.deepEqual(store.popular(),{filter:'all',tracks:[]});
+    store.submit('a',run());store.submit('a',run(300));store.submit('a',run(200));
+    store.submit('b',{...run(200),name:'Второй'});
+    store.submit('a',run(500,'EGG1-E-2-ABC'));
+    assert.deepEqual(store.popular().tracks,[{code:run().code,players:2,bestScore:300},{code:'EGG1-E-2-ABC',players:1,bestScore:500}]);
+    assert.equal(store.popular('endless').tracks.length,1);
+    assert.equal(store.popular('endless').tracks[0].code,'EGG1-E-2-ABC');
+    assert.equal(store.popular('finite').tracks[0].code,run().code);
+    for(let i=0;i<24;i++)store.submit('a',run(100,`EGG1-R-3-${(i+1).toString(36).toUpperCase()}`));
+    assert.equal(store.popular().tracks.length,20);
+    assert.equal(store.popular().tracks[0].players,2);
+    assert.deepEqual(Object.keys(store.popular().tracks[0]).sort(),['bestScore','code','players']);
+  } finally {store.close();await rm(dir,{recursive:true,force:true});}
 });
 
 test('HTTP records use an opaque browser cookie, protect writes, bound payloads and throttle repeated submissions', async () => {
@@ -93,8 +177,14 @@ test('HTTP records use an opaque browser cookie, protect writes, bound payloads 
     await POST(a.context('POST',run(100)));await POST(a.context('POST',run(200)));
     const own=await (await GET(a.context('GET'))).json();assert.equal(own.total,1);assert.equal(own.personal.score,200);
     const other=await (await GET(b.context('GET'))).json();assert.equal(other.personal,null);assert.equal(other.entries[0].mine,false);
-    await POST(b.context('POST',run(300,'EGG1-E-2-ABC')));
+    const taken=await POST(b.context('POST',run(300,'EGG1-E-2-ABC')));
+    assert.equal(taken.status,409);assert.deepEqual(await taken.json(),{error:'name_taken'});
+    await POST(b.context('POST',{...run(300,'EGG1-E-2-ABC'),name:'Другой игрок'}));
     assert.equal((await (await GET(b.context('GET',null,{},'EGG1-E-2-ABC'))).json()).personal.score,300);
+    const popular=b.context('GET');popular.url.search='?view=popular&mode=endless';
+    const roads=await GET(popular);assert.equal(roads.status,200);
+    assert.deepEqual(await roads.json(),{filter:'endless',tracks:[{code:'EGG1-E-2-ABC',players:1,bestScore:300}]});
+    popular.url.search='?view=popular&mode=nope';assert.equal((await GET(popular)).status,400);
     let limited=false;
     for(let i=0;i<25;i++)if((await POST(a.context('POST',run()))).status===429)limited=true;
     assert.ok(limited);assert.equal((await (await GET(a.context('GET'))).json()).personal.score,200);

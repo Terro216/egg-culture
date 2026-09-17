@@ -12,8 +12,18 @@ export type LeaderboardEntry = {
 };
 export type RoadLeaderboard = {
   code: string; entries: LeaderboardEntry[]; personal: LeaderboardEntry | null;
-  total: number; name: string; endlessBest: number;
+  total: number; name: string; nameClaimed: boolean; endlessBest: number;
 };
+export type PopularFilter = "all" | "finite" | "endless";
+export type PopularRoads = { filter: PopularFilter; tracks: { code: string; players: number; bestScore: number }[] };
+
+export function normalizePlayerName(value: unknown) {
+  if (typeof value !== "string") return null;
+  const normalized = value.normalize("NFKC");
+  if (/[<>\p{Cc}\p{Cf}\p{Cs}]/u.test(normalized)) return null;
+  const name = normalized.trim().replace(/\p{Zs}+/gu, " ");
+  return name && [...name].length <= 32 ? { name, key: name.toLowerCase() } : null;
+}
 
 export function canonicalRoadCode(value: unknown) {
   if (typeof value !== "string" || value.length > 40) return null;
@@ -26,9 +36,8 @@ export function parsePublishedRun(value: unknown): PublishedRun | null {
   if (!value || typeof value !== "object") return null;
   const run = value as PublishedRun;
   const code = canonicalRoadCode(run.code);
-  if (!code || typeof run.name !== "string" || typeof run.finished !== "boolean") return null;
-  const name = run.name.normalize("NFC").trim().replace(/ +/g, " ");
-  if (!name || [...name].length > 32 || /[<>\p{Cc}\p{Cf}]/u.test(name)) return null;
+  const identity = normalizePlayerName(run.name);
+  if (!code || !identity || typeof run.finished !== "boolean") return null;
   if (!Number.isSafeInteger(run.score) || run.score < 1 || run.score > 1e12 ||
       !Number.isSafeInteger(run.gates) || run.gates < 0 || run.gates > 1e8 ||
       !Number.isFinite(run.distance) || run.distance < 0 || run.distance > 2e9 ||
@@ -42,5 +51,5 @@ export function parsePublishedRun(value: unknown): PublishedRun | null {
     breakdown[kind] = points;
   }
   if (breakdown.gates !== run.gates * 100 || Object.values(breakdown).reduce((a, b) => a + b, 0) !== run.score) return null;
-  return { code, name, score: run.score, gates: run.gates, distance: run.distance, seconds: run.seconds, finished: run.finished, breakdown };
+  return { code, name: identity.name, score: run.score, gates: run.gates, distance: run.distance, seconds: run.seconds, finished: run.finished, breakdown };
 }

@@ -68,7 +68,7 @@ test("gyro activation handles denial, missing readings, recentering, and late pe
   }
 });
 
-test("a rhythm bonus requires lateral rolling and decays after leaving the road", () => {
+test("a rhythm bonus requires lateral rolling and freezes during flight", () => {
   const rhythm = new RollRhythm();
   const stroke = (direction, moving=true, near=true) => {
     for (let i=0;i<54;i++) rhythm.step(1/120,direction,moving?direction*2:0,moving?2:0,near);
@@ -77,6 +77,12 @@ test("a rhythm bonus requires lateral rolling and decays after leaving the road"
   assert.equal(rhythm.charge,0,'input without actual rolling earns nothing');
   stroke(-1);stroke(1);stroke(-1);stroke(1);
   assert.ok(rhythm.charge>.4 && rhythm.chain>=2);
-  for(let i=0;i<360;i++) rhythm.step(1/120,0,0,0,false);
-  assert.equal(rhythm.charge,0);assert.equal(rhythm.chain,0);
+  const charge=rhythm.charge, chain=rhythm.chain, cue=rhythm.cue(true);
+  for(let i=0;i<360;i++) rhythm.step(1/120,i%2?1:-1,20,20,false);
+  assert.equal(rhythm.charge,charge);assert.equal(rhythm.chain,chain);
+  assert.deepEqual(rhythm.cue(true),cue,'stroke timing pauses along with charge');
+  rhythm.step(1/120,-1,-2,2,true);
+  assert.equal(rhythm.chain,chain+1,'the next landed stroke continues the same series');
+  for(let i=0;i<60;i++) rhythm.step(1/120,0,0,0,true);
+  assert.equal(rhythm.chain,0,'being idle on the road still breaks the rhythm');
 });

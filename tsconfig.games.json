@@ -1,8 +1,11 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["astro/client", "node"] },
   "include": [
     "src/features/EggRoad/**/*.ts",
     "src/features/EggRoad/**/*.tsx",
-    "src/features/MotionTrials/**/*.tsx"
+    "src/features/MotionTrials/**/*.tsx",
+    "src/server/roadRecords.ts",
+    "src/pages/api/egg-road-records.ts"
   ]
 }

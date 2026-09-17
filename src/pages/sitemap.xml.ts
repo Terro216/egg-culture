@@ -17,6 +17,7 @@ const STATIC_ROUTES = [
   "egg-type",
   "kladka",
   "incubator",
+  "play",
 ];
 
 const LANGS = ["ru", "en"] as const;

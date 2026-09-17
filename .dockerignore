@@ -7,6 +7,7 @@ dist
 !.env.example
 .news_cache.json
 .news-cache
+.kladka
 .vscode
 .dockerignore
 Dockerfile

@@ -1,4 +1,4 @@
-import { parseRoadCode } from "./seed.ts";
+import { parseRoadCode, roadCode } from "./seed.ts";
 export const ROAD_STORAGE_KEY = "egg_road_v1";
 const PROGRESS_KEY = "egg_road_journey_v1";
 export type RoadProgress = { level: number; seed: number };
@@ -26,6 +26,27 @@ export function readRoadBest() {
 
 const SCORES_KEY = "egg_road_points_v2";
 const SAVED_KEY = "egg_road_maps_v1";
+const TRACK_SCORES_KEY = "egg_road_track_points_v1";
+
+// Old mode totals cannot identify a seed, so never turn them into map records.
+export function readTrackBest(code: string) {
+  const spec = parseRoadCode(code);
+  if (!spec) return 0;
+  try {
+    const value = JSON.parse(localStorage.getItem(TRACK_SCORES_KEY) ?? "{}")[roadCode(spec)];
+    return Number.isSafeInteger(value) && value > 0 ? value : 0;
+  } catch { return 0; }
+}
+export function saveTrackScore(code: string, score: number) {
+  const spec = parseRoadCode(code);
+  if (!spec || !Number.isSafeInteger(score) || score < 0) return 0;
+  const best = Math.max(readTrackBest(code), score);
+  try {
+    const saved = JSON.parse(localStorage.getItem(TRACK_SCORES_KEY) ?? "{}");
+    localStorage.setItem(TRACK_SCORES_KEY, JSON.stringify({ ...saved, [roadCode(spec)]: best }));
+  } catch { /* The result remains visible in this session. */ }
+  return best;
+}
 
 export function saveRoadScore(mode: string, score: number) {
   const best = Math.max(readPointsBest(mode), Math.floor(score));

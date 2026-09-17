@@ -1,0 +1,37 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import PublicRoad from "@features/EggRoad/PublicRoad";
+import { getLangFromUrl } from "@shared/i18n/utils";
+export function getStaticPaths() { return [{ params: { lang: "ru" } }, { params: { lang: "en" } }]; }
+const lang = getLangFromUrl(Astro.url);
+const ru = lang === "ru";
+const title = ru ? "Путь формы" : "Path of Form";
+const description = ru
+  ? "Катите яйцо по дороге над Пустотой. Учебная трасса, уровни, бесконечный спуск и таблицы рекордов для каждой карты."
+  : "Roll an egg along the road above the Void. A practice road, levels, an endless descent, and leaderboards for every map.";
+---
+<Layout title={`${title} | Egg Culture`} description={description} lang={lang}>
+  <section class="public-road-page container">
+    <p class="public-road-kicker">{ru ? "Равновесие в движении" : "Balance in motion"}</p>
+    <div class="public-road-egg" aria-hidden="true"></div>
+    <h1>{title}</h1>
+    <p class="public-road-description">{description}</p>
+    <PublicRoad client:load lang={lang} />
+    <p class="public-road-controls">{ru ? "На телефоне — касания по сторонам экрана. На клавиатуре — ← → или A / D." : "On your phone, hold either side of the screen. On a keyboard, use ← → or A / D."}</p>
+    <aside class="public-road-more">
+      <p>{ru ? "Больше испытаний доступно адептам." : "More trials await adepts."}</p>
+      <a href={`/${lang}/quiz/`}>{ru ? "Пройти Инициацию" : "Take the Initiation"} →</a>
+    </aside>
+  </section>
+</Layout>
+<style>
+  .public-road-page { max-width: 720px; padding-top: 3rem; padding-bottom: 4rem; text-align: center; }
+  .public-road-kicker { margin: 0 0 2rem; font-family: var(--font-sans-ui); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
+  .public-road-egg { width: 88px; height: 115px; margin: 0 auto 2rem; border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%; transform: rotate(25deg); background: radial-gradient(ellipse at 28% 23%, #fff9e9, #e8d7b4 58%, #b49972); box-shadow: 15px 18px 30px #8b633c26, inset -8px -8px 20px #85663520; }
+  h1 { margin: 0 0 1.4rem; color: var(--color-yolk); font-size: clamp(3rem, 8vw, 5rem); }
+  .public-road-description { margin: 0 auto 2rem; max-width: 530px; font-size: 1.2rem; line-height: 1.7; }
+  .public-road-controls { margin: 1.3rem auto 0; max-width: 460px; font: .8rem/1.7 var(--font-sans-ui); opacity: .7; }
+  .public-road-more { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #b18e633d; font: .9rem/1.8 var(--font-sans-ui); }
+  .public-road-more p { margin: 0 0 .4rem; }
+  .public-road-more a { text-decoration: underline; text-underline-offset: 5px; }
+</style>

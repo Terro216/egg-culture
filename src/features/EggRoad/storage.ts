@@ -27,13 +27,32 @@ export function readRoadBest() {
 const SCORES_KEY = "egg_road_points_v2";
 const SAVED_KEY = "egg_road_maps_v1";
 const TRACK_SCORES_KEY = "egg_road_track_points_v1";
+const ACCOUNT_KEY = "egg_road_active_account_v1";
+function scoreKey(key: string) {
+  try { const name = localStorage.getItem(ACCOUNT_KEY); return name ? `${key}:account:${encodeURIComponent(name)}` : key; }
+  catch { return key; }
+}
+export function selectRoadAccount(name: string | null, adoptGuest = false) {
+  try {
+    if (name) {
+      const normalized = name.normalize("NFKC").toLowerCase();
+      if (adoptGuest) for (const key of [TRACK_SCORES_KEY, SCORES_KEY]) {
+        const target = `${key}:account:${encodeURIComponent(normalized)}`;
+        const guest = JSON.parse(localStorage.getItem(key) ?? "{}"), previous = JSON.parse(localStorage.getItem(target) ?? "{}");
+        for (const [code, value] of Object.entries(guest)) if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) previous[code] = Math.max(previous[code] ?? 0, value);
+        localStorage.setItem(target, JSON.stringify(previous));
+      }
+      localStorage.setItem(ACCOUNT_KEY, normalized);
+    } else localStorage.removeItem(ACCOUNT_KEY);
+  } catch { /* Account access does not depend on local storage. */ }
+}
 
 // Old mode totals cannot identify a seed, so never turn them into map records.
 export function readTrackBest(code: string) {
   const spec = parseRoadCode(code);
   if (!spec) return 0;
   try {
-    const value = JSON.parse(localStorage.getItem(TRACK_SCORES_KEY) ?? "{}")[roadCode(spec)];
+    const value = JSON.parse(localStorage.getItem(scoreKey(TRACK_SCORES_KEY)) ?? "{}")[roadCode(spec)];
     return Number.isSafeInteger(value) && value > 0 ? value : 0;
   } catch { return 0; }
 }
@@ -42,8 +61,8 @@ export function saveTrackScore(code: string, score: number) {
   if (!spec || !Number.isSafeInteger(score) || score < 0) return 0;
   const best = Math.max(readTrackBest(code), score);
   try {
-    const saved = JSON.parse(localStorage.getItem(TRACK_SCORES_KEY) ?? "{}");
-    localStorage.setItem(TRACK_SCORES_KEY, JSON.stringify({ ...saved, [roadCode(spec)]: best }));
+    const saved = JSON.parse(localStorage.getItem(scoreKey(TRACK_SCORES_KEY)) ?? "{}");
+    localStorage.setItem(scoreKey(TRACK_SCORES_KEY), JSON.stringify({ ...saved, [roadCode(spec)]: best }));
   } catch { /* The result remains visible in this session. */ }
   return best;
 }
@@ -51,14 +70,14 @@ export function saveTrackScore(code: string, score: number) {
 export function saveRoadScore(mode: string, score: number) {
   const best = Math.max(readPointsBest(mode), Math.floor(score));
   try {
-    const saved = JSON.parse(localStorage.getItem(SCORES_KEY) ?? "{}");
-    localStorage.setItem(SCORES_KEY, JSON.stringify({ ...saved, [mode]: best }));
+    const saved = JSON.parse(localStorage.getItem(scoreKey(SCORES_KEY)) ?? "{}");
+    localStorage.setItem(scoreKey(SCORES_KEY), JSON.stringify({ ...saved, [mode]: best }));
   } catch { /* The result remains visible in this session. */ }
   return best;
 }
 export function readPointsBest(mode?: string) {
   try {
-    const saved = JSON.parse(localStorage.getItem(SCORES_KEY) ?? "{}");
+    const saved = JSON.parse(localStorage.getItem(scoreKey(SCORES_KEY)) ?? "{}");
     const values = mode ? [saved?.[mode]] : Object.values(saved ?? {});
     return Math.max(0, ...values.filter((n): n is number => typeof n === "number" && Number.isFinite(n) && n >= 0).map(Math.floor));
   } catch { return 0; }

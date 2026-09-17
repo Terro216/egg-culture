@@ -5,7 +5,7 @@
     "src/features/EggRoad/**/*.ts",
     "src/features/EggRoad/**/*.tsx",
     "src/features/MotionTrials/**/*.tsx",
-    "src/server/roadRecords.ts",
-    "src/pages/api/egg-road-records.ts"
+    "src/server/road*.ts",
+    "src/pages/api/egg-road-*.ts"
   ]
 }

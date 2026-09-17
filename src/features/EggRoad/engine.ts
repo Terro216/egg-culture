@@ -103,7 +103,7 @@ export class RoadEngine {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.setAttribute("aria-hidden", "true");
     container.appendChild(renderer.domElement);
     this.scene.background = new THREE.Color(0x17131e);

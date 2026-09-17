@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { RoadResult } from "./simulation.ts";
-import type { RoadLeaderboard } from "./leaderboard.ts";
+import type { RoadLeaderboard, RoadAccount } from "./leaderboard.ts";
 import { copy } from "./copy.ts";
 
 export function useRoadRecords(code: string, result: RoadResult | null) {
   const [data, setData] = useState<RoadLeaderboard | null>(null);
   const [failed, setFailed] = useState(false), [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0), [name, setName] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "saved" | "error" | "limited" | "taken">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "saved" | "error" | "limited" | "taken" | "account">("idle");
   const post = useRef<AbortController | null>(null);
   const epoch = useRef(0);
   const edited = useRef(false);
@@ -38,7 +38,14 @@ export function useRoadRecords(code: string, result: RoadResult | null) {
         body: JSON.stringify({ code, name, score: result.score, gates: result.gates, distance: result.distance, seconds: result.seconds, finished: result.finished, breakdown: result.breakdown }),
       });
       if (response.status === 429) { if (!abort.signal.aborted) setStatus("limited"); return; }
-      if (response.status === 409) { if (!abort.signal.aborted) setStatus("taken"); return; }
+      if (response.status === 409) {
+        const issue = await response.json() as { error: string };
+        if (!abort.signal.aborted) {
+          setStatus(issue.error === "account_changed" ? "account" : "taken");
+          if (issue.error === "account_changed") { edited.current = false; setRevision(value => value + 1); }
+        }
+        return;
+      }
       if (!response.ok) throw new Error();
       const value = await response.json() as RoadLeaderboard;
       if (!abort.signal.aborted && value.code === code) {
@@ -51,6 +58,12 @@ export function useRoadRecords(code: string, result: RoadResult | null) {
   };
   return { data: data?.code === code ? data : null, failed, loading, name, status,
     setName: (value: string) => { edited.current = true; setName(value); if (status === "taken") setStatus("idle"); },
+    adoptAccount: (account: RoadAccount) => {
+      post.current?.abort(); post.current = null;
+      epoch.current++; edited.current = false; setData(null); setName(account.name); setStatus("idle");
+      try { if (account.registered) localStorage.setItem("egg_road_name_v1", account.name); else localStorage.removeItem("egg_road_name_v1"); } catch { /* Optional. */ }
+      setRevision(value => value + 1);
+    },
     reload: () => setRevision(value => value + 1), submit };
 }
 
@@ -62,9 +75,10 @@ export function RoadRecords({ lang, board, result }: {
     {result && result.score > 0 && <form className="egg-road-publish" onSubmit={event => { event.preventDefault(); void board.submit(); }}>
       {status === "saved" ? <p role="status">{ui.published}{data?.personal ? ` · #${data.personal.rank}` : ""}</p> : <>
         <label htmlFor="egg-road-name">{ui.playerName}</label>
-        <div><input id="egg-road-name" value={board.name} onChange={event => board.setName(event.target.value)} required maxLength={32} autoComplete="nickname" placeholder={ui.namePlaceholder} disabled={status === "sending"} aria-invalid={status === "taken"} aria-describedby={status === "taken" ? "egg-road-name-error" : undefined} /><button disabled={status === "sending" || !board.name.trim()}>{status === "sending" ? ui.publishing : ui.publish}</button></div>
-        <small>{ui.publishNote}</small>
+        <div><input id="egg-road-name" value={board.name} onChange={event => board.setName(event.target.value)} required maxLength={32} autoComplete="nickname" placeholder={ui.namePlaceholder} disabled={status === "sending"} readOnly={data?.registered} aria-invalid={status === "taken"} aria-describedby={status === "taken" ? "egg-road-name-error" : undefined} /><button disabled={status === "sending" || !board.name.trim()}>{status === "sending" ? ui.publishing : ui.publish}</button></div>
+        <small>{data?.registered ? ui.publishAccountNote : ui.publishNote}</small>
         {status === "taken" && <p id="egg-road-name-error" role="alert">{ui.nameTaken}</p>}
+        {status === "account" && <p role="alert">{ui.accountChanged}</p>}
         {(status === "error" || status === "limited") && <p role="alert">{status === "limited" ? ui.publishLimited : ui.publishError}</p>}
       </>}
     </form>}

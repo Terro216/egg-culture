@@ -11,6 +11,8 @@ interface Props {
   ogType?: string;
   /** Тайные страницы (квиз, тёмная сторона): не индексировать. */
   noindex?: boolean;
+  /** Installable game page without browser chrome on phones. */
+  gameApp?: boolean;
 }
 
 const {
@@ -20,6 +22,7 @@ const {
   ogImage,
   ogType = "website",
   noindex = false,
+  gameApp = false,
 } = Astro.props;
 
 const site = Astro.site ?? new URL("https://egg.ilyamedve.dev/");
@@ -42,6 +45,14 @@ const alternates = langMatch
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    {gameApp && <>
+      <link rel="manifest" href={`/${lang}/egg-road.webmanifest`} />
+      <link rel="apple-touch-icon" href="/egg-road-icon-192.png" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-title" content={lang === "ru" ? "Путь формы" : "Path of Form"} />
+      <meta name="theme-color" content="#17131e" />
+    </>}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />

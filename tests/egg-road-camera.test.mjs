@@ -11,7 +11,13 @@ test("look controls are bounded, smooth, and return to the forward view", () => 
   assert.ok(look.x > 0 && look.x < 1 && look.y < 0 && look.y > -1);
   for (let i = 0; i < 60; i++) look.step(1/60);
   const facing = lookDirection(new Vector3(0, 0, -1), look.x);
-  assert.ok(facing.x > .5 && facing.angleTo(new Vector3(0,0,-1)) <= .65);
+  assert.ok(facing.z > .9 && facing.x < -.3, "manual look reaches past the rear view to 200 degrees");
+  const left = lookDirection(new Vector3(0, 0, -1), -1);
+  assert.ok(left.z > .9 && left.x > .3, "the same range is available to the left");
+  for (const side of [-1, 1]) {
+    const rear = lookDirection(new Vector3(0, 0, -1), side * .9);
+    assert.ok(rear.z > .999 && Math.abs(rear.x) < 1e-9, "180 degrees looks straight behind the egg");
+  }
   look.setManual(0, 0);
   for (let i = 0; i < 120; i++) look.step(1/60);
   assert.ok(Math.abs(look.x) < 1e-5 && Math.abs(look.y) < 1e-5);
@@ -45,10 +51,11 @@ test("gyro activation handles denial, missing readings, recentering, and late pe
     await look.enableGyro(); assert.equal(look.gyroState, 'waiting');
     reading(null, null); assert.equal(look.gyroState, 'waiting');
     reading(45, 0); reading(45, 24); look.step(1);
-    assert.equal(look.gyroState, 'on');assert.ok(look.x > .99);
+    const yaw = () => lookDirection(new Vector3(0,0,-1), look.x).angleTo(new Vector3(0,0,-1));
+    assert.equal(look.gyroState, 'on');assert.ok(yaw() > .649 && yaw() < .651, 'wide manual look preserves the gentle tilt sensitivity');
     assert.equal(look.calibrate(),true);look.step(1);assert.equal(look.x,0);
-    reading(45,30);look.step(1);assert.ok(look.x>.24 && look.x<.26,'the calibration button makes the current tilt neutral');
-    look.centerView();reading(45,30);look.step(1);assert.ok(look.x>.24 && look.x<.26,'resetting the view on retry must preserve the chosen calibration');
+    reading(45,30);look.step(1);assert.ok(yaw()>.16 && yaw()<.164,'the calibration button makes the current tilt neutral');
+    look.centerView();reading(45,30);look.step(1);assert.ok(yaw()>.16 && yaw()<.164,'resetting the view on retry must preserve the chosen calibration');
     device.screen.orientation.angle = 90;
     reading(60, 24); look.step(1);assert.ok(Math.abs(look.x) < .001, 'screen rotation establishes a new neutral hold');
     look.disableGyro();reading(90, 50);look.step(1);assert.equal(look.x,0);

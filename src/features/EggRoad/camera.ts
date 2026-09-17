@@ -3,6 +3,8 @@ import type { RoadTrack } from "./track.ts";
 
 const UP = new Vector3(0, 1, 0);
 export const FLYBY_SECONDS = 4.6;
+export const MAX_LOOK_YAW = MathUtils.degToRad(200);
+const GYRO_LOOK_YAW = 0.65;
 
 /** The sphere fit uses the narrower field of view, including portrait screens. */
 export function flybyPose(track: RoadTrack, progress: number, aspect: number, fov: number, finishPosition: Vector3, finishTarget: Vector3) {
@@ -27,7 +29,7 @@ export function overviewPose(track: RoadTrack, seconds: number, aspect: number, 
 }
 
 export function lookDirection(heading: Vector3, horizontal: number) {
-  return heading.clone().applyAxisAngle(UP, -MathUtils.clamp(horizontal, -1, 1) * 0.65);
+  return heading.clone().applyAxisAngle(UP, -MathUtils.clamp(horizontal, -1, 1) * MAX_LOOK_YAW);
 }
 
 /** Sensor axes stay tied to the device when the screen rotates. */
@@ -67,7 +69,8 @@ export class CameraLook {
   }
   step(dt: number, keyboard = 0) {
     const rate = 1 - Math.exp(-dt * 8);
-    this.x = MathUtils.lerp(this.x, MathUtils.clamp(this.manual.x + this.sensor.x + keyboard, -1, 1), rate);
+    // A wide manual orbit must not amplify every small movement of the phone.
+    this.x = MathUtils.lerp(this.x, MathUtils.clamp(this.manual.x + this.sensor.x * GYRO_LOOK_YAW / MAX_LOOK_YAW + keyboard, -1, 1), rate);
     this.y = MathUtils.lerp(this.y, MathUtils.clamp(this.manual.y + this.sensor.y, -1, 1), rate);
   }
   private status(state: GyroState) { this.gyroState = state; this.changed(state); }

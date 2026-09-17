@@ -1,7 +1,7 @@
 import type { APIRoute, APIContext } from "astro";
 import { createHash, randomBytes } from "node:crypto";
 import { canonicalRoadCode, parsePublishedRun } from "../../features/EggRoad/leaderboard.ts";
-import { roadRecordStore } from "../../server/roadRecords.ts";
+import { roadRecordStore, RoadNameTakenError } from "../../server/roadRecords.ts";
 
 export const prerender = false;
 const COOKIE = "egg_road_player";
@@ -29,9 +29,15 @@ function player(context: APIContext) {
   return digest(token);
 }
 export const GET: APIRoute = async context => {
+  if (!allowed(context, "read")) return json({ error: "rate_limit" }, 429);
+  if (context.url.searchParams.get("view") === "popular") {
+    const filter = context.url.searchParams.get("mode") ?? "all";
+    if (!["all", "finite", "endless"].includes(filter)) return json({ error: "invalid_mode" }, 400);
+    try { return json(roadRecordStore().popular(filter as "all" | "finite" | "endless")); }
+    catch { return json({ error: "unavailable" }, 503); }
+  }
   const code = canonicalRoadCode(context.url.searchParams.get("code"));
   if (!code) return json({ error: "invalid_code" }, 400);
-  if (!allowed(context, "read")) return json({ error: "rate_limit" }, 429);
   try { return json(roadRecordStore().read(code, player(context))); }
   catch { return json({ error: "unavailable" }, 503); }
 };
@@ -59,5 +65,5 @@ export const POST: APIRoute = async context => {
   const run = parsePublishedRun(value);
   if (!run) return json({ error: "invalid_run" }, 400);
   try { return json(roadRecordStore().submit(player(context), run)); }
-  catch { return json({ error: "unavailable" }, 503); }
+  catch (error) { return json({ error: error instanceof RoadNameTakenError ? "name_taken" : "unavailable" }, error instanceof RoadNameTakenError ? 409 : 503); }
 };

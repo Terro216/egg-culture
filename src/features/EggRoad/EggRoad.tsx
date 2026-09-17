@@ -7,6 +7,7 @@ import type { RoadSpec } from "./seed.ts";
 import { newRoadSeed, parseRoadCode } from "./seed.ts";
 import { readTrackBest, saveTrackScore, saveRoadScore, readRoadProgress, readSavedRoads, saveRoad, forgetRoad, ROAD_STORAGE_KEY } from "./storage.ts";
 import { RoadRecords, useRoadRecords } from "./RoadRecords.tsx";
+import { PopularRoads } from "./PopularRoads.tsx";
 import { emptyScore } from "./scoring.ts";
 import type { BonusKind } from "./scoring.ts";
 import { copy } from "./copy.ts";
@@ -34,6 +35,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const board = useRoadRecords(snapshot.code, result);
   const [ready, setReady] = useState(false), [error, setError] = useState(false);
   const [menu, setMenu] = useState(true);
+  const [menuTab, setMenuTab] = useState<"modes" | "popular">("modes");
   const [muted, setMuted] = useState(true); const mutedRef = useRef(true);
   const [best, setBest] = useState(0), [newBest, setNewBest] = useState(false);
   const [pressed, setPressed] = useState(0), [gyro, setGyro] = useState<GyroState>("off");
@@ -185,6 +187,16 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
         <p className="egg-road-kicker">{menu ? ui.modes : modeLabel}</p>
         <h1>{error ? ui.error : menu ? ui.title : snapshot.phase === "paused" ? ui.paused : ended ? snapshot.finished ? ui.finished : ui.over : ui.title}</h1>
         {menu && !error ? <>
+          <div className="egg-road-tabs" role="tablist" aria-label={ui.menuTabs}>
+            {([ ["modes", ui.modeTab], ["popular", ui.popularTab] ] as const).map(([tab, label]) => <button key={tab} type="button" role="tab" id={`egg-road-tab-${tab}`} aria-controls={`egg-road-panel-${tab}`} aria-selected={menuTab === tab} tabIndex={menuTab === tab ? 0 : -1} onClick={() => setMenuTab(tab)} onKeyDown={event => {
+              if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const next = event.key === "Home" ? "modes" : event.key === "End" ? "popular" : tab === "modes" ? "popular" : "modes";
+              setMenuTab(next); document.getElementById(`egg-road-tab-${next}`)?.focus();
+            }}>{label}</button>)}
+          </div>
+          <div role="tabpanel" id={`egg-road-panel-${menuTab}`} aria-labelledby={`egg-road-tab-${menuTab}`}>
+          {menuTab === "popular" ? <PopularRoads lang={lang} ready={ready} onChoose={loadSeed} /> : <>
           <p className="egg-road-intro">{ui.choose}</p>
           <div className="egg-road-mode-grid">
             <button disabled={!ready} onClick={() => choose({ mode: "practice", level: 1, seed: 0 })}><strong>{ui.tutorial}</strong><small>{ui.practiceHint}</small></button>
@@ -199,6 +211,8 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
             {seedError && <p id="egg-road-seed-error" role="alert">{ui.seedError}</p>}
           </form>
           {saved.length > 0 && <details className="egg-road-help"><summary>{ui.saved} · {saved.length}</summary><ul className="egg-road-saved">{saved.map(code => <li key={code}><button onClick={() => loadSeed(code)}>{code}</button><button aria-label={`${ui.remove} ${code}`} onClick={() => { if (forgetRoad(code)) setSaved(readSavedRoads()); }}>{ui.remove}</button></li>)}</ul></details>}
+          </>}
+          </div>
         </> : <>
           <p className="egg-road-intro">{error ? ui.errorText : snapshot.phase === "paused" ? ui.pausedText : ended ? snapshot.finished ? snapshot.mode === "levels" ? ui.finishedText : ui.seedFinished : ui.overText : ui.intro}</p>
           {ended && <><div className="egg-road-result"><strong>{snapshot.score}<span>{ui.score}</span></strong><dl><div><dt>{ui.gates}</dt><dd>{snapshot.gates}</dd></div><div><dt>{ui.distance}</dt><dd>{Math.floor(snapshot.distance)}</dd></div></dl></div>{newBest && <p className="egg-road-record">{ui.newBest}</p>}</>}

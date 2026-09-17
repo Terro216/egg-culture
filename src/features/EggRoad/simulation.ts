@@ -12,6 +12,7 @@ import type { ScoreBreakdown, ScoreNotice, BonusKind } from "./scoring.ts";
 
 export const PHYSICS_STEP = 1 / 120;
 export const FLIGHT_LIMIT = 4.2;
+export const JUMP_SPEED = 6;
 export type RoadPhase = "ready" | "overview" | "intro" | "running" | "paused" | "over" | "finished";
 export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number; mode: RoadMode; code: string; distance: number; gates: number; breakdown: ScoreBreakdown };
 export type RoadSnapshot = RoadResult & {
@@ -23,6 +24,7 @@ export type RoadSnapshot = RoadResult & {
   lastSkip: number;
   boost: number;
   rhythm: number;
+  jumpAvailable: boolean;
   rhythmCue: ReturnType<RollRhythm["cue"]>;
   code: string;
   distance: number;
@@ -50,6 +52,9 @@ export class RoadSimulation {
   airTime = 0;
   flightTime = 0;
   nearRoad = true;
+  jumpAvailable = true;
+  private jumping = false;
+  private jumpStarted = 0;
   readonly rhythm = new RollRhythm();
   seconds = 0;
   gates = 0;
@@ -107,6 +112,9 @@ export class RoadSimulation {
     this.grounded = false;
     this.airTime = this.flightTime = this.seconds = this.gates = this.skipped = this.bestSkip = this.lastSkip = this.progress = 0;
     this.nearRoad = true;
+    this.jumpAvailable = true;
+    this.jumping = false;
+    this.jumpStarted = 0;
     this.rhythm.reset();
     this.scoring.reset();
     this.originShift.set(0, 0, 0);
@@ -133,6 +141,20 @@ export class RoadSimulation {
   start() { if (this.phase === "ready" || this.phase === "intro") this.phase = "running"; }
   pause() { if (this.phase === "running" || this.phase === "intro" || this.phase === "overview") { this.resumePhase = this.phase; this.phase = "paused"; } }
   resume() { if (this.phase === "paused") this.phase = this.resumePhase; }
+
+  jump() {
+    if (this.phase !== "running" || !this.jumpAvailable || this.disposed) return false;
+    const velocity = this.body.linvel();
+    this.body.setLinvel({ x: velocity.x, y: Math.max(0, velocity.y) + JUMP_SPEED, z: velocity.z }, true);
+    this.jumpAvailable = false;
+    this.jumping = true;
+    this.jumpStarted = this.seconds;
+    if (this.grounded) this.takeoffGate = this.gates;
+    this.grounded = this.nearRoad = false;
+    // A last-second rescue gets time to work, without replenishing the jump.
+    this.flightTime = Math.min(this.flightTime, FLIGHT_LIMIT - 1);
+    return true;
+  }
 
   private supportRadius(direction: Vector3) {
     this.inverseRotation.copy(this.rotation).invert();
@@ -163,15 +185,19 @@ export class RoadSimulation {
     this.scoring.tick(this.seconds);
     this.velocity.copy(this.body.linvel());
     const input = Number.isFinite(steering) ? MathUtils.clamp(steering, -1, 1) : 0;
-    const spin = this.body.angvel();
-    const rollRate = spin.x * sample.tangent.x + spin.y * sample.tangent.y + spin.z * sample.tangent.z;
     // The asymmetric shell makes tiny hops between contacts. They belong to the
     // same roll; only a real departure from the lane pauses the rhythm.
-    this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), rollRate, this.nearRoad || (this.flightTime === 0 && this.airTime < 1.2));
+    const earned = this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), this.velocity.dot(sample.tangent),
+      !this.jumping && (this.nearRoad || (this.flightTime === 0 && this.airTime < 1.2)));
+    const targetSpeed = 18.5 + Math.min(3, this.progress / 260) + Math.min(2, (this.track.level - 1) * 0.3) + this.rhythm.charge * 9;
+    if (earned) {
+      const kick = Math.min(2, Math.max(0, targetSpeed - this.velocity.dot(sample.tangent)));
+      this.body.applyImpulse(sample.tangent.clone().multiplyScalar(kick * this.body.mass()), true);
+      this.velocity.copy(this.body.linvel());
+    }
     this.body.resetForces(true);
     this.force.copy(sample.right).multiplyScalar(input * (this.nearRoad ? 25 : 11));
-    if (this.nearRoad || this.seconds < 0.15) {
-      const targetSpeed = 18.5 + Math.min(3, this.progress / 260) + Math.min(2, (this.track.level - 1) * 0.3) + this.rhythm.charge * 9;
+    if (!this.jumping && (this.nearRoad || this.seconds < 0.15)) {
       const acceleration = MathUtils.clamp((targetSpeed - this.velocity.dot(sample.tangent)) * 2.5, -4, 17);
       this.force.addScaledVector(sample.tangent, acceleration);
     }
@@ -185,6 +211,7 @@ export class RoadSimulation {
     let supportIndex = -1;
     let supportDistance = Infinity;
     this.world.contactPairsWith(this.collider, (other) => {
+      if (this.jumping && this.seconds - this.jumpStarted < 0.1) return;
       const chunk = this.roadColliders.get(other.handle);
       if (!chunk) return;
       let touching = false;
@@ -235,6 +262,7 @@ export class RoadSimulation {
         skipped: newlySkipped, seconds: this.seconds });
       this.flightPeak = this.position.y;
       this.grounded = true;
+      this.jumping = false;
       this.nearRoad = true;
       this.airTime = this.flightTime = 0;
       if (!this.track.endless && distance >= this.track.length - 12) this.phase = "finished";
@@ -248,7 +276,7 @@ export class RoadSimulation {
       this.offset.copy(this.position).sub(nearby.position);
       const gap = this.offset.dot(nearby.normal) - this.supportRadius(nearby.normal);
       const aboveSurface = gap >= -0.12 && Math.abs(this.offset.dot(nearby.right)) < nearby.width / 2 - 0.1;
-      this.nearRoad = aboveSurface && this.airTime < 0.7 && gap < 0.85;
+      this.nearRoad = !this.jumping && aboveSurface && this.airTime < 0.7 && gap < 0.85;
       // The egg's pointed end can launch it above the lane. This warning grace
       // neither awards gates nor changes the close-to-road drive check.
       const ordinaryHop = aboveSurface && this.airTime < 1.2 && gap < 3;
@@ -264,8 +292,9 @@ export class RoadSimulation {
       phase: this.phase, score: this.score, skipped: this.skipped, bestSkip: this.bestSkip,
       mode: this.mode, gates: this.gates, breakdown: this.scoring.breakdown(),
       code: roadCode({ mode: this.mode, level: this.track.level, seed: this.track.seed }),
-      distance: this.progress, bonus: this.scoring.notice, activeBonuses: [...this.scoring.active], rhythmCue: this.rhythm.cue(this.flightTime <= 0.35),
+      distance: this.progress, bonus: this.scoring.notice, activeBonuses: [...this.scoring.active], rhythmCue: this.rhythm.cue(!this.jumping && this.flightTime <= 0.35),
       level: this.track.level, boost: this.rhythm.charge, rhythm: this.rhythm.chain,
+      jumpAvailable: this.jumpAvailable,
       seconds: this.seconds, finished: this.phase === "finished",
       // Show travel across the road, not the vertical speed of a fall or bounce.
       speed: Math.hypot(velocity.x, velocity.z),

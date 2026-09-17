@@ -73,7 +73,10 @@ test('endless retry restores its seed and imported maps never unlock campaign le
   try {
     journey.select({mode:'endless',level:2,seed:88});
     const first=journey.simulation.track.chunks[0].vertices.slice();
-    streamEndless(journey.simulation.track,2000);journey.retry();
+    journey.simulation.start();assert.equal(journey.simulation.jump(),true);
+    streamEndless(journey.simulation.track,2000);
+    assert.equal(journey.simulation.snapshot().jumpAvailable,false,'new endless sections do not give another jump');
+    journey.retry();assert.equal(journey.simulation.snapshot().jumpAvailable,true,'a new attempt recharges the jump');
     assert.deepEqual(journey.simulation.track.chunks[0].vertices,first);
     journey.select({mode:'seed',level:5,seed:123});
     journey.simulation.phase='finished';
@@ -115,13 +118,17 @@ test('high-drop bonuses are banked on a real landing, while an unsuccessful fall
   } finally {sim.dispose();}
 });
 
-test('rhythm tells the player when to switch and the next correct stroke charges speed', () => {
+test('natural corrections with pauses and uneven timing earn rhythm without watching a cue', () => {
   const r=new RollRhythm();assert.equal(r.cue(true).state,'start');
-  for(let i=0;i<12;i++)r.step(1/120,1,2,2,true);
-  assert.equal(r.cue(true).state,'hold');
-  for(let i=0;i<40;i++)r.step(1/120,1,2,2,true);
-  assert.equal(r.cue(true).state,'switch');assert.equal(r.cue(true).direction,1);
-  r.step(1/120,-1,-2,2,true);assert.equal(r.chain,1);assert.ok(r.charge>.2);
+  let direction=1;
+  for(const duration of [.2,.37,.68,1.4,.25]) {
+    for(let i=0;i<Math.ceil(duration*120);i++)r.step(1/120,direction,.8,12,true);
+    for(let i=0;i<54;i++)r.step(1/120,0,.5,12,true);
+    direction*=-1;
+    assert.equal(r.step(1/120,direction,.8,12,true),true,'braking a drift counts too');
+  }
+  assert.equal(r.chain,5);assert.ok(r.charge>.9);
+  assert.equal(r.cue(true).state,'flow');
   assert.equal(r.cue(false).state,'air');
 });
 

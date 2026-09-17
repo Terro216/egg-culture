@@ -62,7 +62,7 @@ export class RoadEngine {
   private readonly roadGroup = new THREE.Group();
   private readonly roadResources: Resource[] = [];
   private readonly roadFog = new THREE.Fog(0x17131e, 78, 235);
-  private readonly egg: THREE.Mesh;
+  private readonly egg: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
   private readonly light = new THREE.DirectionalLight(0xffe1b1, 3.2);
   private readonly audio = new RoadAudio();
   private readonly resources: Resource[] = [];
@@ -83,6 +83,8 @@ export class RoadEngine {
   private pointerSteering = 0;
   private finishedReported = false;
   private previousScore = 0;
+  private previousStroke = 0;
+  private rhythmFlash = 0;
   private disposed = false;
   private needsRender = true;
   private flybyTime = 0;
@@ -122,7 +124,7 @@ export class RoadEngine {
     const eggGeometry = this.keep(createEggGeometry());
     const eggTexture = this.keep(this.shellTexture());
     const material = this.keep(new THREE.MeshStandardMaterial({
-      color: 0xfff4dc, map: eggTexture, roughness: 0.57, metalness: 0.02,
+      color: 0xfff4dc, map: eggTexture, roughness: 0.57, metalness: 0.02, emissive: 0xeaa446, emissiveIntensity: 0,
     }));
     this.egg = new THREE.Mesh(eggGeometry, material);
     this.egg.castShadow = true;
@@ -258,6 +260,8 @@ export class RoadEngine {
     this.camera.updateProjectionMatrix();
     this.scene.fog = this.roadFog;
     const sim = this.simulation;
+    this.previousStroke = sim.rhythm.strokes;
+    this.rhythmFlash = this.egg.material.emissiveIntensity = 0;
     this.previousPosition.copy(sim.position);
     this.previousRotation.copy(sim.rotation);
     this.egg.position.copy(sim.position);
@@ -274,7 +278,7 @@ export class RoadEngine {
     this.menuOpen = false;
     if (this.simulation.phase === "finished") { if (this.simulation.mode === "levels") this.nextLevel(); else this.restart(); return; }
     if (this.simulation.phase === "over") { this.restart(); return; }
-    if (this.simulation.phase === "paused") { this.look.centerView(); this.simulation.resume(); }
+    if (this.simulation.phase === "paused") this.simulation.resume();
     else this.beginFlyby();
     this.accumulator = 0;
     this.lastTime = performance.now();
@@ -353,6 +357,11 @@ export class RoadEngine {
   openMenu() { this.pause(); this.menuOpen = true; }
   pause = () => { this.simulation.pause(); this.clearInput(); this.accumulator = 0; this.notify(); };
   steer(value: number) { this.pointerSteering = value; }
+  jump = () => {
+    if (!this.simulation.jump()) return;
+    this.audio.unlock(); this.audio.tone(520, 0.16);
+    this.notify();
+  };
   lookAround(x: number, y: number) { this.look.setManual(x, y); }
   toggleGyro() { if (this.look.gyroState === "on" || this.look.gyroState === "waiting") this.look.disableGyro(); else void this.look.enableGyro(); }
   calibrateGyro() { return this.look.calibrate(); }
@@ -377,7 +386,11 @@ export class RoadEngine {
       else if (this.simulation.phase === "paused") this.play();
     }
     if (event.code === "KeyR") { event.preventDefault(); this.restart(); }
-    if (event.code === "Space" && this.simulation.phase === "intro") { event.preventDefault(); this.skipFlyby(); }
+    if (event.code === "Space") {
+      event.preventDefault();
+      if (this.simulation.phase === "intro") this.skipFlyby();
+      else this.jump();
+    }
   };
   private keyUp = (event: KeyboardEvent) => { this.keys.delete(event.code); };
 
@@ -437,6 +450,14 @@ export class RoadEngine {
       this.egg.position.lerpVectors(this.previousPosition, sim.position, alpha);
       this.egg.quaternion.slerpQuaternions(this.previousRotation, sim.rotation, alpha);
       if (sim.gates > this.previousScore) { this.previousScore = sim.gates; this.audio.tone(360 + (sim.gates % 5) * 80); }
+      if (sim.rhythm.strokes > this.previousStroke) {
+        this.previousStroke = sim.rhythm.strokes;
+        this.rhythmFlash = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 0.8;
+        this.audio.tone(700 + Math.min(6, sim.rhythm.chain) * 60, 0.07);
+        try { navigator.vibrate?.(12); } catch { /* Feedback is optional. */ }
+      }
+      this.rhythmFlash *= Math.exp(-dt * 7);
+      this.egg.material.emissiveIntensity = sim.rhythm.charge * 0.18 + this.rhythmFlash;
     }
 
     // Keep menus and pauses still without spending GPU time on identical frames.

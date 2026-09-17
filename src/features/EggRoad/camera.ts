@@ -50,6 +50,7 @@ export class CameraLook {
   y = 0;
   gyroState: GyroState = "off";
   private manual = { x: 0, y: 0 };
+  private orbit = 0;
   private sensor = { x: 0, y: 0 };
   private origin: { beta: number; gamma: number; angle: number } | null = null;
   private latest: { beta: number; gamma: number; angle: number } | null = null;
@@ -60,17 +61,23 @@ export class CameraLook {
 
   constructor(changed: (state: GyroState) => void) { this.changed = changed; }
   setManual(x: number, y: number) { this.manual = { x: MathUtils.clamp(x, -1, 1), y: MathUtils.clamp(y, -1, 1) }; }
-  recenter() { this.x = this.y = 0; this.origin = null; this.sensor = { x: 0, y: 0 }; this.setManual(0, 0); }
-  centerView() { this.x = this.y = 0; this.setManual(0, 0); }
+  recenter() { this.x = this.y = this.orbit = 0; this.origin = null; this.sensor = { x: 0, y: 0 }; this.setManual(0, 0); }
+  centerView() { this.x = this.y = this.orbit = 0; this.setManual(0, 0); }
   calibrate() {
     if (!this.latest || this.gyroState !== "on") return false;
-    this.origin = { ...this.latest }; this.sensor = { x: 0, y: 0 }; this.x = this.y = 0;
+    this.origin = { ...this.latest }; this.sensor = { x: 0, y: 0 }; this.x = this.y = this.orbit = 0;
     return true;
   }
   step(dt: number, keyboard = 0) {
-    const rate = 1 - Math.exp(-dt * 8);
-    // A wide manual orbit must not amplify every small movement of the phone.
-    this.x = MathUtils.lerp(this.x, MathUtils.clamp(this.manual.x + this.sensor.x * GYRO_LOOK_YAW / MAX_LOOK_YAW + keyboard, -1, 1), rate);
+    const input = MathUtils.clamp(this.manual.x + keyboard, -1, 1);
+    if (Math.abs(input) > 0.03) {
+      // A held gesture turns gradually, slowing as it approaches the rear view.
+      this.orbit = MathUtils.clamp(this.orbit + input * (0.62 - 0.42 * Math.abs(this.orbit)) * dt, -1, 1);
+    } else this.orbit *= Math.exp(-dt * 3.5);
+    const rate = 1 - Math.exp(-dt * 6);
+    const target = MathUtils.clamp(this.orbit + this.sensor.x * GYRO_LOOK_YAW / MAX_LOOK_YAW, -1, 1);
+    // Also cap the return speed, so releasing a rearward look cannot whip around.
+    this.x += MathUtils.clamp((target - this.x) * rate, -0.65 * dt, 0.65 * dt);
     this.y = MathUtils.lerp(this.y, MathUtils.clamp(this.manual.y + this.sensor.y, -1, 1), rate);
   }
   private status(state: GyroState) { this.gyroState = state; this.changed(state); }

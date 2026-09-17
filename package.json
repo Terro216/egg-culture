@@ -11,28 +11,29 @@
     "preview": "astro preview",
     "start": "node scripts/start.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "check": "tsc --noEmit -p tsconfig.json",
     "check:games": "tsc --noEmit -p tsconfig.games.json",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^10.0.6",
-    "@astrojs/react": "^5.0.4",
+    "@astrojs/node": "^11.1.6",
+    "@astrojs/react": "^6.0.6",
     "@dimforge/rapier3d-compat": "^0.20.0",
     "@resvg/resvg-js": "^2.6.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "astro": "^6.1.9",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "astro": "^7.3.3",
     "d3-geo": "^3.1.1",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "three": "^0.184.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.0",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
-    "@types/d3-geo": "^3.1.0",
+    "@types/d3-geo": "^3.1.1",
     "@types/node": "^22.20.3",
-    "@types/three": "^0.184.1",
+    "@types/three": "^0.186.0",
     "@types/topojson-client": "^3.1.5",
-    "typescript": "^5.9.3"
+    "typescript": "^7.0.2"
   }
 }

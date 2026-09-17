@@ -204,6 +204,21 @@
 .egg-road-popular-list code { font-size: 10px; overflow-wrap: anywhere; color: #bda88f; }
 .egg-road-popular-stats { font-size: 10px; color: #bda88f; }
 .egg-road-popular-stats b { color: #f7e2bd; font-weight: 500; }
+
+.egg-road-account { margin: 12px 0 20px; border-top: 0; border-bottom: 1px solid #b18e6333; padding: 0 0 13px; }
+.egg-road-account summary { overflow-wrap: anywhere; }
+.egg-road-account p, .egg-road-account small { font-size: 11px; line-height: 1.6; color: #bda88f; }
+.egg-road-account button { border: 1px solid #b18e6355; border-radius: 4px; padding: 10px; background: #ead1aa09; color: #f7e2bd; font-size: 11px; touch-action: manipulation; }
+.egg-road-account-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.egg-road-account-actions button[aria-pressed="true"] { border-color: #e5c08b; background: #e5c08b22; }
+.egg-road-account-form { display: grid; gap: 8px; margin: 14px 0 0; }
+.egg-road-account-form label { font-size: 11px; color: #d9c0a2; margin-top: 5px; }
+.egg-road-account .egg-road-account-submit { width: 100%; background: #e5c08b; color: #271c20; margin-top: 8px; }
+.egg-road-account [role="alert"] { color: #ffcaac; }
+.egg-road-account .egg-road-account-protected { color: #e5c08b; overflow-wrap: anywhere; }
+.egg-road-recovery { margin-top: 16px; padding: 12px; border: 1px solid #e5c08b55; border-radius: 4px; }
+.egg-road-recovery > strong { font-size: 13px; font-weight: 500; }
+.egg-road-recovery input { font-size: 11px; }
 .egg-road-adepts { margin: 15px 0 0; padding-top: 13px; border-top: 1px solid #b18e6330; font-size: 11px; color: #baa58f; line-height: 1.7; }
 .egg-road-adepts a { display: inline-block; color: #e5c08b; text-decoration: underline; text-underline-offset: 3px; }
 .egg-road-rhythm { padding: 7px 6px; border: 1px solid #f2cd942b; border-radius: 16px; background: #17131ec9; box-shadow: 0 4px 18px #100b1830; }

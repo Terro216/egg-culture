@@ -12,8 +12,9 @@ export type LeaderboardEntry = {
 };
 export type RoadLeaderboard = {
   code: string; entries: LeaderboardEntry[]; personal: LeaderboardEntry | null;
-  total: number; name: string; nameClaimed: boolean; endlessBest: number;
+  total: number; name: string; nameClaimed: boolean; registered: boolean; endlessBest: number;
 };
+export type RoadAccount = { name: string; registered: boolean };
 export type PopularFilter = "all" | "finite" | "endless";
 export type PopularRoads = { filter: PopularFilter; tracks: { code: string; players: number; bestScore: number }[] };
 

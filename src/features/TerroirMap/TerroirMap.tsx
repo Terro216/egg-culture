@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
-// @ts-ignore
+import type { Topology, GeometryCollection } from "topojson-specification";
 import worldData from "@shared/data/world-110m.json";
 
 interface TerroirMapProps {
@@ -62,13 +62,13 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
   // Распаковываем TopoJSON и считаем SVG-пути один раз: геометрия статична,
   // а pathGenerator по всем странам — слишком дорог для каждого рендера.
   const countryPaths = useMemo(() => {
-    // @ts-ignore
-    const featureCollection = feature(worldData, worldData.objects.countries);
+    const world = worldData as unknown as Topology<{ countries: GeometryCollection<{ name: string }> }>;
+    const featureCollection = feature(world, world.objects.countries);
     const features = featureCollection.features;
     // Сортируем: сначала обычные регионы, затем "яичные", чтобы их обводка не перекрывалась
-    features.sort((a: any, b: any) => {
-      const aIsTerroir = !!COUNTRY_MAP[a.properties?.name];
-      const bIsTerroir = !!COUNTRY_MAP[b.properties?.name];
+    features.sort((a, b) => {
+      const aIsTerroir = !!COUNTRY_MAP[a.properties?.name ?? ""];
+      const bIsTerroir = !!COUNTRY_MAP[b.properties?.name ?? ""];
       if (aIsTerroir === bIsTerroir) return 0;
       return aIsTerroir ? 1 : -1;
     });
@@ -79,7 +79,7 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
       .translate([MAP_WIDTH / 2, MAP_HEIGHT / 1.4]);
     const pathGenerator = geoPath().projection(projection);
 
-    return features.map((geo: any) => {
+    return features.map(geo => {
       const countryName: string = geo.properties?.name || "";
       return {
         d: pathGenerator(geo) || "",

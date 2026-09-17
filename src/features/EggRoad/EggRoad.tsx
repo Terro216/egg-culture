@@ -7,6 +7,8 @@ import type { RoadSpec } from "./seed.ts";
 import { newRoadSeed, parseRoadCode } from "./seed.ts";
 import { readTrackBest, saveTrackScore, saveRoadScore, readRoadProgress, readSavedRoads, saveRoad, forgetRoad, ROAD_STORAGE_KEY } from "./storage.ts";
 import { RoadRecords, useRoadRecords } from "./RoadRecords.tsx";
+import { RoadAccount, useRoadAccount } from "./RoadAccount.tsx";
+import { selectRoadAccount } from "./storage.ts";
 import { PopularRoads } from "./PopularRoads.tsx";
 import { emptyScore } from "./scoring.ts";
 import type { BonusKind } from "./scoring.ts";
@@ -33,6 +35,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [result, setResult] = useState<RoadResult | null>(null);
   const board = useRoadRecords(snapshot.code, result);
+  const account = useRoadAccount(board);
   const [ready, setReady] = useState(false), [error, setError] = useState(false);
   const [menu, setMenu] = useState(true);
   const [menuTab, setMenuTab] = useState<"modes" | "popular">("modes");
@@ -87,9 +90,12 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   useEffect(() => { setBest(readTrackBest(snapshot.code)); setShareMessage(""); setShareValue(null); }, [snapshot.code]);
   useEffect(() => {
     if (!board.data || board.data.code !== snapshot.code) return;
+    selectRoadAccount(board.data.registered ? board.data.name : null);
+    setBest(readTrackBest(snapshot.code));
     if (board.data.personal) setBest(saveTrackScore(snapshot.code, board.data.personal.score));
     saveRoadScore("endless", board.data.endlessBest);
   }, [board.data, snapshot.code]);
+  useEffect(() => { setBest(readTrackBest(snapshot.code)); }, [account.profile, snapshot.code]);
   useEffect(() => { if (calibrated) { const timer = setTimeout(() => setCalibrated(false), 1800); return () => clearTimeout(timer); } }, [calibrated]);
 
   const choose = (spec: RoadSpec) => {
@@ -186,6 +192,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
       {showPanel && <div className="egg-road-overlay"><section className={`egg-road-panel ${menu ? "egg-road-menu" : ""}`}>
         <p className="egg-road-kicker">{menu ? ui.modes : modeLabel}</p>
         <h1>{error ? ui.error : menu ? ui.title : snapshot.phase === "paused" ? ui.paused : ended ? snapshot.finished ? ui.finished : ui.over : ui.title}</h1>
+        {!error && <RoadAccount lang={lang} account={account} reload={board.reload} failed={board.failed} suggestedName={board.name} />}
         {menu && !error ? <>
           <div className="egg-road-tabs" role="tablist" aria-label={ui.menuTabs}>
             {([ ["modes", ui.modeTab], ["popular", ui.popularTab] ] as const).map(([tab, label]) => <button key={tab} type="button" role="tab" id={`egg-road-tab-${tab}`} aria-controls={`egg-road-panel-${tab}`} aria-selected={menuTab === tab} tabIndex={menuTab === tab ? 0 : -1} onClick={() => setMenuTab(tab)} onKeyDown={event => {

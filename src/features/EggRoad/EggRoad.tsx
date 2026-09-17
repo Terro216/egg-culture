@@ -13,6 +13,7 @@ import { PopularRoads } from "./PopularRoads.tsx";
 import { emptyScore } from "./scoring.ts";
 import type { BonusKind } from "./scoring.ts";
 import { copy } from "./copy.ts";
+import { useRoadFullscreen } from "./fullscreen.ts";
 import "./EggRoad.css";
 
 export type EggRoadLang = "ru" | "en";
@@ -29,6 +30,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const ui = copy[lang];
   const canvasHost = useRef<HTMLDivElement>(null), modal = useRef<HTMLDivElement>(null);
   const engine = useRef<RoadEngine | null>(null);
+  const fullscreen = useRoadFullscreen(modal, () => engine.current?.pause());
   const heldPointers = useRef(new Map<number, number>());
   const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const completeRef = useRef(onComplete); completeRef.current = onComplete;
@@ -51,6 +53,9 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
+    const viewport = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    const previousViewport = viewport?.content;
+    if (viewport) viewport.content = `${viewport.content.replace(/,?\s*viewport-fit=[^,]+/, "")}, viewport-fit=cover`;
     const previousFocus = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden"; modal.current?.focus();
     setBest(readTrackBest(initialSnapshot.code)); setSaved(readSavedRoads()); setProgress(readRoadProgress());
@@ -77,7 +82,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
         else { setSeedInput(shared.slice(0, 2048)); setSeedError(true); }
       }
     }).catch(() => { if (!abort.signal.aborted) setError(true); });
-    return () => { abort.abort(); instance?.dispose(); engine.current = null; document.body.style.overflow = previousOverflow; previousFocus?.focus(); };
+    return () => { abort.abort(); instance?.dispose(); engine.current = null; document.body.style.overflow = previousOverflow; if (viewport && previousViewport !== undefined) viewport.content = previousViewport; previousFocus?.focus(); };
   }, []);
 
   useEffect(() => {
@@ -133,8 +138,11 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
 
   if (typeof document === "undefined") return null;
   return createPortal(
-    <div className="egg-road" role="dialog" aria-modal="true" aria-label={ui.title} tabIndex={-1} ref={modal}
+    <div className="egg-road" data-panel={showPanel} role="dialog" aria-modal="true" aria-label={ui.title} tabIndex={-1} ref={modal}
       onKeyDown={event => {
+        if (event.code === "KeyF" && !event.repeat && !event.ctrlKey && !event.metaKey && !event.altKey && !(event.target as HTMLElement).closest("input, textarea, select, [contenteditable='true']")) {
+          event.preventDefault(); void fullscreen.toggle(); return;
+        }
         if (event.key !== "Tab") return;
         const focusable = [...(modal.current?.querySelectorAll<HTMLElement>("button:not([disabled]):not([tabindex='-1']),input:not([disabled]),summary,a[href]") ?? [])].filter(el => el.offsetParent !== null);
         const first = focusable[0], last = focusable.at(-1);
@@ -155,9 +163,14 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
               : snapshot.bonus ? <div className="egg-road-shortcut" role="status">{ui.bonusNames[snapshot.bonus.kind]} <b>+{snapshot.bonus.points}</b></div> : null}
           </div>}
         </div>
+        <div className="egg-road-hud-actions">
+        {!fullscreen.standalone && <button className="egg-road-icon egg-road-fullscreen" type="button" onClick={() => void fullscreen.toggle()} disabled={fullscreen.pending} aria-label={fullscreen.active ? ui.fullscreenExit : ui.fullscreenEnter} title={fullscreen.active ? ui.fullscreenExit : ui.fullscreenEnter} aria-pressed={fullscreen.active}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d={fullscreen.active ? "M4 9h5V4m11 5h-5V4M4 15h5v5m11-5h-5v5" : "M9 4H4v5m11-5h5v5M4 15v5h5m6 0h5v-5"} /></svg>
+        </button>}
         <button className="egg-road-icon" type="button" onClick={() => engine.current?.pause()} disabled={!ready || menu || !["running", "intro", "overview"].includes(snapshot.phase)} aria-label={ui.pause}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
         </button>
+        </div>
       </header>
       {!showPanel && !flyingIn && !overview && <>
         {([-1, 1] as const).map(direction => <button key={direction} type="button" tabIndex={-1}
@@ -171,7 +184,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
         </button>)}
         <button className="egg-road-look" type="button" tabIndex={-1} aria-label={ui.lookDrag}
           onPointerDown={event => { if (lookPointer.current) return; event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); lookPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY }; }}
-          onPointerMove={event => { const start = lookPointer.current; if (start?.id === event.pointerId) engine.current?.lookAround((event.clientX - start.x) / 70, (event.clientY - start.y) / 70); }}
+          onPointerMove={event => { const start = lookPointer.current; if (start?.id === event.pointerId) engine.current?.lookAround((event.clientX - start.x) / 48, (event.clientY - start.y) / 70); }}
           onPointerUp={stopLooking} onPointerCancel={stopLooking} onLostPointerCapture={stopLooking}>
           <span aria-hidden="true">◎</span><small>{ui.look}</small>
         </button>
@@ -192,6 +205,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
       {showPanel && <div className="egg-road-overlay"><section className={`egg-road-panel ${menu ? "egg-road-menu" : ""}`}>
         <p className="egg-road-kicker">{menu ? ui.modes : modeLabel}</p>
         <h1>{error ? ui.error : menu ? ui.title : snapshot.phase === "paused" ? ui.paused : ended ? snapshot.finished ? ui.finished : ui.over : ui.title}</h1>
+        {fullscreen.notice && <div className="egg-road-fullscreen-note" role="status"><p>{fullscreen.notice === "install" ? ui.fullscreenInstall : ui.fullscreenUnavailable}</p>{fullscreen.notice === "install" && !publicPage && <a href={`/${lang}/play/?road=${snapshot.code}`}>{ui.fullscreenGamePage}</a>}</div>}
         {!error && <RoadAccount lang={lang} account={account} reload={board.reload} failed={board.failed} suggestedName={board.name} />}
         {menu && !error ? <>
           <div className="egg-road-tabs" role="tablist" aria-label={ui.menuTabs}>

@@ -267,7 +267,8 @@ export class RoadSimulation {
       distance: this.progress, bonus: this.scoring.notice, activeBonuses: [...this.scoring.active], rhythmCue: this.rhythm.cue(this.flightTime <= 0.35),
       level: this.track.level, boost: this.rhythm.charge, rhythm: this.rhythm.chain,
       seconds: this.seconds, finished: this.phase === "finished",
-      speed: Math.hypot(velocity.x, velocity.y, velocity.z),
+      // Show travel across the road, not the vertical speed of a fall or bounce.
+      speed: Math.hypot(velocity.x, velocity.z),
       airborne: !this.nearRoad && this.flightTime > 0.35,
       flightLeft: Math.max(0, FLIGHT_LIMIT - this.flightTime),
       progress: this.progress / this.track.length, lastSkip: this.lastSkip,

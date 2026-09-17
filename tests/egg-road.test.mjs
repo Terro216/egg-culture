@@ -80,6 +80,25 @@ test("CCD catches a fast falling egg on a thin road surface", () => {
   } finally { sim.dispose(); }
 });
 
+test("falling and bouncing vertically do not masquerade as fast travel on the HUD", () => {
+  const sim = new RoadSimulation(track);
+  try {
+    sim.start(); advance(sim, .5);
+    const surface = track.samples[20];
+    sim.body.setTranslation(surface.position.clone().addScaledVector(surface.normal, 12), true);
+    sim.body.setLinvel({ x: 0, y: -25, z: 0 }, true);
+    sim.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    sim.step(0);
+    assert.ok(Math.abs(sim.body.linvel().y) > 25, "the egg really is falling at over 90 km/h");
+    assert.ok(sim.snapshot().speed < 1, "almost no travel must show almost no speed");
+    sim.body.setLinvel({ x: 0, y: 25, z: 0 }, true);
+    sim.body.setAngvel({ x: 25, y: 20, z: 15 }, true);
+    assert.equal(sim.snapshot().speed, 0, "vertical bounce and spinning in place are not travel");
+    sim.body.setLinvel({ x: 3, y: 25, z: -4 }, true);
+    assert.equal(sim.snapshot().speed, 5, "forward and sideways motion still contribute");
+  } finally { sim.dispose(); }
+});
+
 test("a fall away from the road ends the run without awarding gates", () => {
   const sim = new RoadSimulation(track);
   try {

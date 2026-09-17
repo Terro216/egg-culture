@@ -19,9 +19,11 @@ export class RollRhythm {
   reset() { this.charge = this.chain = this.direction = this.duration = this.rollingDistance = this.idle = 0; }
 
   step(dt: number, input: number, lateralSpeed: number, rollRate: number, nearRoad: boolean) {
-    this.charge = Math.max(0, this.charge - dt * (nearRoad ? 0.07 : 0.35));
+    // Flight pauses the stroke, charge and chain. Inputs in the air earn nothing.
+    if (!nearRoad) return;
+    this.charge = Math.max(0, this.charge - dt * 0.07);
     const direction = Math.abs(input) > 0.3 ? Math.sign(input) : 0;
-    if (!direction || !nearRoad) {
+    if (!direction) {
       this.idle += dt;
       if (this.idle > 0.22) { this.direction = this.duration = this.rollingDistance = this.chain = 0; }
       return;

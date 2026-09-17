@@ -13,7 +13,7 @@ import type { ScoreBreakdown, ScoreNotice, BonusKind } from "./scoring.ts";
 export const PHYSICS_STEP = 1 / 120;
 export const FLIGHT_LIMIT = 4.2;
 export type RoadPhase = "ready" | "overview" | "intro" | "running" | "paused" | "over" | "finished";
-export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number; mode: RoadMode; gates: number; breakdown: ScoreBreakdown };
+export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number; mode: RoadMode; code: string; distance: number; gates: number; breakdown: ScoreBreakdown };
 export type RoadSnapshot = RoadResult & {
   phase: RoadPhase;
   speed: number;
@@ -165,6 +165,8 @@ export class RoadSimulation {
     const input = Number.isFinite(steering) ? MathUtils.clamp(steering, -1, 1) : 0;
     const spin = this.body.angvel();
     const rollRate = spin.x * sample.tangent.x + spin.y * sample.tangent.y + spin.z * sample.tangent.z;
+    // The asymmetric shell makes tiny hops between contacts. They belong to the
+    // same roll; only a real departure from the lane pauses the rhythm.
     this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), rollRate, this.nearRoad || (this.flightTime === 0 && this.airTime < 1.2));
     this.body.resetForces(true);
     this.force.copy(sample.right).multiplyScalar(input * (this.nearRoad ? 25 : 11));

@@ -170,6 +170,25 @@
   .egg-road-calibrate { bottom: calc(200px + env(safe-area-inset-bottom, 0px)); }
 }
 .egg-road-rhythm-intro { margin: 12px 0 0; color: #e5c08b; font-size: 11px; line-height: 1.6; }
+.egg-road-personal-best { margin: 12px 0; color: #c8af94; font-size: 11px; }
+.egg-road-personal-best strong { color: #f5d8a9; font-variant-numeric: tabular-nums; }
+.egg-road-publish { margin: 16px 0 12px; padding-top: 14px; border-top: 1px solid #b18e6330; }
+.egg-road-publish label { display: block; color: #e5c08b; font-size: 11px; margin-bottom: 8px; }
+.egg-road-publish > div { display: flex; gap: 8px; }
+.egg-road-publish input { font-family: inherit; font-size: 16px; }
+.egg-road-publish button { flex-shrink: 0; padding: 8px 12px; border: 1px solid #e5c08b88; border-radius: 4px; background: #e5c08b20; color: #f7e2bd; font-size: 11px; }
+.egg-road-publish > small { display: block; color: #bba48d; margin: 9px 0 0; font-size: 10px; line-height: 1.6; }
+.egg-road-publish p { color: #e5c08b; font-size: 11px; line-height: 1.6; }
+.egg-road-leaderboard table { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.egg-road-leaderboard th, .egg-road-leaderboard td { padding: 8px 4px; border-bottom: 1px solid #b18e6322; text-align: left; font-weight: 400; overflow-wrap: anywhere; }
+.egg-road-leaderboard th:first-child, .egg-road-leaderboard td:first-child { width: 28px; }
+.egg-road-leaderboard th:last-child, .egg-road-leaderboard td:last-child { text-align: right; width: 88px; }
+.egg-road-leaderboard .is-mine { color: #f7dfa8; background: #e5c08b12; }
+.egg-road-leaderboard small { font-size: 9px; opacity: .75; }
+.egg-road-leaderboard button { background: transparent; border: 0; padding: 6px 0; color: #e5c08b; text-decoration: underline; }
+.egg-road-records-note { font-size: 10px; opacity: .8; }
+.egg-road-adepts { margin: 15px 0 0; padding-top: 13px; border-top: 1px solid #b18e6330; font-size: 11px; color: #baa58f; line-height: 1.7; }
+.egg-road-adepts a { display: inline-block; color: #e5c08b; text-decoration: underline; text-underline-offset: 3px; }
 .egg-road-rhythm { padding: 7px 6px; border: 1px solid #f2cd942b; border-radius: 16px; background: #17131ec9; box-shadow: 0 4px 18px #100b1830; }
 @media (max-height: 560px) and (min-width: 600px) {
   .egg-road-rhythm { bottom: max(15px, env(safe-area-inset-bottom, 0px)); }

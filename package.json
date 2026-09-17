@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "dev": "astro dev --host",
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@types/d3-geo": "^3.1.0",
+    "@types/node": "^22.20.3",
     "@types/three": "^0.184.1",
     "@types/topojson-client": "^3.1.5",
     "typescript": "^5.9.3"

@@ -37,6 +37,7 @@ const ui = {
     loadError: "Не удалось загрузить испытание. Вернитесь к выбору и попробуйте снова.",
     begin: "Начать",
     best: "Лучший результат",
+    endlessBest: "Рекорд бесконечной дороги",
     back: "К выбору испытаний",
   },
   en: {
@@ -57,6 +58,7 @@ const ui = {
     loadError: "The trial could not load. Return to the selection and try again.",
     begin: "Begin",
     best: "Best result",
+    endlessBest: "Endless road best",
     back: "Choose another trial",
   },
 } as const;
@@ -70,7 +72,7 @@ export const AdeptGames: React.FC<{ lang: MotionTrialLang }> = ({ lang }) => {
   const [roadBest, setRoadBest] = useState(0);
 
   useEffect(() => {
-    setRoadBest(readPointsBest());
+    setRoadBest(readPointsBest("endless"));
     if (new URL(window.location.href).searchParams.has("road")) setActive("road");
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -113,7 +115,7 @@ export const AdeptGames: React.FC<{ lang: MotionTrialLang }> = ({ lang }) => {
           <GameBoundary key={active} message={text.loadError}>
             <Suspense fallback={<p role="status">{text.loading}</p>}>
               {active === "road" ? (
-                <EggRoad lang={lang} onClose={() => setActive(null)} onComplete={(result) => setRoadBest((best) => Math.max(best, result.score))} />
+                <EggRoad lang={lang} onClose={() => { setRoadBest(readPointsBest("endless")); setActive(null); }} onComplete={(result) => { if (result.mode === "endless") setRoadBest((best) => Math.max(best, result.score)); }} />
               ) : (
                 <MotionTrial key={active} kind={active} lang={lang} onComplete={saveResult} />
               )}
@@ -137,7 +139,7 @@ export const AdeptGames: React.FC<{ lang: MotionTrialLang }> = ({ lang }) => {
               </p>
               {(kind === "road" ? roadBest : scores[kind]) ? (
                 <small>
-                  {text.best}: {kind === "road" ? `${roadBest} ${text.gates}` : `${scores[kind]} / 100`}
+                  {kind === "road" ? text.endlessBest : text.best}: {kind === "road" ? `${roadBest} ${text.gates}` : `${scores[kind]} / 100`}
                 </small>
               ) : null}
               <button type="button" onClick={() => setActive(kind)}>

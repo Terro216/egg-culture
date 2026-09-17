@@ -5,7 +5,8 @@ import type { RoadResult, RoadSnapshot } from "./simulation.ts";
 import type { GyroState } from "./camera.ts";
 import type { RoadSpec } from "./seed.ts";
 import { newRoadSeed, parseRoadCode } from "./seed.ts";
-import { readPointsBest, saveRoadScore, readRoadProgress, readSavedRoads, saveRoad, forgetRoad, ROAD_STORAGE_KEY } from "./storage.ts";
+import { readTrackBest, saveTrackScore, saveRoadScore, readRoadProgress, readSavedRoads, saveRoad, forgetRoad, ROAD_STORAGE_KEY } from "./storage.ts";
+import { RoadRecords, useRoadRecords } from "./RoadRecords.tsx";
 import { emptyScore } from "./scoring.ts";
 import type { BonusKind } from "./scoring.ts";
 import { copy } from "./copy.ts";
@@ -19,8 +20,8 @@ const initialSnapshot: RoadSnapshot = {
   rhythmCue: { state: "start", direction: 0, progress: 0 }, code: "EGG1-R-1-0", distance: 0, bonus: null, activeBonuses: [],
 };
 
-export default function EggRoad({ lang, onClose, onComplete }: {
-  lang: EggRoadLang; onClose: () => void; onComplete?: (result: RoadResult) => void;
+export default function EggRoad({ lang, onClose, onComplete, publicPage = false }: {
+  lang: EggRoadLang; onClose: () => void; onComplete?: (result: RoadResult) => void; publicPage?: boolean;
 }) {
   const ui = copy[lang];
   const canvasHost = useRef<HTMLDivElement>(null), modal = useRef<HTMLDivElement>(null);
@@ -29,6 +30,8 @@ export default function EggRoad({ lang, onClose, onComplete }: {
   const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const completeRef = useRef(onComplete); completeRef.current = onComplete;
   const [snapshot, setSnapshot] = useState(initialSnapshot);
+  const [result, setResult] = useState<RoadResult | null>(null);
+  const board = useRoadRecords(snapshot.code, result);
   const [ready, setReady] = useState(false), [error, setError] = useState(false);
   const [menu, setMenu] = useState(true);
   const [muted, setMuted] = useState(true); const mutedRef = useRef(true);
@@ -45,7 +48,7 @@ export default function EggRoad({ lang, onClose, onComplete }: {
     const previousOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden"; modal.current?.focus();
-    setBest(readPointsBest("levels")); setSaved(readSavedRoads()); setProgress(readRoadProgress());
+    setBest(readTrackBest(initialSnapshot.code)); setSaved(readSavedRoads()); setProgress(readRoadProgress());
     try { mutedRef.current = JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "null")?.muted !== false; setMuted(mutedRef.current); } catch { /* Optional storage. */ }
     const abort = new AbortController(); let instance: RoadEngine | null = null;
     void import("./engine.ts").then(({ createRoadEngine }) => {
@@ -53,8 +56,8 @@ export default function EggRoad({ lang, onClose, onComplete }: {
       return createRoadEngine(canvasHost.current, {
         update: setSnapshot, gyro: setGyro, failure: () => setError(true),
         complete: result => {
-          setNewBest(result.score > readPointsBest(result.mode));
-          setBest(saveRoadScore(result.mode, result.score)); setProgress(readRoadProgress());
+          setResult(result); setNewBest(result.score > readTrackBest(result.code));
+          setBest(saveTrackScore(result.code, result.score)); saveRoadScore(result.mode, result.score); setProgress(readRoadProgress());
           completeRef.current?.(result);
         },
       }, abort.signal);
@@ -79,11 +82,16 @@ export default function EggRoad({ lang, onClose, onComplete }: {
       engine.current?.steer(0); engine.current?.lookAround(0, 0);
     }
   }, [snapshot.phase, menu]);
-  useEffect(() => { setBest(readPointsBest(snapshot.mode)); setShareMessage(""); setShareValue(null); }, [snapshot.mode, snapshot.code]);
+  useEffect(() => { setBest(readTrackBest(snapshot.code)); setShareMessage(""); setShareValue(null); }, [snapshot.code]);
+  useEffect(() => {
+    if (!board.data || board.data.code !== snapshot.code) return;
+    if (board.data.personal) setBest(saveTrackScore(snapshot.code, board.data.personal.score));
+    saveRoadScore("endless", board.data.endlessBest);
+  }, [board.data, snapshot.code]);
   useEffect(() => { if (calibrated) { const timer = setTimeout(() => setCalibrated(false), 1800); return () => clearTimeout(timer); } }, [calibrated]);
 
   const choose = (spec: RoadSpec) => {
-    try { engine.current?.selectRoad(spec); setNewBest(false); setMenu(false); setShareMessage(""); setShareValue(null); }
+    try { engine.current?.selectRoad(spec); setResult(null); setNewBest(false); setMenu(false); setShareMessage(""); setShareValue(null); }
     catch { setError(true); }
   };
   const loadSeed = (value: string) => { const spec = parseRoadCode(value); setSeedError(!spec); if (spec) choose(spec); };
@@ -98,14 +106,14 @@ export default function EggRoad({ lang, onClose, onComplete }: {
     try { localStorage.setItem(ROAD_STORAGE_KEY, JSON.stringify({ ...JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "{}"), muted: mutedRef.current })); } catch { /* Optional. */ }
   };
   const copySeed = async (link = false) => {
-    const url = new URL(window.location.href); url.search = ""; url.hash = ""; url.searchParams.set("road", snapshot.code);
+    const url = new URL(`/${lang}/play/`, window.location.origin); url.searchParams.set("road", snapshot.code);
     const value = link ? url.toString() : snapshot.code;
     try { await navigator.clipboard.writeText(value); setShareMessage(ui.copied); }
     catch { setShareValue(value); setShareMessage(ui.copyManually); requestAnimationFrame(() => { codeField.current?.focus(); codeField.current?.select(); }); }
   };
   const remember = () => { if (saveRoad(snapshot.code)) { setSaved(readSavedRoads()); setShareMessage(ui.savedOne); } else setShareMessage(ui.storageError); };
   const calibrate = () => { if (engine.current?.calibrateGyro()) setCalibrated(true); };
-  const play = () => { setNewBest(false); engine.current?.play(); };
+  const play = () => { setResult(null); setNewBest(false); engine.current?.play(); };
   const ended = snapshot.phase === "over" || snapshot.phase === "finished";
   const flyingIn = snapshot.phase === "intro", overview = snapshot.phase === "overview";
   const showPanel = menu || !ready || error || (snapshot.phase !== "running" && !flyingIn && !overview);
@@ -120,7 +128,7 @@ export default function EggRoad({ lang, onClose, onComplete }: {
     <div className="egg-road" role="dialog" aria-modal="true" aria-label={ui.title} tabIndex={-1} ref={modal}
       onKeyDown={event => {
         if (event.key !== "Tab") return;
-        const focusable = [...(modal.current?.querySelectorAll<HTMLElement>("button:not([disabled]):not([tabindex='-1']),input,summary") ?? [])].filter(el => el.offsetParent !== null);
+        const focusable = [...(modal.current?.querySelectorAll<HTMLElement>("button:not([disabled]):not([tabindex='-1']),input:not([disabled]),summary,a[href]") ?? [])].filter(el => el.offsetParent !== null);
         const first = focusable[0], last = focusable.at(-1);
         if (event.shiftKey && (document.activeElement === first || document.activeElement === modal.current)) { event.preventDefault(); last?.focus(); }
         if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -128,7 +136,7 @@ export default function EggRoad({ lang, onClose, onComplete }: {
       <div className="egg-road-scene" ref={canvasHost} />
       <div className="egg-road-vignette" aria-hidden="true" />
       <header className="egg-road-hud">
-        <button className="egg-road-icon egg-road-exit" type="button" onClick={menu ? onClose : showModes} aria-label={menu ? ui.close : ui.modes}>
+        <button className="egg-road-icon egg-road-exit" type="button" onClick={menu ? onClose : showModes} aria-label={menu ? publicPage ? ui.publicClose : ui.close : ui.modes}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
         </button>
         <div className="egg-road-score" style={{ visibility: showPanel ? "hidden" : "visible" }}>
@@ -196,10 +204,13 @@ export default function EggRoad({ lang, onClose, onComplete }: {
           {ended && <><div className="egg-road-result"><strong>{snapshot.score}<span>{ui.score}</span></strong><dl><div><dt>{ui.gates}</dt><dd>{snapshot.gates}</dd></div><div><dt>{ui.distance}</dt><dd>{Math.floor(snapshot.distance)}</dd></div></dl></div>{newBest && <p className="egg-road-record">{ui.newBest}</p>}</>}
           {!error && <>
             {snapshot.phase === "ready" && <p className="egg-road-rhythm-intro">{ui.character}</p>}
+            {ready && <p className="egg-road-personal-best">{ui.trackBest}: <strong>{best}</strong></p>}
             <button className="egg-road-primary" type="button" disabled={!ready} onClick={play}>{!ready ? ui.loading : snapshot.phase === "paused" ? ui.resume : snapshot.finished && snapshot.mode === "levels" ? ui.next : ended ? ui.retry : ui.start}<span aria-hidden="true">↗</span></button>
-            {ready && snapshot.phase !== "paused" && <button className="egg-road-overview" type="button" onClick={() => { setNewBest(false); engine.current?.overview(); }}>{ui.overview} ◎</button>}
+            {ready && snapshot.phase !== "paused" && <button className="egg-road-overview" type="button" onClick={() => { setResult(null); setNewBest(false); engine.current?.overview(); }}>{ui.overview} ◎</button>}
+            {ready && ended && <RoadRecords lang={lang} board={board} result={result} />}
             {ready && <div className="egg-road-map-code"><label htmlFor="egg-road-code">{ui.code}</label><input id="egg-road-code" ref={codeField} readOnly value={shareValue ?? snapshot.code} onClick={event => event.currentTarget.select()} /><div><button onClick={() => void copySeed()}>{ui.copyCode}</button><button onClick={() => void copySeed(true)}>{ui.copyLink}</button><button disabled={saved.includes(snapshot.code)} onClick={remember}>{saved.includes(snapshot.code) ? ui.savedOne : ui.save}</button></div>{shareMessage && <p role="status">{shareMessage}</p>}</div>}
             {ended && <details className="egg-road-help"><summary>{ui.scoreBreakdown}</summary><dl className="egg-road-breakdown">{(Object.keys(snapshot.breakdown) as BonusKind[]).filter(kind => snapshot.breakdown[kind] > 0).map(kind => <div key={kind}><dt>{ui.bonusNames[kind]}</dt><dd>+{snapshot.breakdown[kind]}</dd></div>)}</dl></details>}
+            {ready && !ended && <RoadRecords lang={lang} board={board} result={null} />}
             <details className="egg-road-help"><summary>{ui.help}</summary><p>{ui.rhythmHelp}</p><ul>{[ui.gateRule, ui.edgeRule, ui.speedRule, ui.rhythmRule, ui.dropRule, ui.shortcutRule].map(rule => <li key={rule}>{rule}</li>)}</ul><p>{ui.fairRule}</p></details>
             {snapshot.phase === "ready" && <p className="egg-road-controls-copy">{ui.controls}<br />{ui.keyboard}<br />{ui.lookHint}</p>}
           </>}
@@ -209,7 +220,8 @@ export default function EggRoad({ lang, onClose, onComplete }: {
           {gyro === "on" && <><button type="button" onClick={calibrate}>{calibrated ? ui.calibrated : ui.calibrate}</button><p>{ui.tiltNote}</p></>}
           {gyro === "unavailable" && <p role="status">{ui.gyroMissing}</p>}
         </div>}
-        <div className="egg-road-panel-footer"><button type="button" onClick={menu ? onClose : showModes}>{menu ? ui.close : ui.modes}</button>{!error && <button type="button" onClick={toggleSound} aria-pressed={!muted}>{muted ? ui.soundOff : ui.soundOn}</button>}</div>
+        <div className="egg-road-panel-footer"><button type="button" onClick={menu ? onClose : showModes}>{menu ? publicPage ? ui.publicClose : ui.close : ui.modes}</button>{!error && <button type="button" onClick={toggleSound} aria-pressed={!muted}>{muted ? ui.soundOff : ui.soundOn}</button>}</div>
+        {publicPage && menu && <p className="egg-road-adepts">{ui.moreGames} <a href={`/${lang}/quiz/`}>{ui.initiation}</a></p>}
       </section></div>}
       {snapshot.mode !== "endless" && <div className="egg-road-progress" aria-hidden="true"><i style={{ transform: `scaleX(${snapshot.progress})` }} /></div>}
     </div>, document.body,

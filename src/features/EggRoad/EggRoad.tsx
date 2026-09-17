@@ -14,6 +14,7 @@ import { emptyScore } from "./scoring.ts";
 import type { BonusKind } from "./scoring.ts";
 import { copy } from "./copy.ts";
 import { useRoadFullscreen } from "./fullscreen.ts";
+import { Speedometer } from "./Speedometer.tsx";
 import "./EggRoad.css";
 
 export type EggRoadLang = "ru" | "en";
@@ -21,7 +22,7 @@ const initialSnapshot: RoadSnapshot = {
   phase: "ready", score: 0, skipped: 0, bestSkip: 0, seconds: 0, finished: false,
   speed: 0, airborne: false, flightLeft: 4.2, progress: 0, lastSkip: 0,
   level: 1, boost: 0, rhythm: 0, mode: "levels", gates: 0, breakdown: emptyScore(),
-  rhythmCue: { state: "start", direction: 0, progress: 0 }, code: "EGG1-R-1-0", distance: 0, bonus: null, activeBonuses: [],
+  rhythmCue: { state: "start", progress: 0 }, jumpAvailable: true, code: "EGG1-R-1-0", distance: 0, bonus: null, activeBonuses: [],
 };
 
 export default function EggRoad({ lang, onClose, onComplete, publicPage = false }: {
@@ -133,8 +134,6 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const stopLooking = () => { lookPointer.current = null; engine.current?.lookAround(0, 0); };
   const modeLabel = snapshot.mode === "endless" ? ui.endless : snapshot.level === 1 ? ui.tutorial : `${ui.level} ${snapshot.level}`;
   const cue = snapshot.rhythmCue;
-  const cueArrow = cue.state === "switch" || cue.state === "late" ? (cue.direction > 0 ? "←" : "→") : (cue.direction > 0 ? "→" : "←");
-  const cueText = cue.state === "start" ? ui.rhythmStart : cue.state === "air" ? ui.rhythmAir : `${cueArrow} ${cue.state === "switch" ? ui.rhythmSwitch : cue.state === "late" ? ui.rhythmLate : ui.rhythmHold}`;
 
   if (typeof document === "undefined") return null;
   return createPortal(
@@ -182,6 +181,11 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
           onLostPointerCapture={event => { heldPointers.current.delete(event.pointerId); updateSteering(); }}>
           <span aria-hidden="true">{direction < 0 ? "‹" : "›"}</span>
         </button>)}
+        <button className="egg-road-jump" type="button" disabled={!snapshot.jumpAvailable}
+          aria-label={snapshot.jumpAvailable ? ui.jumpHelp : ui.jumpUsed}
+          onPointerDown={event => { event.preventDefault(); engine.current?.jump(); }} onClick={() => engine.current?.jump()}>
+          <span aria-hidden="true">↑<b>{snapshot.jumpAvailable ? 1 : 0}</b></span><small>{ui.jump}</small>
+        </button>
         <button className="egg-road-look" type="button" tabIndex={-1} aria-label={ui.lookDrag}
           onPointerDown={event => { if (lookPointer.current) return; event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); lookPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY }; }}
           onPointerMove={event => { const start = lookPointer.current; if (start?.id === event.pointerId) engine.current?.lookAround((event.clientX - start.x) / 48, (event.clientY - start.y) / 70); }}
@@ -189,11 +193,13 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
           <span aria-hidden="true">◎</span><small>{ui.look}</small>
         </button>
         {gyro === "on" && <button className="egg-road-calibrate" type="button" onClick={calibrate} aria-label={ui.calibrate}>{calibrated ? "✓" : ui.calibrateShort}</button>}
-        <div className={`egg-road-rhythm ${cue.state === "switch" ? "is-ready" : ""} ${snapshot.boost > .1 ? "is-charged" : ""}`}>
-          <strong>{Math.round(snapshot.speed * 3.6)} <small>{ui.speedUnit}</small></strong>
-          <div className="egg-road-stroke"><i style={{ transform: `scaleX(${cue.progress})` }} /></div>
-          <span className="egg-road-cue">{cueText}</span>
-          <span>{ui.rhythm} ×{snapshot.rhythm} · +{Math.round(snapshot.boost * 32.4)} {ui.speedUnit}</span>
+        <div className={`egg-road-instruments ${snapshot.boost > .1 ? "is-charged" : ""}`}>
+          <Speedometer speed={snapshot.speed} unit={ui.speedUnit} />
+          <div className="egg-road-rhythm">
+            <span>{ui.rhythm} ×{snapshot.rhythm}{cue.state === "air" ? " ⏸" : ""}</span>
+            <div className="egg-road-charge"><i style={{ transform: `scaleX(${cue.progress})` }} /></div>
+            <small>{cue.state === "air" ? ui.rhythmAir : snapshot.boost > .1 ? `+${Math.round(snapshot.boost * 32.4)} ${ui.speedUnit}` : ui.rhythmStart}</small>
+          </div>
         </div>
         <div className="egg-road-active-bonuses">{snapshot.activeBonuses.map(kind => <span key={kind}>{ui.bonusNames[kind]} +</span>)}</div>
         <div className="egg-road-key-hint">{ui.keyboard}</div>
@@ -238,7 +244,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
           <p className="egg-road-intro">{error ? ui.errorText : snapshot.phase === "paused" ? ui.pausedText : ended ? snapshot.finished ? snapshot.mode === "levels" ? ui.finishedText : ui.seedFinished : ui.overText : ui.intro}</p>
           {ended && <><div className="egg-road-result"><strong>{snapshot.score}<span>{ui.score}</span></strong><dl><div><dt>{ui.gates}</dt><dd>{snapshot.gates}</dd></div><div><dt>{ui.distance}</dt><dd>{Math.floor(snapshot.distance)}</dd></div></dl></div>{newBest && <p className="egg-road-record">{ui.newBest}</p>}</>}
           {!error && <>
-            {snapshot.phase === "ready" && <p className="egg-road-rhythm-intro">{ui.character}</p>}
+            {snapshot.phase === "ready" && <p className="egg-road-rhythm-intro">{ui.character}<br />{ui.jumpHelp}</p>}
             {ready && <p className="egg-road-personal-best">{ui.trackBest}: <strong>{best}</strong></p>}
             <button className="egg-road-primary" type="button" disabled={!ready} onClick={play}>{!ready ? ui.loading : snapshot.phase === "paused" ? ui.resume : snapshot.finished && snapshot.mode === "levels" ? ui.next : ended ? ui.retry : ui.start}<span aria-hidden="true">↗</span></button>
             {ready && snapshot.phase !== "paused" && <button className="egg-road-overview" type="button" onClick={() => { setResult(null); setNewBest(false); engine.current?.overview(); }}>{ui.overview} ◎</button>}
@@ -246,7 +252,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
             {ready && <div className="egg-road-map-code"><label htmlFor="egg-road-code">{ui.code}</label><input id="egg-road-code" ref={codeField} readOnly value={shareValue ?? snapshot.code} onClick={event => event.currentTarget.select()} /><div><button onClick={() => void copySeed()}>{ui.copyCode}</button><button onClick={() => void copySeed(true)}>{ui.copyLink}</button><button disabled={saved.includes(snapshot.code)} onClick={remember}>{saved.includes(snapshot.code) ? ui.savedOne : ui.save}</button></div>{shareMessage && <p role="status">{shareMessage}</p>}</div>}
             {ended && <details className="egg-road-help"><summary>{ui.scoreBreakdown}</summary><dl className="egg-road-breakdown">{(Object.keys(snapshot.breakdown) as BonusKind[]).filter(kind => snapshot.breakdown[kind] > 0).map(kind => <div key={kind}><dt>{ui.bonusNames[kind]}</dt><dd>+{snapshot.breakdown[kind]}</dd></div>)}</dl></details>}
             {ready && !ended && <RoadRecords lang={lang} board={board} result={null} />}
-            <details className="egg-road-help"><summary>{ui.help}</summary><p>{ui.rhythmHelp}</p><ul>{[ui.gateRule, ui.edgeRule, ui.speedRule, ui.rhythmRule, ui.dropRule, ui.shortcutRule].map(rule => <li key={rule}>{rule}</li>)}</ul><p>{ui.fairRule}</p></details>
+            <details className="egg-road-help"><summary>{ui.help}</summary><p>{ui.rhythmHelp}</p><p>{ui.jumpHelp}</p><ul>{[ui.gateRule, ui.edgeRule, ui.speedRule, ui.rhythmRule, ui.dropRule, ui.shortcutRule].map(rule => <li key={rule}>{rule}</li>)}</ul><p>{ui.fairRule}</p></details>
             {snapshot.phase === "ready" && <p className="egg-road-controls-copy">{ui.controls}<br />{ui.keyboard}<br />{ui.lookHint}</p>}
           </>}
         </>}

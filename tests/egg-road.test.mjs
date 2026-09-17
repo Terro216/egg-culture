@@ -111,6 +111,54 @@ test("a fall away from the road ends the run without awarding gates", () => {
   } finally { sim.dispose(); }
 });
 
+test("one ground jump lifts the real egg, preserves its spin, freezes rhythm and recharges only on retry", () => {
+  const sim = new RoadSimulation(track);
+  try {
+    assert.equal(sim.jump(), false, "cannot spend a jump before the run");
+    sim.start();
+    while (!sim.grounded && sim.seconds < 1) sim.step(0);
+    assert.ok(sim.grounded);
+    sim.rhythm.charge = .7; sim.rhythm.chain = 4;
+    const before = { ...sim.body.linvel() }, spin = { ...sim.body.angvel() }, startY = sim.position.y;
+    assert.equal(sim.jump(), true);
+    const boosted = { ...sim.body.linvel() };
+    assert.ok(boosted.y >= 6); assert.equal(boosted.x, before.x); assert.equal(boosted.z, before.z);
+    assert.deepEqual({ ...sim.body.angvel() }, spin);
+    assert.equal(sim.jump(), false);
+    assert.equal(sim.snapshot().jumpAvailable, false);
+    advance(sim, .2, -1);
+    assert.ok(sim.position.y > startY + .5, "a real upward flight, not a HUD effect");
+    assert.equal(sim.rhythm.charge, .7); assert.equal(sim.rhythm.chain, 4);
+    assert.equal(sim.snapshot().rhythmCue.state, "air");
+    sim.pause(); assert.equal(sim.jump(), false); sim.resume();
+    let landed = false;
+    for (let i = 0; i < 156; i++) { sim.step(0); landed ||= sim.grounded; }
+    assert.ok(landed, "the short rescue jump can land back on the opening road");
+    assert.equal(sim.jump(), false, "landing does not recharge it");
+    sim.reset(); sim.start(); assert.equal(sim.jump(), true);
+  } finally { sim.dispose(); }
+});
+
+test("an air jump arrests a fast fall and gives a late rescue time to work, once", () => {
+  const sim = new RoadSimulation(track);
+  try {
+    sim.start(); sim.body.setTranslation({ x: 500, y: 300, z: 500 }, true);
+    sim.body.setLinvel({ x: 3, y: -60, z: -4 }, true);
+    sim.flightTime = FLIGHT_LIMIT - .05;
+    sim.step(0);
+    assert.equal(sim.grounded, false);
+    const before = { ...sim.body.linvel() };
+    assert.equal(sim.jump(), true);
+    assert.ok(sim.body.linvel().y > 0);
+    assert.equal(sim.body.linvel().x, before.x); assert.equal(sim.body.linvel().z, before.z);
+    assert.ok(sim.snapshot().flightLeft >= .99);
+    advance(sim, .5);
+    assert.equal(sim.phase, "running"); assert.equal(sim.jump(), false);
+    advance(sim, .7);
+    assert.equal(sim.phase, "over"); assert.equal(sim.jump(), false);
+  } finally { sim.dispose(); }
+});
+
 test("landing on the end of the course finishes the run and freezes its result", () => {
   const sim = new RoadSimulation(track);
   try {
@@ -203,6 +251,30 @@ test("well-timed rocking gives real extra speed; tapping rapidly does not charge
   assert.ok(rocking.distance > straight.distance + 5);
   assert.equal(tapping.charge, 0);
   assert.equal(straight.warnings + rocking.warnings + tapping.warnings, 0);
+});
+
+test("steering from the road position alone builds useful rhythm with no timing cue", () => {
+  const sim = new RoadSimulation(track), straight = new RoadSimulation(track);
+  try {
+    sim.start(); straight.start();
+    let target = .65, input = 0, warnings = 0;
+    for (let i = 0; i < 360; i++) {
+      const sample = sim.track.samples[sim.sampleIndex];
+      const side = sim.position.clone().sub(sample.position).dot(sample.right);
+      const lateral = new Vector3().copy(sim.body.linvel()).dot(sample.right);
+      if ((target > 0 && side > target) || (target < 0 && side < target)) target = -target;
+      // React every 150 ms to position and drift, never to rhythm or elapsed stroke time.
+      if (i % 18 === 0) {
+        const correction = target - side - lateral * .25;
+        input = Math.abs(correction) < .15 ? 0 : Math.sign(correction);
+      }
+      sim.step(input); straight.step(0); warnings += Number(sim.snapshot().airborne);
+    }
+    assert.equal(warnings, 0);
+    assert.ok(sim.rhythm.chain >= 3 && sim.rhythm.charge > .6);
+    assert.ok(sim.snapshot().speed > straight.snapshot().speed * 1.2);
+    assert.ok(sim.scoring.totals.rhythm > 20, "ordinary corrections earn real points on the road");
+  } finally { sim.dispose(); straight.dispose(); }
 });
 
 test("the flyby and its pause keep the egg frozen until the descent starts", () => {

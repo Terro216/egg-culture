@@ -45,13 +45,27 @@
 .egg-road-look { position: absolute; z-index: 2; right: max(28px, env(safe-area-inset-right, 0px)); bottom: calc(140px + env(safe-area-inset-bottom, 0px)); display: grid; place-items: center; width: 58px; height: 64px; padding: 4px; border: 1px solid #f2cd9440; border-radius: 22px; color: #e8c49b; background: #17131e77; }
 .egg-road-look > span { font-size: 28px; line-height: 1; }
 .egg-road-look > small { font-size: 9px; }
-.egg-road-rhythm { position: absolute; z-index: 2; bottom: calc(49px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: clamp(90px, 28vw, 145px); text-align: center; pointer-events: none; color: #e5c49b; }
-.egg-road-rhythm > strong { font-size: 22px; font-weight: 400; font-variant-numeric: tabular-nums; }
-.egg-road-rhythm small { font-size: 9px; font-weight: 400; }
-.egg-road-rhythm > div { height: 3px; margin: 6px 0; overflow: hidden; border-radius: 2px; background: #efd9b52b; }
-.egg-road-rhythm i { display: block; width: 100%; height: 100%; background: #ffdb9a; transform-origin: left; }
-.egg-road-rhythm > span { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
-.egg-road-rhythm.is-charged { color: #ffdf9e; text-shadow: 0 0 14px #eaa45688; }
+.egg-road-jump { position: absolute; z-index: 2; left: max(28px, env(safe-area-inset-left, 0px)); bottom: calc(140px + env(safe-area-inset-bottom, 0px)); display: grid; place-items: center; width: 58px; height: 64px; padding: 4px; border: 1px solid #f2cd9477; border-radius: 22px; color: #f7dfb8; background: #352536cc; }
+.egg-road-jump > span { font-size: 28px; line-height: 1; }
+.egg-road-jump b { margin-left: 3px; font-size: 13px; font-weight: 500; vertical-align: middle; }
+.egg-road-jump > small { font-size: 9px; }
+.egg-road-instruments { position: absolute; z-index: 2; bottom: calc(44px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 148px; padding: 5px 3px 8px; text-align: center; pointer-events: none; color: #e5c49b; border: 1px solid #f2cd942b; border-radius: 72px 72px 15px 15px; background: #17131ebd; }
+.egg-road-speedometer { display: block; width: 140px; height: 84px; overflow: visible; }
+.egg-road-dial, .egg-road-dial-fill { fill: none; stroke: #efd9b526; stroke-width: 3; stroke-linecap: round; }
+.egg-road-dial-fill { stroke: #edc893; }
+.egg-road-dial-tick { stroke: #e5c49b; stroke-width: 1.5; }
+.egg-road-speedometer text { fill: currentColor; text-anchor: middle; font-family: inherit; font-variant-numeric: tabular-nums; }
+.egg-road-dial-label { font-size: 10px; }
+.egg-road-needle { transform-origin: 90px 74px; transition: transform .14s linear; fill: #ffdc9d; }
+.egg-road-dial-hub { fill: #ffdc9d; }
+.egg-road-speed-value { font-size: 23px; font-weight: 500; fill: #f8ebd8 !important; }
+.egg-road-speed-unit { font-size: 10px; }
+.egg-road-rhythm { width: 120px; margin: 3px auto 0; line-height: 1.3; }
+.egg-road-rhythm > span { display: block; font-size: 10px; }
+.egg-road-rhythm small { display: block; font-size: 9px; }
+.egg-road-charge { height: 3px; margin: 5px 0; overflow: hidden; border-radius: 2px; background: #efd9b52b; }
+.egg-road-charge i { display: block; width: 100%; height: 100%; background: #ffdb9a; transform-origin: left; transition: transform .15s linear; }
+.egg-road-instruments.is-charged { color: #ffdf9e; border-color: #f2cd9466; }
 .egg-road-flyby { position: absolute; z-index: 2; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 100%; text-align: center; }
 .egg-road-flyby p { font-size: 12px; color: #f3d6ad; text-shadow: 0 2px 8px #17131e; }
 .egg-road-flyby button { min-height: 44px; padding: 10px 24px; border: 1px solid #e8c49b77; border-radius: 24px; color: #f4d7ab; background: #17131ecc; font-size: 12px; }
@@ -123,7 +137,7 @@
 }
 @media (pointer: coarse) { .egg-road-key-hint { display: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .egg-road-flight, .egg-road-steer > span { transition: none; }
+  .egg-road-flight, .egg-road-steer > span, .egg-road-needle, .egg-road-charge i { transition: none; }
 }
 
 .egg-road-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 20px 0; }
@@ -152,13 +166,7 @@
 .egg-road-breakdown dd { margin: 0; font-variant-numeric: tabular-nums; color: #f7dfb8; }
 .egg-road-controls-copy { margin: 12px 0; font-size: 10px; color: #baa58f; line-height: 1.7; }
 .egg-road-calibrate { position: absolute; z-index: 2; right: max(28px, env(safe-area-inset-right, 0px)); bottom: calc(212px + env(safe-area-inset-bottom, 0px)); width: 58px; min-height: 36px; font-size: 10px !important; background: #17131e99; border: 1px solid #f2cd9440; color: #e8c49b; border-radius: 15px; }
-.egg-road-rhythm { width: clamp(135px, 34vw, 180px); bottom: calc(46px + env(safe-area-inset-bottom, 0px)); }
-.egg-road-rhythm > span { display: block; font-size: 9px; letter-spacing: .01em; text-transform: none; }
-.egg-road-rhythm .egg-road-cue { min-height: 21px; line-height: 21px; font-size: 12px; font-weight: 500; }
-.egg-road-stroke { height: 5px !important; }
-.egg-road-rhythm.is-ready .egg-road-cue { color: #cbf2ae; }
-.egg-road-rhythm.is-ready i { background: #cbf2ae; }
-.egg-road-active-bonuses { position: absolute; z-index: 2; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 10px; color: #f5d8a9; pointer-events: none; }
+.egg-road-active-bonuses { position: absolute; z-index: 2; bottom: calc(216px + env(safe-area-inset-bottom, 0px)); left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 10px; color: #f5d8a9; pointer-events: none; }
 @media (max-width: 360px) {
   .egg-road-mode-grid { gap: 7px; }
   .egg-road-mode-grid button { padding: 11px 9px; }
@@ -166,7 +174,6 @@
   .egg-road-menu { padding: 20px; }
   .egg-road-seed-form > div { flex-wrap: wrap; }
   .egg-road-seed-form button { width: 100%; }
-  .egg-road-rhythm { width: 135px; }
 }
 @media (max-height: 560px) and (min-width: 600px) {
   .egg-road-mode-grid { grid-template-columns: repeat(4, 1fr); margin: 12px 0; }
@@ -225,7 +232,6 @@
 .egg-road-recovery input { font-size: 11px; }
 .egg-road-adepts { margin: 15px 0 0; padding-top: 13px; border-top: 1px solid #b18e6330; font-size: 11px; color: #baa58f; line-height: 1.7; }
 .egg-road-adepts a { display: inline-block; color: #e5c08b; text-decoration: underline; text-underline-offset: 3px; }
-.egg-road-rhythm { padding: 7px 6px; border: 1px solid #f2cd942b; border-radius: 16px; background: #17131ec9; box-shadow: 0 4px 18px #100b1830; }
 .egg-road-fullscreen-note { margin: 12px 0; padding: 12px; border: 1px solid #e5c08b55; border-radius: 4px; color: #e5c08b; font-size: 12px; line-height: 1.6; }
 .egg-road-fullscreen-note p { margin: 0; }
 .egg-road-fullscreen-note a { display: inline-block; margin-top: 8px; color: inherit; text-decoration: underline; }
@@ -252,13 +258,13 @@
   .egg-road-look { width: 48px; height: 44px; border-radius: 15px; right: max(28px, env(safe-area-inset-right, 0px)); bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
   .egg-road-look > span { font-size: 25px; }
   .egg-road-look > small { display: none; }
+  .egg-road-jump { width: 48px; height: 44px; border-radius: 15px; left: max(28px, env(safe-area-inset-left, 0px)); bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
+  .egg-road-jump > small { display: none; }
   .egg-road-calibrate { width: 52px; min-height: 44px; right: calc(85px + env(safe-area-inset-right, 0px)); bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
-  .egg-road-rhythm { bottom: max(10px, env(safe-area-inset-bottom, 0px)); width: min(390px, calc(100% - 190px)); padding: 6px 10px; display: grid; grid-template-columns: 65px minmax(80px, 1fr) auto; align-items: center; gap: 0 10px; border-radius: 12px; }
-  .egg-road-rhythm > strong { grid-column: 1; grid-row: 1 / 3; font-size: 21px; white-space: nowrap; }
-  .egg-road-rhythm .egg-road-cue { grid-column: 2; grid-row: 1; min-height: 16px; line-height: 16px; font-size: 10px; }
-  .egg-road-rhythm > .egg-road-stroke { grid-column: 2; grid-row: 2; height: 3px !important; margin: 3px 0 0; }
-  .egg-road-rhythm > span:last-child { grid-column: 3; grid-row: 1 / 3; font-size: 9px; max-width: 100px; line-height: 1.4; }
-  .egg-road-active-bonuses { left: 50%; transform: translateX(-50%); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); flex-direction: row; gap: 9px; white-space: nowrap; font-size: 9px; }
+  .egg-road-instruments { bottom: max(8px, env(safe-area-inset-bottom, 0px)); width: 244px; padding: 4px 10px 4px 4px; display: flex; align-items: center; gap: 8px; border-radius: 54px 14px 14px 14px; }
+  .egg-road-speedometer { width: 120px; height: 72px; flex-shrink: 0; }
+  .egg-road-rhythm { width: 100px; margin: 0; }
+  .egg-road-active-bonuses { left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); flex-direction: row; gap: 9px; white-space: nowrap; font-size: 9px; }
   .egg-road-overlay { padding-top: calc(64px + env(safe-area-inset-top, 0px)); padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
   .egg-road-panel { padding: 18px 24px; }
   .egg-road-panel h1 { font-size: 29px; }

@@ -8,8 +8,8 @@ import { RollRhythm } from "../src/features/EggRoad/rhythm.ts";
 test("look controls are bounded, smooth, and return to the forward view", () => {
   const look = new CameraLook(() => {});
   look.setManual(10, -10); look.step(.1);
-  assert.ok(look.x > 0 && look.x < 1 && look.y < 0 && look.y > -1);
-  for (let i = 0; i < 60; i++) look.step(1/60);
+  assert.ok(look.x > 0 && look.x < .04 && look.y < 0 && look.y > -1, "a short gesture only peeks sideways");
+  for (let i = 0; i < 240; i++) look.step(1/60);
   const facing = lookDirection(new Vector3(0, 0, -1), look.x);
   assert.ok(facing.z > .9 && facing.x < -.3, "manual look reaches past the rear view to 200 degrees");
   const left = lookDirection(new Vector3(0, 0, -1), -1);
@@ -19,10 +19,34 @@ test("look controls are bounded, smooth, and return to the forward view", () => 
     assert.ok(rear.z > .999 && Math.abs(rear.x) < 1e-9, "180 degrees looks straight behind the egg");
   }
   look.setManual(0, 0);
-  for (let i = 0; i < 120; i++) look.step(1/60);
+  for (let i = 0; i < 240; i++) look.step(1/60);
   assert.ok(Math.abs(look.x) < 1e-5 && Math.abs(look.y) < 1e-5);
-  look.step(.5, -1); assert.ok(look.x < -.9);
+  for (let i = 0; i < 240; i++) look.step(1/60, -1);
+  assert.ok(look.x < -.99, "keyboard has the same full range");
   look.recenter(); assert.equal(look.x, 0);
+});
+
+test("looking further turns more slowly, remains gentle on release and behaves consistently across frame rates", () => {
+  const profiles = [];
+  for (const fps of [60, 120]) {
+    const look = new CameraLook(() => {}), profile = [];
+    look.setManual(1, 0);
+    for (let i = 0; i < fps * 3; i++) {
+      const before = look.x; look.step(1 / fps);
+      assert.ok(Math.abs(look.x - before) * 200 <= 130 / fps + 1e-9, "rotation never snaps");
+      profile.push(look.x);
+    }
+    const early = profile[fps] - profile[fps / 2];
+    const late = profile[2.5 * fps] - profile[2 * fps];
+    assert.ok(late < early * .7, "speed noticeably drops toward the rear");
+    look.setManual(0, 0);
+    for (let i = 0; i < fps; i++) {
+      const before = look.x; look.step(1 / fps);
+      assert.ok(before - look.x <= .65 / fps + 1e-9, "release also has a speed limit");
+    }
+    profiles.push(profile[fps - 1]);
+  }
+  assert.ok(Math.abs(profiles[0] - profiles[1]) < .005);
 });
 
 test("tilt stays relative to the held position and follows screen rotation", () => {
@@ -50,7 +74,7 @@ test("gyro activation handles denial, missing readings, recentering, and late pe
     permission = async () => 'granted';
     await look.enableGyro(); assert.equal(look.gyroState, 'waiting');
     reading(null, null); assert.equal(look.gyroState, 'waiting');
-    reading(45, 0); reading(45, 24); look.step(1);
+    reading(45, 0); reading(45, 24); look.step(2);
     const yaw = () => lookDirection(new Vector3(0,0,-1), look.x).angleTo(new Vector3(0,0,-1));
     assert.equal(look.gyroState, 'on');assert.ok(yaw() > .649 && yaw() < .651, 'wide manual look preserves the gentle tilt sensitivity');
     assert.equal(look.calibrate(),true);look.step(1);assert.equal(look.x,0);
@@ -78,7 +102,7 @@ test("gyro activation handles denial, missing readings, recentering, and late pe
 test("a rhythm bonus requires lateral rolling and freezes during flight", () => {
   const rhythm = new RollRhythm();
   const stroke = (direction, moving=true, near=true) => {
-    for (let i=0;i<54;i++) rhythm.step(1/120,direction,moving?direction*2:0,moving?2:0,near);
+    for (let i=0;i<54;i++) rhythm.step(1/120,direction,moving?direction*2:0,moving?12:0,near);
   };
   stroke(1,false);stroke(-1,false);stroke(1,false);
   assert.equal(rhythm.charge,0,'input without actual rolling earns nothing');
@@ -88,8 +112,11 @@ test("a rhythm bonus requires lateral rolling and freezes during flight", () => 
   for(let i=0;i<360;i++) rhythm.step(1/120,i%2?1:-1,20,20,false);
   assert.equal(rhythm.charge,charge);assert.equal(rhythm.chain,chain);
   assert.deepEqual(rhythm.cue(true),cue,'stroke timing pauses along with charge');
-  rhythm.step(1/120,-1,-2,2,true);
+  rhythm.step(1/120,-1,-2,12,true);
   assert.equal(rhythm.chain,chain+1,'the next landed stroke continues the same series');
   for(let i=0;i<60;i++) rhythm.step(1/120,0,0,0,true);
-  assert.equal(rhythm.chain,0,'being idle on the road still breaks the rhythm');
+  assert.equal(rhythm.chain,chain+1,'a short pause on the road keeps the series');
+  for(let i=0;i<1800;i++) rhythm.step(1/120,0,0,0,true);
+  assert.equal(rhythm.chain,0,'a long pause gradually exhausts the series');
+  assert.equal(rhythm.charge,0);
 });

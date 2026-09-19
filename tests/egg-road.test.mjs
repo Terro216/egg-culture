@@ -34,6 +34,7 @@ test("ordinary rolling hops do not flash the find-road warning", () => {
     assert.equal(sim.phase, "running");
     assert.ok(sim.score >= 1);
     assert.equal(warnings, 0);
+    assert.equal(sim.hardLandings, 0, "ordinary shell hops do not trigger the landing camera hold");
     assert.ok(sim.position.z < 0);
   } finally { sim.dispose(); }
 });
@@ -50,6 +51,7 @@ test("a lower-road landing resets flight allowance and awards skipped gates only
     assert.equal(sim.phase, "running");
     assert.ok(sim.score >= Math.floor(target.distance / GATE_SPACING));
     assert.ok(sim.skipped >= 10);
+    assert.ok(sim.hardLandings > 0, "a real lower-road landing notifies the camera");
     assert.ok(sim.airTime < 0.3);
     const previousSkipped = sim.skipped;
     const previousScore = sim.score;

@@ -52,6 +52,7 @@ export class RoadSimulation {
   grounded = false;
   airTime = 0;
   flightTime = 0;
+  hardLandings = 0;
   nearRoad = true;
   jumpAvailable = true;
   private jumping = false;
@@ -113,6 +114,7 @@ export class RoadSimulation {
     this.grounded = false;
     this.airTime = this.flightTime = this.seconds = this.gates = this.skipped = this.bestSkip = this.lastSkip = this.progress = 0;
     this.nearRoad = true;
+    this.hardLandings = 0;
     this.jumpAvailable = true;
     this.jumping = false;
     this.jumpStarted = 0;
@@ -244,6 +246,7 @@ export class RoadSimulation {
 
     if (supportIndex >= 0) {
       const surface = this.track.samples[supportIndex];
+      if (this.airTime > 0.45 && -this.velocity.dot(surface.normal) > 12) this.hardLandings++;
       const relative = this.position.clone().sub(surface.position);
       const distance = Math.max(0, surface.distance + relative.dot(surface.tangent));
       const gate = Math.floor(distance / GATE_SPACING);

@@ -33,7 +33,11 @@
 .egg-road-steer > span { position: absolute; bottom: calc(46px + env(safe-area-inset-bottom, 0px)); width: 66px; height: 66px; line-height: 55px; font-size: 45px; border: 1px solid #f2cd9433; border-radius: 50%; background: #17131e44; transition: background .12s, color .12s; }
 .egg-road-steer.is-left > span { left: 28px; }
 .egg-road-steer.is-right > span { right: 28px; }
-.egg-road-steer.is-held > span { background: #efcd9c; color: #281b23; border-color: #efcd9c; }
+.egg-road-steer.is-held > span { background: #3a2b31bb; color: #ffe0ab; border-color: #efcd9c66; }
+.egg-road-steer-power { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #efcd9c; stroke-width: 3; transform: rotate(-90deg); pointer-events: none; }
+.egg-road-map-orbit { position: absolute; z-index: 1; inset: 0; touch-action: none; cursor: grab; outline: none; }
+.egg-road-map-orbit:active { cursor: grabbing; }
+.egg-road-map-orbit:focus-visible { box-shadow: inset 0 0 0 2px #efcd9c66; }
 .egg-road-key-hint { position: absolute; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 100%; text-align: center; color: #e8c49b80; font-size: 10px; letter-spacing: .08em; pointer-events: none; }
 .egg-road-flight { width: min(160px, 100%); margin: 0 auto; text-align: center; pointer-events: none; }
 .egg-road-flight > span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
@@ -68,7 +72,10 @@
 .egg-road-instruments.is-charged { color: #ffdf9e; border-color: #f2cd9466; }
 .egg-road-flyby { position: absolute; z-index: 2; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 100%; text-align: center; }
 .egg-road-flyby p { font-size: 12px; color: #f3d6ad; text-shadow: 0 2px 8px #17131e; }
+.egg-road-flyby .egg-road-map-hint { max-width: 480px; margin: 8px auto 12px; padding: 0 20px; font-size: 11px; line-height: 1.5; }
+.egg-road-flyby-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 0 16px; }
 .egg-road-flyby button { min-height: 44px; padding: 10px 24px; border: 1px solid #e8c49b77; border-radius: 24px; color: #f4d7ab; background: #17131ecc; font-size: 12px; }
+.egg-road-flyby .egg-road-map-reset { padding: 10px 16px; background: #17131e99; }
 .egg-road-options { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 0 0 8px; }
 .egg-road-options button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: #d4bb9e; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }
 .egg-road-options button[aria-pressed="true"] { color: #ffe2a6; }
@@ -237,6 +244,11 @@
 .egg-road-fullscreen-note a { display: inline-block; margin-top: 8px; color: inherit; text-decoration: underline; }
 /* Low screens need a clear centre, including phones with the browser bars open. */
 @media (orientation: landscape) and (max-height: 560px) {
+  .egg-road-flyby.is-overview { bottom: max(12px, env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+  .egg-road-flyby.is-overview > p:first-child { display: none; }
+  .egg-road-flyby.is-overview .egg-road-map-hint { max-width: 340px; margin: 0 auto; padding: 0; font-size: 10px; }
+  .egg-road-flyby.is-overview .egg-road-flyby-actions { flex-wrap: nowrap; padding: 0; }
+  .egg-road-flyby.is-overview button { padding: 8px 12px; font-size: 11px; }
   .egg-road-hud { top: max(8px, env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; }
   .egg-road-hud-actions { flex-direction: row; gap: 6px; }
   .egg-road-icon { width: 44px; height: 44px; }

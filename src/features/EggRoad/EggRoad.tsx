@@ -15,6 +15,7 @@ import type { BonusKind } from "./scoring.ts";
 import { copy } from "./copy.ts";
 import { useRoadFullscreen } from "./fullscreen.ts";
 import { Speedometer } from "./Speedometer.tsx";
+import { RoadSteering } from "./controls.ts";
 import "./EggRoad.css";
 
 export type EggRoadLang = "ru" | "en";
@@ -32,8 +33,9 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const canvasHost = useRef<HTMLDivElement>(null), modal = useRef<HTMLDivElement>(null);
   const engine = useRef<RoadEngine | null>(null);
   const fullscreen = useRoadFullscreen(modal, () => engine.current?.pause());
-  const heldPointers = useRef(new Map<number, number>());
+  const heldPointers = useRef(new RoadSteering());
   const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
+  const mapPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const completeRef = useRef(onComplete); completeRef.current = onComplete;
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [result, setResult] = useState<RoadResult | null>(null);
@@ -92,6 +94,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
       heldPointers.current.clear(); lookPointer.current = null; setPressed(0);
       engine.current?.steer(0); engine.current?.lookAround(0, 0);
     }
+    mapPointer.current = null;
   }, [snapshot.phase, menu]);
   useEffect(() => { setBest(readTrackBest(snapshot.code)); setShareMessage(""); setShareValue(null); }, [snapshot.code]);
   useEffect(() => {
@@ -111,9 +114,8 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const loadSeed = (value: string) => { const spec = parseRoadCode(value); setSeedError(!spec); if (spec) choose(spec); };
   const showModes = () => { engine.current?.openMenu(); setProgress(readRoadProgress()); setMenu(true); };
   const updateSteering = () => {
-    const values = [...heldPointers.current.values()];
-    const steering = Number(values.includes(1)) - Number(values.includes(-1));
-    engine.current?.steer(steering); setPressed(steering);
+    const steering = heldPointers.current.value;
+    engine.current?.steer(steering); setPressed(Math.round(steering * 20) / 20);
   };
   const toggleSound = () => {
     mutedRef.current = !mutedRef.current; setMuted(mutedRef.current); engine.current?.setMuted(mutedRef.current);
@@ -154,7 +156,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
         <button className="egg-road-icon egg-road-exit" type="button" onClick={menu ? onClose : showModes} aria-label={menu ? publicPage ? ui.publicClose : ui.close : ui.modes}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
         </button>
-        <div className="egg-road-score" style={{ visibility: showPanel ? "hidden" : "visible" }}>
+        <div className="egg-road-score" style={{ visibility: showPanel || overview ? "hidden" : "visible" }}>
           <span>{ui.title}</span><strong>{String(snapshot.score).padStart(2, "0")}</strong>
           <small>{ui.score} · {ui.best} {best}</small><span className="egg-road-level">{modeLabel}</span>
           {!showPanel && !flyingIn && !overview && <div className="egg-road-notices">
@@ -173,13 +175,15 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
       </header>
       {!showPanel && !flyingIn && !overview && <>
         {([-1, 1] as const).map(direction => <button key={direction} type="button" tabIndex={-1}
-          className={`egg-road-steer ${direction < 0 ? "is-left" : "is-right"} ${pressed === direction ? "is-held" : ""}`}
+          className={`egg-road-steer ${direction < 0 ? "is-left" : "is-right"} ${pressed * direction > 0 ? "is-held" : ""}`}
+          data-strength={Math.max(0, pressed * direction)}
           aria-label={direction < 0 ? ui.left : ui.right}
-          onPointerDown={event => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); heldPointers.current.set(event.pointerId, direction); updateSteering(); }}
-          onPointerUp={event => { heldPointers.current.delete(event.pointerId); updateSteering(); }}
-          onPointerCancel={event => { heldPointers.current.delete(event.pointerId); updateSteering(); }}
-          onLostPointerCapture={event => { heldPointers.current.delete(event.pointerId); updateSteering(); }}>
-          <span aria-hidden="true">{direction < 0 ? "‹" : "›"}</span>
+          onPointerDown={event => { if (event.button !== 0) return; event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); heldPointers.current.begin(event.pointerId, event.clientX, direction); updateSteering(); }}
+          onPointerMove={event => { heldPointers.current.move(event.pointerId, event.clientX); updateSteering(); }}
+          onPointerUp={event => { heldPointers.current.end(event.pointerId); updateSteering(); }}
+          onPointerCancel={event => { heldPointers.current.end(event.pointerId); updateSteering(); }}
+          onLostPointerCapture={event => { heldPointers.current.end(event.pointerId); updateSteering(); }}>
+          <span aria-hidden="true">{direction < 0 ? "‹" : "›"}<svg className="egg-road-steer-power" viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" pathLength="1" strokeDasharray={`${Math.max(0, pressed * direction)} 1`} /></svg></span>
         </button>)}
         <button className="egg-road-jump" type="button" disabled={!snapshot.jumpAvailable}
           aria-label={snapshot.jumpAvailable ? ui.jumpHelp : ui.jumpUsed}
@@ -204,9 +208,17 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
         <div className="egg-road-active-bonuses">{snapshot.activeBonuses.map(kind => <span key={kind}>{ui.bonusNames[kind]} +</span>)}</div>
         <div className="egg-road-key-hint">{ui.keyboard}</div>
       </>}
-      {!showPanel && (flyingIn || overview) && <div className="egg-road-flyby">
+      {!showPanel && overview && <div className="egg-road-map-orbit" role="group" tabIndex={0} aria-label={ui.overviewDrag}
+        onPointerDown={event => { if (mapPointer.current || event.button !== 0) return; event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); mapPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY }; engine.current?.grabOverview(); }}
+        onPointerMove={event => { const pointer = mapPointer.current; if (pointer?.id !== event.pointerId) return; engine.current?.rotateOverview(event.clientX - pointer.x, event.clientY - pointer.y); pointer.x = event.clientX; pointer.y = event.clientY; }}
+        onPointerUp={event => { if (mapPointer.current?.id === event.pointerId) mapPointer.current = null; }}
+        onPointerCancel={event => { if (mapPointer.current?.id === event.pointerId) mapPointer.current = null; }}
+        onLostPointerCapture={event => { if (mapPointer.current?.id === event.pointerId) mapPointer.current = null; }} />}
+      {!showPanel && (flyingIn || overview) && <div className={`egg-road-flyby ${overview ? "is-overview" : ""}`}>
         <p>{snapshot.mode === "endless" ? ui.endlessView : ui.flyby}</p>
-        <button type="button" onClick={overview ? play : () => engine.current?.skipFlyby()}>{overview ? ui.overviewStart : ui.skipFlyby} <span aria-hidden="true">↗</span></button>
+        {overview && <p className="egg-road-map-hint">{ui.overviewDrag}</p>}
+        <div className="egg-road-flyby-actions"><button type="button" onClick={overview ? play : () => engine.current?.skipFlyby()}>{overview ? ui.overviewStart : ui.skipFlyby} <span aria-hidden="true">↗</span></button>
+        {overview && <button className="egg-road-map-reset" type="button" onClick={() => engine.current?.resetOverview()}>{ui.overviewReset}</button>}</div>
       </div>}
       {showPanel && <div className="egg-road-overlay"><section className={`egg-road-panel ${menu ? "egg-road-menu" : ""}`}>
         <p className="egg-road-kicker">{menu ? ui.modes : modeLabel}</p>

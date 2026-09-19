@@ -5,7 +5,8 @@ import { initializePhysics, PHYSICS_STEP } from "./simulation.ts";
 import type { RoadResult, RoadSnapshot } from "./simulation.ts";
 import { RoadJourney } from "./journey.ts";
 import { readRoadProgress, saveRoadProgress } from "./storage.ts";
-import { CameraLook, FLYBY_SECONDS, flybyPose, overviewPose, lookDirection } from "./camera.ts";
+import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, FLYBY_SECONDS, flybyPose, overviewPose, lookDirection } from "./camera.ts";
+import { KeyboardSteering } from "./controls.ts";
 import type { RoadSpec } from "./seed.ts";
 import type { GyroState } from "./camera.ts";
 
@@ -71,10 +72,11 @@ export class RoadEngine {
   private readonly previousPosition = new THREE.Vector3();
   private readonly previousRotation = new THREE.Quaternion();
   private readonly heading = new THREE.Vector3(0, 0, -1);
-  private readonly desiredHeading = new THREE.Vector3();
-  private readonly desiredCamera = new THREE.Vector3();
+  private readonly chaseHeading = new ChaseHeading();
+  private readonly chaseRig = new ChaseRig();
+  private readonly mapOrbit = new MapOrbit();
+  private readonly keyboardSteering = new KeyboardSteering();
   private readonly lookTarget = new THREE.Vector3();
-  private readonly desiredLook = new THREE.Vector3();
   private readonly lightOffset = new THREE.Vector3(-18, 34, 9);
   private frame = 0;
   private lastTime = performance.now();
@@ -265,9 +267,10 @@ export class RoadEngine {
     this.egg.position.copy(sim.position);
     this.egg.quaternion.copy(sim.rotation);
     this.heading.copy(sim.track.samples[sim.sampleIndex].tangent).setY(0).normalize();
-    this.camera.position.copy(sim.position).addScaledVector(this.heading, -12).add(new THREE.Vector3(0, 6.4, 0));
-    this.lookTarget.copy(sim.position).addScaledVector(this.heading, 8);
-    this.lookTarget.y += 0.2;
+    this.chaseHeading.reset(this.heading);
+    this.chaseRig.reset(sim.position, this.heading);
+    this.camera.position.copy(this.chaseRig.position);
+    this.lookTarget.copy(this.chaseRig.target);
     this.camera.lookAt(this.lookTarget);
   }
 
@@ -286,6 +289,7 @@ export class RoadEngine {
 
   private beginFlyby() {
     this.fromOverview = this.simulation.phase === "overview";
+    this.clearInput();
     this.transitionPosition.copy(this.camera.position); this.transitionTarget.copy(this.lookTarget);
     this.flybyTime = 0;
     this.simulation.beginIntro();
@@ -322,7 +326,7 @@ export class RoadEngine {
     this.journey.retry(); this.changeRoad(false);
     this.camera.position.copy(position); this.lookTarget.copy(target);
     this.transitionPosition.copy(position); this.transitionTarget.copy(target);
-    this.overviewTime = 0; this.simulation.beginOverview(); this.notify();
+    this.mapOrbit.reset(); this.overviewTime = 0; this.simulation.beginOverview(); this.notify();
   };
 
   private changeRoad(fly = true) {
@@ -361,10 +365,13 @@ export class RoadEngine {
     this.notify();
   };
   lookAround(x: number, y: number) { this.look.setManual(x, y); }
+  grabOverview() { if (this.simulation.phase === "overview") this.mapOrbit.grab(); }
+  rotateOverview(dx: number, dy: number) { if (this.simulation.phase === "overview") this.mapOrbit.drag(dx, dy); }
+  resetOverview = () => { if (this.simulation.phase === "overview") this.mapOrbit.restore(); };
   toggleGyro() { if (this.look.gyroState === "on" || this.look.gyroState === "waiting") this.look.disableGyro(); else void this.look.enableGyro(); }
   calibrateGyro() { return this.look.calibrate(); }
   setMuted(muted: boolean) { this.audio.muted = muted; if (!muted) this.audio.unlock(); }
-  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.look.setManual(0, 0); }
+  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.keyboardSteering.reset(); this.look.setManual(0, 0); }
   private notify() { this.callbacks.update(this.simulation.snapshot()); }
   private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro" || this.simulation.phase === "overview") this.pause(); else this.clearInput(); };
   private visibility = () => { if (document.hidden) this.loseFocus(); };
@@ -373,7 +380,8 @@ export class RoadEngine {
   private keyDown = (event: KeyboardEvent) => {
     if (this.menuOpen) return;
     if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable='true']")) return;
-    if (["ArrowLeft", "ArrowRight", "KeyA", "KeyD", "KeyQ", "KeyE"].includes(event.code)) {
+    const overview = this.simulation.phase === "overview";
+    if (["ArrowLeft", "ArrowRight", "KeyA", "KeyD", "KeyQ", "KeyE"].includes(event.code) || (overview && ["ArrowUp", "ArrowDown", "KeyW", "KeyS"].includes(event.code))) {
       event.preventDefault();
       this.keys.add(event.code);
     }
@@ -385,8 +393,10 @@ export class RoadEngine {
     }
     if (event.code === "KeyR") { event.preventDefault(); this.restart(); }
     if (event.code === "Space") {
+      if (overview && event.target instanceof HTMLElement && event.target.closest("button")) return;
       event.preventDefault();
       if (this.simulation.phase === "intro") this.skipFlyby();
+      else if (overview) this.play();
       else this.jump();
     }
   };
@@ -402,7 +412,10 @@ export class RoadEngine {
     if (sim.phase === "overview") {
       this.needsRender = true; this.overviewTime += dt;
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const pose = overviewPose(sim.track, reduced ? 0 : Math.max(0, this.overviewTime - 2), this.camera.aspect, this.camera.fov);
+      const horizontal = Number(this.keys.has("ArrowRight") || this.keys.has("KeyD") || this.keys.has("KeyE")) - Number(this.keys.has("ArrowLeft") || this.keys.has("KeyA") || this.keys.has("KeyQ"));
+      const vertical = Number(this.keys.has("ArrowUp") || this.keys.has("KeyW")) - Number(this.keys.has("ArrowDown") || this.keys.has("KeyS"));
+      this.mapOrbit.step(dt, horizontal, vertical, !reduced && this.overviewTime > 2);
+      const pose = overviewPose(sim.track, 0, this.camera.aspect, this.camera.fov, this.mapOrbit);
       const t = reduced ? 1 : THREE.MathUtils.smootherstep(this.overviewTime / 2, 0, 1);
       this.camera.position.lerpVectors(this.transitionPosition, pose.position, t);
       this.lookTarget.lerpVectors(this.transitionTarget, pose.target, t);
@@ -431,12 +444,15 @@ export class RoadEngine {
       this.needsRender = true;
       this.accumulator += dt;
       const keyboard = Number(this.keys.has("ArrowRight") || this.keys.has("KeyD")) - Number(this.keys.has("ArrowLeft") || this.keys.has("KeyA"));
-      const steering = THREE.MathUtils.clamp(keyboard + this.pointerSteering, -1, 1);
       while (this.accumulator >= PHYSICS_STEP && sim.phase === "running") {
+        const steering = THREE.MathUtils.clamp(this.keyboardSteering.step(PHYSICS_STEP, keyboard) + this.pointerSteering, -1, 1);
         this.previousPosition.copy(sim.position);
         this.previousRotation.copy(sim.rotation);
+        const hardLandings = sim.hardLandings;
         sim.step(steering);
+        if (sim.hardLandings > hardLandings) this.chaseHeading.landed();
         if (sim.originShift.lengthSq()) {
+          this.chaseRig.shift(sim.originShift);
           this.previousPosition.sub(sim.originShift); this.camera.position.sub(sim.originShift);
           this.lookTarget.sub(sim.originShift); this.egg.position.sub(sim.originShift);
           sim.originShift.set(0, 0, 0);
@@ -459,21 +475,12 @@ export class RoadEngine {
     if (!this.needsRender) return;
 
     if (!wasIntro && sim.phase === "running") {
-      this.desiredHeading.copy(sim.track.samples[sim.sampleIndex].tangent).setY(0).normalize();
-      if (!sim.nearRoad && sim.flightTime > 0.3) {
-        const velocity = sim.body.linvel();
-        if (Math.hypot(velocity.x, velocity.z) > 2) this.desiredHeading.set(velocity.x, 0, velocity.z).normalize();
-      }
-      this.heading.lerp(this.desiredHeading, 1 - Math.exp(-dt * 3.5)).normalize();
+      this.heading.copy(this.chaseHeading.step(dt, sim.track.samples[sim.sampleIndex].tangent, sim.body.linvel(), !sim.nearRoad && sim.flightTime > 0.3));
       this.look.step(dt, Number(this.keys.has("KeyE")) - Number(this.keys.has("KeyQ")));
       const facing = lookDirection(this.heading, this.look.x);
-      this.desiredCamera.copy(this.egg.position).addScaledVector(facing, -12);
-      this.desiredCamera.y += 6.4 + this.look.y * 3.4;
-      this.desiredLook.copy(this.egg.position).addScaledVector(facing, 8);
-      this.desiredLook.y += 0.2 - this.look.y * 1.5;
-      const follow = 1 - Math.exp(-dt * 7);
-      this.camera.position.lerp(this.desiredCamera, follow);
-      this.lookTarget.lerp(this.desiredLook, follow);
+      this.chaseRig.step(dt, this.egg.position, facing, this.look.y);
+      this.camera.position.copy(this.chaseRig.position);
+      this.lookTarget.copy(this.chaseRig.target);
     }
     this.camera.lookAt(this.lookTarget);
     this.light.position.copy(this.egg.position).add(this.lightOffset);

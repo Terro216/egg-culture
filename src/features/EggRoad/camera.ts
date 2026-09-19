@@ -5,6 +5,10 @@ const UP = new Vector3(0, 1, 0);
 export const FLYBY_SECONDS = 4.6;
 export const MAX_LOOK_YAW = MathUtils.degToRad(200);
 const GYRO_LOOK_YAW = 0.65;
+const MAP_YAW = 0.68;
+const MAP_PITCH = Math.atan(0.52);
+const angleDelta = (from: number, to: number) => MathUtils.euclideanModulo(to - from + Math.PI, Math.PI * 2) - Math.PI;
+const yawOf = (direction: { x: number; z: number }) => Math.atan2(direction.x, -direction.z);
 
 /** The sphere fit uses the narrower field of view, including portrait screens. */
 export function flybyPose(track: RoadTrack, progress: number, aspect: number, fov: number, finishPosition: Vector3, finishTarget: Vector3) {
@@ -22,10 +26,116 @@ export function flybyPose(track: RoadTrack, progress: number, aspect: number, fo
   };
 }
 
-export function overviewPose(track: RoadTrack, seconds: number, aspect: number, fov: number) {
+export function overviewPose(track: RoadTrack, seconds: number, aspect: number, fov: number, orbit?: { yaw: number; pitch: number }) {
   const pose = flybyPose(track, 0, aspect, fov, new Vector3(), new Vector3());
-  pose.position.sub(track.bounds.center).applyAxisAngle(UP, seconds * 0.12).add(track.bounds.center);
+  const distance = pose.position.distanceTo(track.bounds.center);
+  const yaw = orbit?.yaw ?? MAP_YAW + seconds * 0.12, pitch = orbit?.pitch ?? MAP_PITCH;
+  pose.position.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch))
+    .multiplyScalar(distance).add(track.bounds.center);
   return pose;
+}
+
+export class MapOrbit {
+  yaw = MAP_YAW;
+  pitch = MAP_PITCH;
+  private targetYaw = MAP_YAW;
+  private targetPitch = MAP_PITCH;
+  private manual = false;
+  reset() { this.yaw = this.targetYaw = MAP_YAW; this.pitch = this.targetPitch = MAP_PITCH; this.manual = false; }
+  restore() { this.targetYaw = MAP_YAW; this.targetPitch = MAP_PITCH; this.manual = false; }
+  grab() { this.manual = true; this.targetYaw = this.yaw; this.targetPitch = this.pitch; }
+  drag(dx: number, dy: number) {
+    if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+    this.manual = true;
+    this.targetYaw -= dx * 0.008;
+    this.targetPitch = MathUtils.clamp(this.targetPitch + dy * 0.006, -0.25, 1.35);
+  }
+  step(dt: number, horizontal = 0, vertical = 0, auto = true) {
+    if (horizontal || vertical) {
+      this.manual = true;
+      this.targetYaw += horizontal * dt;
+      this.targetPitch = MathUtils.clamp(this.targetPitch + vertical * dt * 0.7, -0.25, 1.35);
+    }
+    if (!this.manual && auto) this.targetYaw += dt * 0.12;
+    const rate = 1 - Math.exp(-dt * 8);
+    this.yaw += MathUtils.clamp(angleDelta(this.yaw, this.targetYaw) * rate, -dt * 2, dt * 2);
+    this.pitch = MathUtils.lerp(this.pitch, this.targetPitch, rate);
+  }
+}
+
+/** Follow a heading as an angle: opposite vectors must never collapse to zero. */
+export class ChaseHeading {
+  readonly direction = new Vector3(0, 0, -1);
+  private yaw = 0;
+  private target = 0;
+  private candidate = 0;
+  private candidateTime = 0;
+  private turnRate = 0;
+  private turnSide = 1;
+  private landingHold = 0;
+  private landingSettle = 0;
+
+  reset(direction: { x: number; z: number }) {
+    this.yaw = this.target = this.candidate = yawOf(direction);
+    this.candidateTime = this.turnRate = this.landingHold = this.landingSettle = 0;
+    this.turnSide = 1;
+    this.direction.set(Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+  }
+  landed() { this.landingHold = 0.25; this.landingSettle = 1; this.turnRate = 0; }
+  step(dt: number, road: { x: number; z: number }, velocity: { x: number; z: number }, airborne: boolean) {
+    this.landingSettle = Math.max(0, this.landingSettle - dt);
+    const useVelocity = airborne && this.landingSettle === 0;
+    const requested = useVelocity ? Math.hypot(velocity.x, velocity.z) > 4 ? yawOf(velocity) : this.target : yawOf(road);
+    // Ignore a brief bounce or a noisy backwards velocity before committing to a turn.
+    if (Math.abs(angleDelta(this.target, requested)) > Math.PI / 2) {
+      if (Math.abs(angleDelta(this.candidate, requested)) > 0.35) { this.candidate = requested; this.candidateTime = 0; }
+      this.candidateTime += dt;
+      if (this.candidateTime >= 0.25) this.target = requested;
+    } else { this.target = this.candidate = requested; this.candidateTime = 0; }
+    if (this.landingHold > 0) { this.landingHold = Math.max(0, this.landingHold - dt); return this.direction; }
+    let error = angleDelta(this.yaw, this.target);
+    // Near 180 degrees, tiny left/right noise must not keep changing the chosen arc.
+    if (Math.abs(error) > 2.6) error = Math.abs(error) * this.turnSide;
+    else if (Math.abs(error) > 0.03) this.turnSide = Math.sign(error);
+    const maxRate = this.landingSettle > 0 ? 1 : 1.4;
+    const desiredRate = MathUtils.clamp(error * 3.2, -maxRate, maxRate);
+    this.turnRate += MathUtils.clamp(desiredRate - this.turnRate, -dt * 3.5, dt * 3.5);
+    const turn = this.turnRate * dt;
+    if (Math.sign(turn) === Math.sign(error) && Math.abs(turn) >= Math.abs(error)) { this.yaw += error; this.turnRate = 0; }
+    else this.yaw += turn;
+    this.direction.set(Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+    return this.direction;
+  }
+}
+
+/** Orbit around a shared, bounded anchor instead of cutting through the egg. */
+export class ChaseRig {
+  readonly position = new Vector3();
+  readonly target = new Vector3();
+  private readonly anchor = new Vector3();
+  private readonly offset = new Vector3();
+  private readonly direction = new Vector3();
+  private yaw = 0;
+  private lookY = 0;
+  reset(position: Vector3, direction: Vector3) {
+    this.anchor.copy(position); this.yaw = yawOf(direction); this.lookY = 0;
+    this.pose();
+  }
+  shift(offset: Vector3) { this.anchor.sub(offset); this.position.sub(offset); this.target.sub(offset); }
+  step(dt: number, egg: Vector3, facing: Vector3, lookY: number) {
+    const rate = 1 - Math.exp(-dt * 8);
+    this.yaw += MathUtils.clamp(angleDelta(this.yaw, yawOf(facing)) * rate, -dt * 2.4, dt * 2.4);
+    this.lookY = MathUtils.lerp(this.lookY, lookY, rate);
+    this.anchor.lerp(egg, rate);
+    this.offset.copy(this.anchor).sub(egg).clampLength(0, 2);
+    this.anchor.copy(egg).add(this.offset);
+    this.pose();
+  }
+  private pose() {
+    this.direction.set(Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+    this.position.copy(this.anchor).addScaledVector(this.direction, -12); this.position.y += 6.4 + this.lookY * 3.4;
+    this.target.copy(this.anchor).addScaledVector(this.direction, 8); this.target.y += 0.2 - this.lookY * 1.5;
+  }
 }
 
 export function lookDirection(heading: Vector3, horizontal: number) {

@@ -28,7 +28,7 @@ export class RollRhythm {
       this.charge = Math.max(0, this.charge - 0.16);
     }
     this.charge = Math.max(0, this.charge - dt * 0.025);
-    const direction = Math.abs(input) > 0.3 ? Math.sign(input) : 0;
+    const direction = Math.abs(input) > 0.1 ? Math.sign(input) : 0;
     if (!direction) {
       this.idle += dt;
       if (this.idle > 1.1) this.direction = this.duration = this.rollingDistance = 0;

@@ -1,9 +1,88 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
-import { Vector3 } from "three";
-import { CameraLook, lookDirection, orientationLook } from "../src/features/EggRoad/camera.ts";
+import { PerspectiveCamera, Vector3 } from "three";
+import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, lookDirection, orientationLook, overviewPose } from "../src/features/EggRoad/camera.ts";
+import { createRoadTrack } from "../src/features/EggRoad/track.ts";
 import { RollRhythm } from "../src/features/EggRoad/rhythm.ts";
+
+test('a sudden 180 degree reversal follows a bounded, continuous arc even with noisy backwards motion', () => {
+  const road = new Vector3(0, 0, -1), results = [];
+  for (const fps of [30, 60, 120]) {
+    const heading = new ChaseHeading(); heading.reset(road);
+    let travelled = 0;
+    for (let i = 0; i < fps * 5; i++) {
+      const before = heading.direction.clone();
+      heading.step(1/fps, road, { x: i%2 ? .01 : -.01, z: 20 }, true);
+      const turn = before.angleTo(heading.direction); travelled += turn;
+      assert.ok(Number.isFinite(turn) && turn <= 1.4/fps + 1e-6);
+      assert.ok(Math.abs(heading.direction.length() - 1) < 1e-10, 'no zero vector at the halfway point');
+    }
+    assert.ok(heading.direction.z > .999, 'a sustained reversal is eventually followed');
+    assert.ok(travelled > 3.1 && travelled < 3.3, 'noise must not make the camera oscillate or take extra turns');
+    results.push(heading.direction.clone());
+  }
+  assert.ok(results[0].angleTo(results[2]) < .01);
+});
+
+test('brief reversals and low-speed jitter are ignored; a hard landing steadies the view before following the road', () => {
+  const forward = new Vector3(0, 0, -1), road = new Vector3(1, 0, 0), heading = new ChaseHeading();
+  heading.reset(forward);
+  for (let i = 0; i < 12; i++) heading.step(1/60, forward, { x: 0, z: 15 }, true);
+  for (let i = 0; i < 60; i++) heading.step(1/60, forward, { x: 1, z: i%2 ? 1 : -1 }, true);
+  assert.ok(heading.direction.angleTo(forward) < 1e-9);
+  heading.landed();
+  for (let i = 0; i < 12; i++) heading.step(1/60, road, { x: -25, z: 0 }, true);
+  assert.ok(heading.direction.angleTo(forward) < 1e-9, 'the impact does not immediately swing the view');
+  for (let i = 0; i < 40; i++) heading.step(1/60, road, { x: -25, z: 0 }, true);
+  assert.ok(heading.direction.x > .2, 'the camera chooses the landed road instead of the rebound');
+});
+
+test('the camera orbits outside the egg through reversals, hard bounces and origin rebasing', () => {
+  const rig = new ChaseRig(), egg = new Vector3(), forward = new Vector3(0, 0, -1);
+  rig.reset(egg, forward);
+  const backward = forward.clone().negate();
+  let previous = rig.position.clone();
+  for (let i = 0; i < 180; i++) {
+    rig.step(1/60, egg, backward, 0);
+    assert.ok(Math.hypot(rig.position.x, rig.position.z) > 11.99, 'an orbit must not cut through the egg');
+    assert.ok(previous.clone().setY(0).angleTo(rig.position.clone().setY(0)) <= 2.4/60 + 1e-6);
+    previous.copy(rig.position);
+  }
+  for (const y of [-30, -60, -20, 20, 0]) {
+    egg.y = y; rig.step(1/60, egg, backward, 0);
+    assert.ok(rig.position.y >= egg.y + 4.39, 'lag after an impact cannot put the camera under the egg');
+  }
+  const shift = new Vector3(1024, -768, 512), position = rig.position.clone(), target = rig.target.clone();
+  rig.shift(shift);
+  assert.ok(rig.position.distanceTo(position.sub(shift)) < 1e-9);
+  assert.ok(rig.target.distanceTo(target.sub(shift)) < 1e-9);
+});
+
+test('manual overview rotates both axes, stops auto-spin, resets smoothly and keeps the whole road in frame', () => {
+  const orbit = new MapOrbit(); orbit.grab();
+  const initial = { yaw: orbit.yaw, pitch: orbit.pitch };
+  orbit.drag(100, 80);
+  for (let i = 0; i < 120; i++) orbit.step(1/60);
+  assert.ok(orbit.yaw < initial.yaw - .7 && orbit.pitch > initial.pitch + .4);
+  const settled = orbit.yaw;
+  for (let i = 0; i < 180; i++) orbit.step(1/60);
+  assert.ok(Math.abs(orbit.yaw - settled) < 1e-6, 'release leaves the chosen view in place');
+  orbit.restore(); const before = orbit.yaw; orbit.step(1/60);
+  assert.ok(Math.abs(orbit.yaw - before) < .04, 'reset does not snap to the initial angle');
+  const track = createRoadTrack(3, 129);
+  for (const aspect of [320/568, 844/390]) for (const [dx, dy] of [[200, -1000], [-390, 1000], [1000, 0]]) {
+    orbit.grab(); orbit.drag(dx, dy);
+    for (let i = 0; i < 240; i++) orbit.step(1/60);
+    const pose = overviewPose(track, 0, aspect, 62, orbit);
+    const camera = new PerspectiveCamera(62, aspect, .1, pose.far);
+    camera.position.copy(pose.position); camera.lookAt(pose.target); camera.updateMatrixWorld();
+    for (const sample of track.samples) for (const side of [-1, 1]) {
+      const point = sample.position.clone().addScaledVector(sample.right, side * sample.width / 2).project(camera);
+      assert.ok(Math.abs(point.x) < 1 && Math.abs(point.y) < 1 && Math.abs(point.z) < 1);
+    }
+  }
+});
 
 test("look controls are bounded, smooth, and return to the forward view", () => {
   const look = new CameraLook(() => {});

@@ -13,6 +13,7 @@ import type { ScoreBreakdown, ScoreNotice, BonusKind } from "./scoring.ts";
 export const PHYSICS_STEP = 1 / 120;
 export const FLIGHT_LIMIT = 4.2;
 export const JUMP_SPEED = 6;
+const JUMP_SPEED_RETAINED = 0.75;
 export type RoadPhase = "ready" | "overview" | "intro" | "running" | "paused" | "over" | "finished";
 export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number; mode: RoadMode; code: string; distance: number; gates: number; breakdown: ScoreBreakdown };
 export type RoadSnapshot = RoadResult & {
@@ -145,7 +146,13 @@ export class RoadSimulation {
   jump() {
     if (this.phase !== "running" || !this.jumpAvailable || this.disposed) return false;
     const velocity = this.body.linvel();
-    this.body.setLinvel({ x: velocity.x, y: Math.max(0, velocity.y) + JUMP_SPEED, z: velocity.z }, true);
+    // Brake along the actual horizontal motion, independent of the camera or
+    // the last road's heading. Keep its direction and the egg's natural spin.
+    this.body.setLinvel({
+      x: velocity.x * JUMP_SPEED_RETAINED,
+      y: Math.max(0, velocity.y) + JUMP_SPEED,
+      z: velocity.z * JUMP_SPEED_RETAINED,
+    }, true);
     this.jumpAvailable = false;
     this.jumping = true;
     this.jumpStarted = this.seconds;

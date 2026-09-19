@@ -113,7 +113,7 @@ test("a fall away from the road ends the run without awarding gates", () => {
   } finally { sim.dispose(); }
 });
 
-test("one ground jump lifts the real egg, preserves its spin, freezes rhythm and recharges only on retry", () => {
+test("one ground jump lifts the real egg, preserves its spin, freezes rhythm and does not refill merely on landing", () => {
   const sim = new RoadSimulation(track);
   try {
     assert.equal(sim.jump(), false, "cannot spend a jump before the run");

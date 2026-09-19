@@ -23,7 +23,7 @@ const initialSnapshot: RoadSnapshot = {
   phase: "ready", score: 0, skipped: 0, bestSkip: 0, seconds: 0, finished: false,
   speed: 0, airborne: false, flightLeft: 4.2, progress: 0, lastSkip: 0,
   level: 1, boost: 0, rhythm: 0, mode: "levels", gates: 0, breakdown: emptyScore(),
-  rhythmCue: { state: "start", progress: 0 }, jumpAvailable: true, code: "EGG1-R-1-0", distance: 0, bonus: null, activeBonuses: [],
+  rhythmCue: { state: "start", progress: 0 }, jumpAvailable: true, jumpCooldown: 0, jumpRecharging: false, code: "EGG1-R-1-0", distance: 0, bonus: null, activeBonuses: [],
 };
 
 export default function EggRoad({ lang, onClose, onComplete, publicPage = false }: {
@@ -34,7 +34,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const engine = useRef<RoadEngine | null>(null);
   const fullscreen = useRoadFullscreen(modal, () => engine.current?.pause());
   const heldPointers = useRef(new RoadSteering());
-  const lookPointer = useRef<{ id: number; x: number; y: number } | null>(null);
+  const lookPointer = useRef<{ id: number; x: number; y: number; moved: number } | null>(null);
   const mapPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const completeRef = useRef(onComplete); completeRef.current = onComplete;
   const [snapshot, setSnapshot] = useState(initialSnapshot);
@@ -92,7 +92,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
     modal.current?.focus();
     if (snapshot.phase !== "running" || menu) {
       heldPointers.current.clear(); lookPointer.current = null; setPressed(0);
-      engine.current?.steer(0); engine.current?.lookAround(0, 0);
+      engine.current?.steer(0);
     }
     mapPointer.current = null;
   }, [snapshot.phase, menu]);
@@ -133,7 +133,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const ended = snapshot.phase === "over" || snapshot.phase === "finished";
   const flyingIn = snapshot.phase === "intro", overview = snapshot.phase === "overview";
   const showPanel = menu || !ready || error || (snapshot.phase !== "running" && !flyingIn && !overview);
-  const stopLooking = () => { lookPointer.current = null; engine.current?.lookAround(0, 0); };
+  const stopLooking = () => { lookPointer.current = null; };
   const modeLabel = snapshot.mode === "endless" ? ui.endless : snapshot.level === 1 ? ui.tutorial : `${ui.level} ${snapshot.level}`;
   const cue = snapshot.rhythmCue;
 
@@ -185,16 +185,18 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
           onLostPointerCapture={event => { heldPointers.current.end(event.pointerId); updateSteering(); }}>
           <span aria-hidden="true">{direction < 0 ? "‹" : "›"}<svg className="egg-road-steer-power" viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" pathLength="1" strokeDasharray={`${Math.max(0, pressed * direction)} 1`} /></svg></span>
         </button>)}
-        <button className="egg-road-jump" type="button" disabled={!snapshot.jumpAvailable}
-          aria-label={snapshot.jumpAvailable ? ui.jumpHelp : ui.jumpUsed}
-          onPointerDown={event => { event.preventDefault(); engine.current?.jump(); }} onClick={() => engine.current?.jump()}>
-          <span aria-hidden="true">↑<b>{snapshot.jumpAvailable ? 1 : 0}</b></span><small>{ui.jump}</small>
+        <button className={`egg-road-jump ${snapshot.jumpRecharging ? "is-recharging" : ""}`} type="button" disabled={!snapshot.jumpAvailable}
+          aria-label={snapshot.jumpAvailable ? ui.jumpHelp : `${ui.jumpRecharge} ${snapshot.jumpCooldown.toFixed(1)} ${ui.secondsShort}. ${snapshot.jumpRecharging ? ui.jumpRolling : ui.jumpPaused}`}
+          onPointerDown={event => { if (event.button !== 0) return; event.preventDefault(); engine.current?.jump(); }} onClick={event => { if (event.detail === 0) engine.current?.jump(); }}>
+          <span aria-hidden="true">↑<b>{snapshot.jumpAvailable ? 1 : snapshot.jumpCooldown.toFixed(1)}</b></span><small>{snapshot.jumpAvailable ? ui.jump : snapshot.jumpRecharging ? ui.jumpRolling : ui.jumpPaused}</small>
+          {!snapshot.jumpAvailable && <svg className="egg-road-jump-charge" viewBox="0 0 58 64" preserveAspectRatio="none" aria-hidden="true"><rect x="2" y="2" width="54" height="60" rx="20" pathLength="1" strokeDasharray={`${1 - snapshot.jumpCooldown / 6} 1`} /></svg>}
         </button>
         <button className="egg-road-look" type="button" tabIndex={-1} aria-label={ui.lookDrag}
-          onPointerDown={event => { if (lookPointer.current) return; event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); lookPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY }; }}
-          onPointerMove={event => { const start = lookPointer.current; if (start?.id === event.pointerId) engine.current?.lookAround((event.clientX - start.x) / 48, (event.clientY - start.y) / 70); }}
-          onPointerUp={stopLooking} onPointerCancel={stopLooking} onLostPointerCapture={stopLooking}>
-          <span aria-hidden="true">◎</span><small>{ui.look}</small>
+          onPointerDown={event => { if (lookPointer.current || event.button !== 0) return; event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); lookPointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: 0 }; }}
+          onPointerMove={event => { const pointer = lookPointer.current; if (pointer?.id !== event.pointerId) return; const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y; pointer.moved += Math.hypot(dx, dy); engine.current?.lookAround(dx, dy); pointer.x = event.clientX; pointer.y = event.clientY; }}
+          onPointerUp={event => { const pointer = lookPointer.current; if (pointer?.id !== event.pointerId) return; if (pointer.moved < 6) engine.current?.centerLook(); stopLooking(); }}
+          onPointerCancel={event => { if (lookPointer.current?.id === event.pointerId) stopLooking(); }} onLostPointerCapture={event => { if (lookPointer.current?.id === event.pointerId) stopLooking(); }} onClick={event => { if (event.detail === 0) engine.current?.centerLook(); }}>
+          <span aria-hidden="true">◎</span><small>{ui.lookForward}</small>
         </button>
         {gyro === "on" && <button className="egg-road-calibrate" type="button" onClick={calibrate} aria-label={ui.calibrate}>{calibrated ? "✓" : ui.calibrateShort}</button>}
         <div className={`egg-road-instruments ${snapshot.boost > .1 ? "is-charged" : ""}`}>
@@ -264,7 +266,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
             {ready && <div className="egg-road-map-code"><label htmlFor="egg-road-code">{ui.code}</label><input id="egg-road-code" ref={codeField} readOnly value={shareValue ?? snapshot.code} onClick={event => event.currentTarget.select()} /><div><button onClick={() => void copySeed()}>{ui.copyCode}</button><button onClick={() => void copySeed(true)}>{ui.copyLink}</button><button disabled={saved.includes(snapshot.code)} onClick={remember}>{saved.includes(snapshot.code) ? ui.savedOne : ui.save}</button></div>{shareMessage && <p role="status">{shareMessage}</p>}</div>}
             {ended && <details className="egg-road-help"><summary>{ui.scoreBreakdown}</summary><dl className="egg-road-breakdown">{(Object.keys(snapshot.breakdown) as BonusKind[]).filter(kind => snapshot.breakdown[kind] > 0).map(kind => <div key={kind}><dt>{ui.bonusNames[kind]}</dt><dd>+{snapshot.breakdown[kind]}</dd></div>)}</dl></details>}
             {ready && !ended && <RoadRecords lang={lang} board={board} result={null} />}
-            <details className="egg-road-help"><summary>{ui.help}</summary><p>{ui.rhythmHelp}</p><p>{ui.jumpHelp}</p><ul>{[ui.gateRule, ui.edgeRule, ui.speedRule, ui.rhythmRule, ui.dropRule, ui.shortcutRule].map(rule => <li key={rule}>{rule}</li>)}</ul><p>{ui.fairRule}</p></details>
+            <details className="egg-road-help"><summary>{ui.help}</summary><p>{ui.rhythmHelp}</p><p>{ui.jumpHelp}</p><p>{ui.flightHelp}</p><ul>{[ui.gateRule, ui.edgeRule, ui.speedRule, ui.rhythmRule, ui.dropRule, ui.shortcutRule].map(rule => <li key={rule}>{rule}</li>)}</ul><p>{ui.fairRule}</p></details>
             {snapshot.phase === "ready" && <p className="egg-road-controls-copy">{ui.controls}<br />{ui.keyboard}<br />{ui.lookHint}</p>}
           </>}
         </>}

@@ -6,14 +6,14 @@ import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, lookDirection, orientatio
 import { createRoadTrack } from "../src/features/EggRoad/track.ts";
 import { RollRhythm } from "../src/features/EggRoad/rhythm.ts";
 
-test('a sudden 180 degree reversal follows a bounded, continuous arc even with noisy backwards motion', () => {
+test('a sustained road reversal follows a bounded arc after a settled landing', () => {
   const road = new Vector3(0, 0, -1), results = [];
   for (const fps of [30, 60, 120]) {
-    const heading = new ChaseHeading(); heading.reset(road);
+    const heading = new ChaseHeading(); heading.reset(road); heading.landed();
     let travelled = 0;
     for (let i = 0; i < fps * 5; i++) {
       const before = heading.direction.clone();
-      heading.step(1/fps, road, { x: i%2 ? .01 : -.01, z: 20 }, true);
+      heading.step(1/fps, { x: i%2 ? .001 : -.001, z: 1 }, false);
       const turn = before.angleTo(heading.direction); travelled += turn;
       assert.ok(Number.isFinite(turn) && turn <= 1.4/fps + 1e-6);
       assert.ok(Math.abs(heading.direction.length() - 1) < 1e-10, 'no zero vector at the halfway point');
@@ -25,17 +25,19 @@ test('a sudden 180 degree reversal follows a bounded, continuous arc even with n
   assert.ok(results[0].angleTo(results[2]) < .01);
 });
 
-test('brief reversals and low-speed jitter are ignored; a hard landing steadies the view before following the road', () => {
+test('chained drops keep one heading until the egg stays on the new road', () => {
   const forward = new Vector3(0, 0, -1), road = new Vector3(1, 0, 0), heading = new ChaseHeading();
   heading.reset(forward);
-  for (let i = 0; i < 12; i++) heading.step(1/60, forward, { x: 0, z: 15 }, true);
-  for (let i = 0; i < 60; i++) heading.step(1/60, forward, { x: 1, z: i%2 ? 1 : -1 }, true);
-  assert.ok(heading.direction.angleTo(forward) < 1e-9);
-  heading.landed();
-  for (let i = 0; i < 12; i++) heading.step(1/60, road, { x: -25, z: 0 }, true);
-  assert.ok(heading.direction.angleTo(forward) < 1e-9, 'the impact does not immediately swing the view');
-  for (let i = 0; i < 40; i++) heading.step(1/60, road, { x: -25, z: 0 }, true);
-  assert.ok(heading.direction.x > .2, 'the camera chooses the landed road instead of the rebound');
+  for (let bounce = 0; bounce < 4; bounce++) {
+    for (let i = 0; i < 90; i++) heading.step(1/60, road, true);
+    heading.landed();
+    for (let i = 0; i < 20; i++) heading.step(1/60, road, false);
+    assert.ok(heading.direction.angleTo(forward) < 1e-9, 'brief contacts cannot reorient the series');
+    assert.equal(heading.inFlight, true);
+  }
+  for (let i = 0; i < 180; i++) heading.step(1/60, road, false);
+  assert.equal(heading.inFlight, false);
+  assert.ok(heading.direction.angleTo(road) < .01, 'stable rolling restores the new road heading');
 });
 
 test('the camera orbits outside the egg through reversals, hard bounces and origin rebasing', () => {
@@ -84,48 +86,62 @@ test('manual overview rotates both axes, stops auto-spin, resets smoothly and ke
   }
 });
 
-test("look controls are bounded, smooth, and return to the forward view", () => {
+test('direct look gestures stop at the chosen view and explicit recentering stays smooth', () => {
   const look = new CameraLook(() => {});
-  look.setManual(10, -10); look.step(.1);
-  assert.ok(look.x > 0 && look.x < .04 && look.y < 0 && look.y > -1, "a short gesture only peeks sideways");
+  look.drag(80, 20); look.step(1/60);
+  assert.ok(look.x > 0 && look.x < .02 && look.y > 0, 'a drag starts smoothly');
+  for (let i = 0; i < 180; i++) look.step(1/60);
+  const held = { x: look.x, y: look.y };
+  for (let i = 0; i < 180; i++) look.step(1/60);
+  assert.ok(Math.abs(look.x-held.x) < 1e-6 && Math.abs(look.y-held.y) < 1e-6, 'release keeps the angle instead of continuing to turn');
+  assert.ok(held.x > .2 && held.x < .35);
+  look.drag(NaN, Infinity); look.step(1/60); assert.ok(Number.isFinite(look.x));
+  for (let i = 0; i < 20; i++) look.drag(60, 0);
   for (let i = 0; i < 240; i++) look.step(1/60);
-  const facing = lookDirection(new Vector3(0, 0, -1), look.x);
-  assert.ok(facing.z > .9 && facing.x < -.3, "manual look reaches past the rear view to 200 degrees");
-  const left = lookDirection(new Vector3(0, 0, -1), -1);
-  assert.ok(left.z > .9 && left.x > .3, "the same range is available to the left");
-  for (const side of [-1, 1]) {
-    const rear = lookDirection(new Vector3(0, 0, -1), side * .9);
-    assert.ok(rear.z > .999 && Math.abs(rear.x) < 1e-9, "180 degrees looks straight behind the egg");
-  }
-  look.setManual(0, 0);
-  for (let i = 0; i < 240; i++) look.step(1/60);
+  assert.ok(lookDirection(new Vector3(0,0,-1),look.x).z > .9, 'the full 200-degree range is still available');
+  look.resetView(); const before = look.x; look.step(1/60);
+  assert.ok(before - look.x <= .65/60 + 1e-9 && look.x > .9, 'recenter never snaps');
+  for (let i = 0; i < 300; i++) look.step(1/60);
   assert.ok(Math.abs(look.x) < 1e-5 && Math.abs(look.y) < 1e-5);
   for (let i = 0; i < 240; i++) look.step(1/60, -1);
-  assert.ok(look.x < -.99, "keyboard has the same full range");
+  assert.ok(look.x < -.99, 'keyboard retains the full range');
   look.recenter(); assert.equal(look.x, 0);
 });
 
-test("looking further turns more slowly, remains gentle on release and behaves consistently across frame rates", () => {
-  const profiles = [];
-  for (const fps of [60, 120]) {
-    const look = new CameraLook(() => {}), profile = [];
-    look.setManual(1, 0);
-    for (let i = 0; i < fps * 3; i++) {
-      const before = look.x; look.step(1 / fps);
-      assert.ok(Math.abs(look.x - before) * 200 <= 130 / fps + 1e-9, "rotation never snaps");
-      profile.push(look.x);
-    }
-    const early = profile[fps] - profile[fps / 2];
-    const late = profile[2.5 * fps] - profile[2 * fps];
-    assert.ok(late < early * .7, "speed noticeably drops toward the rear");
-    look.setManual(0, 0);
-    for (let i = 0; i < fps; i++) {
-      const before = look.x; look.step(1 / fps);
-      assert.ok(before - look.x <= .65 / fps + 1e-9, "release also has a speed limit");
-    }
-    profiles.push(profile[fps - 1]);
+test('keyboard turns slow near the rear and keep consistent speed limits at different frame rates', () => {
+  const profiles=[];
+  for (const fps of [30,60,120]) {
+    const look=new CameraLook(()=>{}),profile=[];
+    for(let i=0;i<fps*3;i++) {const before=look.x;look.step(1/fps,1);assert.ok(look.x-before<=.65/fps+1e-9);profile.push(look.x);}
+    assert.ok(profile[2.5*fps]-profile[2*fps] < (profile[fps]-profile[fps/2])*.7);
+    profiles.push(profile[fps-1]);
   }
-  assert.ok(Math.abs(profiles[0] - profiles[1]) < .005);
+  assert.ok(Math.max(...profiles)-Math.min(...profiles)<.01);
+});
+
+test('flight framing smoothly widens and looks down without orbiting through the egg', () => {
+  const rig=new ChaseRig(),egg=new Vector3(),forward=new Vector3(0,0,-1);
+  rig.reset(egg,forward); const initial=rig.position.clone();
+  rig.step(1/60,egg,forward,0,true);assert.ok(rig.position.distanceTo(initial)<.5);
+  for(let i=0;i<180;i++) rig.step(1/60,egg,forward,0,true);
+  assert.ok(rig.position.z>17.9 && rig.position.y>11.3 && rig.target.y< -5.7);
+  for(let i=0;i<360;i++) rig.step(1/60,egg,forward,0,false);
+  assert.ok(rig.position.distanceTo(initial)<.001);
+});
+
+test('flight framing keeps the egg and contact clear of the top and bottom HUD without changing yaw', () => {
+  for (const [aspect,fov] of [[844/390,79],[320/568,81]]) for (const depth of [8,24,40]) {
+    const rig=new ChaseRig(),egg=new Vector3(),forward=new Vector3(0,0,-1),landing=new Vector3(4,-depth,2);
+    rig.reset(egg,forward);
+    for(let i=0;i<120;i++)rig.step(1/60,egg,forward,0,true,landing);
+    const camera=new PerspectiveCamera(fov,aspect,.1,310);
+    camera.position.copy(rig.position);camera.lookAt(rig.target);camera.updateMatrixWorld();
+    for(const point of [egg,landing]) {
+      const projected=point.clone().project(camera);
+      assert.ok(Math.abs(projected.x)<.85 && Math.abs(projected.y)<.57, 'both reference points stay in the open part of the screen');
+    }
+    assert.equal(rig.position.x,0,'vertical framing cannot introduce an automatic sideways turn');
+  }
 });
 
 test("tilt stays relative to the held position and follows screen rotation", () => {

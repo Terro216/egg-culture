@@ -13,6 +13,7 @@ import type { ScoreBreakdown, ScoreNotice, BonusKind } from "./scoring.ts";
 export const PHYSICS_STEP = 1 / 120;
 export const FLIGHT_LIMIT = 4.2;
 export const JUMP_SPEED = 6;
+export const JUMP_RECHARGE_SECONDS = 6;
 const JUMP_SPEED_RETAINED = 0.75;
 export type RoadPhase = "ready" | "overview" | "intro" | "running" | "paused" | "over" | "finished";
 export type RoadResult = { score: number; skipped: number; bestSkip: number; seconds: number; finished: boolean; level: number; mode: RoadMode; code: string; distance: number; gates: number; breakdown: ScoreBreakdown };
@@ -26,6 +27,8 @@ export type RoadSnapshot = RoadResult & {
   boost: number;
   rhythm: number;
   jumpAvailable: boolean;
+  jumpCooldown: number;
+  jumpRecharging: boolean;
   rhythmCue: ReturnType<RollRhythm["cue"]>;
   code: string;
   distance: number;
@@ -54,7 +57,14 @@ export class RoadSimulation {
   flightTime = 0;
   hardLandings = 0;
   nearRoad = true;
-  jumpAvailable = true;
+  jumpCooldown = 0;
+  get jumpAvailable() { return this.jumpCooldown === 0; }
+  get rollingOnRoad() { return !this.jumping && (this.nearRoad || (this.flightTime === 0 && this.airTime < 1.2)); }
+  get jumpRecharging() {
+    if (this.disposed || this.phase !== "running" || this.jumpAvailable || !this.rollingOnRoad) return false;
+    const velocity = this.body.linvel();
+    return Math.hypot(velocity.x, velocity.z) > 3;
+  }
   private jumping = false;
   private jumpStarted = 0;
   readonly rhythm = new RollRhythm();
@@ -115,7 +125,7 @@ export class RoadSimulation {
     this.airTime = this.flightTime = this.seconds = this.gates = this.skipped = this.bestSkip = this.lastSkip = this.progress = 0;
     this.nearRoad = true;
     this.hardLandings = 0;
-    this.jumpAvailable = true;
+    this.jumpCooldown = 0;
     this.jumping = false;
     this.jumpStarted = 0;
     this.rhythm.reset();
@@ -155,7 +165,7 @@ export class RoadSimulation {
       y: Math.max(0, velocity.y) + JUMP_SPEED,
       z: velocity.z * JUMP_SPEED_RETAINED,
     }, true);
-    this.jumpAvailable = false;
+    this.jumpCooldown = JUMP_RECHARGE_SECONDS;
     this.jumping = true;
     this.jumpStarted = this.seconds;
     if (this.grounded) this.takeoffGate = this.gates;
@@ -196,8 +206,7 @@ export class RoadSimulation {
     const input = Number.isFinite(steering) ? MathUtils.clamp(steering, -1, 1) : 0;
     // The asymmetric shell makes tiny hops between contacts. They belong to the
     // same roll; only a real departure from the lane pauses the rhythm.
-    const earned = this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), this.velocity.dot(sample.tangent),
-      !this.jumping && (this.nearRoad || (this.flightTime === 0 && this.airTime < 1.2)));
+    const earned = this.rhythm.step(PHYSICS_STEP, input, this.velocity.dot(sample.right), this.velocity.dot(sample.tangent), this.rollingOnRoad);
     const targetSpeed = 18.5 + Math.min(3, this.progress / 260) + Math.min(2, (this.track.level - 1) * 0.3) + this.rhythm.charge * 9;
     if (earned) {
       const kick = Math.min(2, Math.max(0, targetSpeed - this.velocity.dot(sample.tangent)));
@@ -294,6 +303,12 @@ export class RoadSimulation {
       if (this.flightTime >= FLIGHT_LIMIT || this.position.y < this.track.samples.at(-1)!.position.y - 30) this.phase = "over";
     }
     if (this.seconds > this.skipNoticeUntil) this.lastSkip = 0;
+    // Natural shell hops close to the lane still belong to rolling. A rescue
+    // jump, real drop, stopped egg or pause must never refill the charge.
+    if (this.jumpRecharging) {
+      this.jumpCooldown = Math.max(0, this.jumpCooldown - PHYSICS_STEP);
+      if (this.jumpCooldown < 1e-8) this.jumpCooldown = 0;
+    }
   }
 
   snapshot(): RoadSnapshot {
@@ -305,6 +320,7 @@ export class RoadSimulation {
       distance: this.progress, bonus: this.scoring.notice, activeBonuses: [...this.scoring.active], rhythmCue: this.rhythm.cue(!this.jumping && this.flightTime <= 0.35),
       level: this.track.level, boost: this.rhythm.charge, rhythm: this.rhythm.chain,
       jumpAvailable: this.jumpAvailable,
+      jumpCooldown: this.jumpCooldown, jumpRecharging: this.jumpRecharging,
       seconds: this.seconds, finished: this.phase === "finished",
       // Show travel across the road, not the vertical speed of a fall or bounce.
       speed: Math.hypot(velocity.x, velocity.z),

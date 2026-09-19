@@ -7,6 +7,7 @@ import { RoadJourney } from "./journey.ts";
 import { readRoadProgress, saveRoadProgress } from "./storage.ts";
 import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, FLYBY_SECONDS, flybyPose, overviewPose, lookDirection } from "./camera.ts";
 import { KeyboardSteering } from "./controls.ts";
+import { predictLanding } from "./landing.ts";
 import type { RoadSpec } from "./seed.ts";
 import type { GyroState } from "./camera.ts";
 
@@ -57,6 +58,7 @@ export class RoadEngine {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(62, 1, 0.1, 310);
+  private baseFov = 62;
   private readonly journey: RoadJourney;
   private get simulation() { return this.journey.simulation; }
   private readonly look: CameraLook;
@@ -77,6 +79,8 @@ export class RoadEngine {
   private readonly mapOrbit = new MapOrbit();
   private readonly keyboardSteering = new KeyboardSteering();
   private readonly lookTarget = new THREE.Vector3();
+  private readonly landingMarker = new THREE.Group();
+  private lastPrediction = 0;
   private readonly lightOffset = new THREE.Vector3(-18, 34, 9);
   private frame = 0;
   private lastTime = performance.now();
@@ -132,13 +136,15 @@ export class RoadEngine {
     this.egg.receiveShadow = true;
     this.scene.add(this.egg);
     this.buildDust();
+    this.buildLandingMarker();
     this.resetCamera();
 
     const resize = () => {
       const width = Math.max(1, container.clientWidth);
       const height = Math.max(1, container.clientHeight);
       this.camera.aspect = width / height;
-      this.camera.fov = width < height ? 69 : 59;
+      this.baseFov = width < height ? 69 : 59;
+      this.camera.fov = this.baseFov;
       this.camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
       this.needsRender = true;
@@ -254,10 +260,34 @@ export class RoadEngine {
     }))));
   }
 
+  private buildLandingMarker() {
+    const material = this.keep(new THREE.MeshBasicMaterial({ color: 0xffedc4, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+    this.landingMarker.add(new THREE.Mesh(this.keep(new THREE.RingGeometry(0.9, 1.04, 40)), material));
+    const arrow = new THREE.Shape();
+    arrow.moveTo(0, 2.1); arrow.lineTo(-0.45, 1.4); arrow.lineTo(-0.14, 1.4); arrow.lineTo(-0.14, 0.15);
+    arrow.lineTo(0.14, 0.15); arrow.lineTo(0.14, 1.4); arrow.lineTo(0.45, 1.4); arrow.closePath();
+    this.landingMarker.add(new THREE.Mesh(this.keep(new THREE.ShapeGeometry(arrow)), material));
+    this.scene.add(this.landingMarker);
+  }
+
+  private updateLandingMarker(now: number) {
+    if (!this.chaseHeading.inFlight) { this.landingMarker.visible = false; return; }
+    // Ten bounded predictions per second; never step or clone the physics world.
+    if (now - this.lastPrediction < 100 || this.simulation.rollingOnRoad) return;
+    this.lastPrediction = now;
+    const landing = predictLanding(this.simulation);
+    this.landingMarker.visible = Boolean(landing);
+    if (!landing) return;
+    this.landingMarker.position.copy(landing.position).addScaledVector(landing.sample.normal, 0.07);
+    this.landingMarker.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(landing.sample.right, landing.sample.tangent, landing.sample.normal));
+  }
+
   private resetCamera() {
     this.needsRender = true;
     this.look.centerView();
+    this.landingMarker.visible = false; this.lastPrediction = 0;
     this.camera.far = 310;
+    this.camera.fov = this.baseFov;
     this.camera.updateProjectionMatrix();
     this.scene.fog = this.roadFog;
     const sim = this.simulation;
@@ -364,14 +394,15 @@ export class RoadEngine {
     this.audio.unlock(); this.audio.tone(520, 0.16);
     this.notify();
   };
-  lookAround(x: number, y: number) { this.look.setManual(x, y); }
+  lookAround(dx: number, dy: number) { this.look.drag(dx, dy); }
+  centerLook = () => { this.look.resetView(); };
   grabOverview() { if (this.simulation.phase === "overview") this.mapOrbit.grab(); }
   rotateOverview(dx: number, dy: number) { if (this.simulation.phase === "overview") this.mapOrbit.drag(dx, dy); }
   resetOverview = () => { if (this.simulation.phase === "overview") this.mapOrbit.restore(); };
   toggleGyro() { if (this.look.gyroState === "on" || this.look.gyroState === "waiting") this.look.disableGyro(); else void this.look.enableGyro(); }
   calibrateGyro() { return this.look.calibrate(); }
   setMuted(muted: boolean) { this.audio.muted = muted; if (!muted) this.audio.unlock(); }
-  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.keyboardSteering.reset(); this.look.setManual(0, 0); }
+  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.keyboardSteering.reset(); }
   private notify() { this.callbacks.update(this.simulation.snapshot()); }
   private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro" || this.simulation.phase === "overview") this.pause(); else this.clearInput(); };
   private visibility = () => { if (document.hidden) this.loseFocus(); };
@@ -392,6 +423,7 @@ export class RoadEngine {
       else if (this.simulation.phase === "paused") this.play();
     }
     if (event.code === "KeyR") { event.preventDefault(); this.restart(); }
+    if (event.code === "KeyC" && !overview) { event.preventDefault(); this.centerLook(); }
     if (event.code === "Space") {
       if (overview && event.target instanceof HTMLElement && event.target.closest("button")) return;
       event.preventDefault();
@@ -455,6 +487,7 @@ export class RoadEngine {
           this.chaseRig.shift(sim.originShift);
           this.previousPosition.sub(sim.originShift); this.camera.position.sub(sim.originShift);
           this.lookTarget.sub(sim.originShift); this.egg.position.sub(sim.originShift);
+          this.landingMarker.position.sub(sim.originShift);
           sim.originShift.set(0, 0, 0);
         }
         this.accumulator -= PHYSICS_STEP;
@@ -475,13 +508,18 @@ export class RoadEngine {
     if (!this.needsRender) return;
 
     if (!wasIntro && sim.phase === "running") {
-      this.heading.copy(this.chaseHeading.step(dt, sim.track.samples[sim.sampleIndex].tangent, sim.body.linvel(), !sim.nearRoad && sim.flightTime > 0.3));
+      const airborne = !sim.rollingOnRoad && (this.chaseHeading.inFlight || sim.flightTime > 0.2);
+      this.heading.copy(this.chaseHeading.step(dt, sim.track.samples[sim.sampleIndex].tangent, airborne));
       this.look.step(dt, Number(this.keys.has("KeyE")) - Number(this.keys.has("KeyQ")));
       const facing = lookDirection(this.heading, this.look.x);
-      this.chaseRig.step(dt, this.egg.position, facing, this.look.y);
+      this.updateLandingMarker(now);
+      this.chaseRig.step(dt, this.egg.position, facing, this.look.y, this.chaseHeading.inFlight,
+        !sim.rollingOnRoad && this.landingMarker.visible ? this.landingMarker.position : undefined);
       this.camera.position.copy(this.chaseRig.position);
       this.lookTarget.copy(this.chaseRig.target);
-    }
+      const fov = this.baseFov + this.chaseRig.flightAmount * (this.camera.aspect < 1 ? 12 : 20);
+      if (Math.abs(this.camera.fov - fov) > 0.001) { this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
+    } else this.landingMarker.visible = false;
     this.camera.lookAt(this.lookTarget);
     this.light.position.copy(this.egg.position).add(this.lightOffset);
     this.light.target.position.copy(this.egg.position);

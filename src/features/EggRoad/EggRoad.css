@@ -53,6 +53,11 @@
 .egg-road-jump > span { font-size: 28px; line-height: 1; }
 .egg-road-jump b { margin-left: 3px; font-size: 13px; font-weight: 500; vertical-align: middle; }
 .egg-road-jump > small { font-size: 9px; }
+.egg-road-jump-charge { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #f7dfb8; stroke-width: 2; pointer-events: none; }
+.egg-road-jump:disabled { opacity: .75; cursor: default; background: #211b2acc; }
+.egg-road-jump.is-recharging { opacity: 1; }
+.egg-road-jump:disabled > span { display: flex; align-items: center; gap: 2px; font-size: 22px; }
+.egg-road-jump:disabled b { margin-left: 0; font-variant-numeric: tabular-nums; font-size: 11px; }
 .egg-road-instruments { position: absolute; z-index: 2; bottom: calc(44px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: 148px; padding: 5px 3px 8px; text-align: center; pointer-events: none; color: #e5c49b; border: 1px solid #f2cd942b; border-radius: 72px 72px 15px 15px; background: #17131ebd; }
 .egg-road-speedometer { display: block; width: 140px; height: 84px; overflow: visible; }
 .egg-road-dial, .egg-road-dial-fill { fill: none; stroke: #efd9b526; stroke-width: 3; stroke-linecap: round; }

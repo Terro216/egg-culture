@@ -122,7 +122,10 @@ test("one ground jump lifts the real egg, preserves its spin, freezes rhythm and
     const before = { ...sim.body.linvel() }, spin = { ...sim.body.angvel() }, startY = sim.position.y;
     assert.equal(sim.jump(), true);
     const boosted = { ...sim.body.linvel() };
-    assert.ok(boosted.y >= 6); assert.equal(boosted.x, before.x); assert.equal(boosted.z, before.z);
+    assert.ok(boosted.y >= 6);
+    const speedRatio = Math.hypot(boosted.x, boosted.z) / Math.hypot(before.x, before.z);
+    assert.ok(speedRatio > .74 && speedRatio < .76, "the jump brakes a quarter of the rolling speed");
+    assert.ok(new Vector3(boosted.x, 0, boosted.z).angleTo(new Vector3(before.x, 0, before.z)) < 1e-6, "braking keeps the travel direction");
     assert.deepEqual({ ...sim.body.angvel() }, spin);
     assert.equal(sim.jump(), false);
     assert.equal(sim.snapshot().jumpAvailable, false);
@@ -150,13 +153,39 @@ test("an air jump arrests a fast fall and gives a late rescue time to work, once
     const before = { ...sim.body.linvel() };
     assert.equal(sim.jump(), true);
     assert.ok(sim.body.linvel().y > 0);
-    assert.equal(sim.body.linvel().x, before.x); assert.equal(sim.body.linvel().z, before.z);
+    const after = sim.body.linvel();
+    assert.ok(Math.hypot(after.x, after.z) < Math.hypot(before.x, before.z) * .76);
+    assert.ok(new Vector3(after.x, 0, after.z).angleTo(new Vector3(before.x, 0, before.z)) < 1e-6);
     assert.ok(sim.snapshot().flightLeft >= .99);
     advance(sim, .5);
     assert.equal(sim.phase, "running"); assert.equal(sim.jump(), false);
     advance(sim, .7);
     assert.equal(sim.phase, "over"); assert.equal(sim.jump(), false);
   } finally { sim.dispose(); }
+});
+
+test("rescue braking shortens the flight without weakening sideways control or adding forward acceleration", () => {
+  const run = (brake, heading) => {
+    const sim = new RoadSimulation(track);
+    try {
+      sim.start(); sim.body.setTranslation({ x: 500, y: 100, z: 500 }, true);
+      sim.body.setLinvel({ x: 0, y: -20, z: heading * 24 }, true);
+      assert.equal(sim.jump(), true);
+      if (!brake) sim.body.setLinvel({ x: 0, y: sim.body.linvel().y, z: heading * 24 }, true);
+      advance(sim, .5, 1);
+      return { forward: Math.abs(sim.position.z - 500), side: sim.position.x - 500,
+        height: sim.position.y, speed: Math.abs(sim.body.linvel().z), phase: sim.phase };
+    } finally { sim.dispose(); }
+  };
+  for (const heading of [-1, 1]) {
+    const old = run(false, heading), rescue = run(true, heading);
+    assert.equal(rescue.phase, "running");
+    assert.ok(rescue.forward > old.forward * .74 && rescue.forward < old.forward * .76,
+      "forward and backward flights both cover less distance before the same landing opportunity");
+    assert.ok(rescue.side > 1 && Math.abs(rescue.side - old.side) < .001, "air steering retains its full effect");
+    assert.ok(Math.abs(rescue.height - old.height) < .001, "the upward lift is unchanged");
+    assert.ok(rescue.speed < 18, "auto-acceleration does not undo the braking in the air");
+  }
 });
 
 test("landing on the end of the course finishes the run and freezes its result", () => {

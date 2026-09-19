@@ -84,7 +84,6 @@ export class RoadEngine {
   private finishedReported = false;
   private previousScore = 0;
   private previousStroke = 0;
-  private rhythmFlash = 0;
   private disposed = false;
   private needsRender = true;
   private flybyTime = 0;
@@ -124,7 +123,7 @@ export class RoadEngine {
     const eggGeometry = this.keep(createEggGeometry());
     const eggTexture = this.keep(this.shellTexture());
     const material = this.keep(new THREE.MeshStandardMaterial({
-      color: 0xfff4dc, map: eggTexture, roughness: 0.57, metalness: 0.02, emissive: 0xeaa446, emissiveIntensity: 0,
+      color: 0xfff4dc, map: eggTexture, roughness: 0.57, metalness: 0.02,
     }));
     this.egg = new THREE.Mesh(eggGeometry, material);
     this.egg.castShadow = true;
@@ -261,7 +260,6 @@ export class RoadEngine {
     this.scene.fog = this.roadFog;
     const sim = this.simulation;
     this.previousStroke = sim.rhythm.strokes;
-    this.rhythmFlash = this.egg.material.emissiveIntensity = 0;
     this.previousPosition.copy(sim.position);
     this.previousRotation.copy(sim.rotation);
     this.egg.position.copy(sim.position);
@@ -452,12 +450,9 @@ export class RoadEngine {
       if (sim.gates > this.previousScore) { this.previousScore = sim.gates; this.audio.tone(360 + (sim.gates % 5) * 80); }
       if (sim.rhythm.strokes > this.previousStroke) {
         this.previousStroke = sim.rhythm.strokes;
-        this.rhythmFlash = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 0.8;
         this.audio.tone(700 + Math.min(6, sim.rhythm.chain) * 60, 0.07);
         try { navigator.vibrate?.(12); } catch { /* Feedback is optional. */ }
       }
-      this.rhythmFlash *= Math.exp(-dt * 7);
-      this.egg.material.emissiveIntensity = sim.rhythm.charge * 0.18 + this.rhythmFlash;
     }
 
     // Keep menus and pauses still without spending GPU time on identical frames.

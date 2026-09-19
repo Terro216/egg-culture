@@ -72,33 +72,39 @@ export class ChaseHeading {
   private candidateTime = 0;
   private turnRate = 0;
   private turnSide = 1;
-  private landingHold = 0;
-  private landingSettle = 0;
+  private flight = false;
+  private roadTime = 0;
+  get inFlight() { return this.flight; }
 
   reset(direction: { x: number; z: number }) {
     this.yaw = this.target = this.candidate = yawOf(direction);
-    this.candidateTime = this.turnRate = this.landingHold = this.landingSettle = 0;
+    this.candidateTime = this.turnRate = this.roadTime = 0;
+    this.flight = false;
     this.turnSide = 1;
     this.direction.set(Math.sin(this.yaw), 0, -Math.cos(this.yaw));
   }
-  landed() { this.landingHold = 0.25; this.landingSettle = 1; this.turnRate = 0; }
-  step(dt: number, road: { x: number; z: number }, velocity: { x: number; z: number }, airborne: boolean) {
-    this.landingSettle = Math.max(0, this.landingSettle - dt);
-    const useVelocity = airborne && this.landingSettle === 0;
-    const requested = useVelocity ? Math.hypot(velocity.x, velocity.z) > 4 ? yawOf(velocity) : this.target : yawOf(road);
-    // Ignore a brief bounce or a noisy backwards velocity before committing to a turn.
+  landed() { this.flight = true; this.roadTime = this.turnRate = this.candidateTime = 0; this.target = this.yaw; }
+  step(dt: number, road: { x: number; z: number }, airborne: boolean) {
+    // A drop and its short rebounds share one view. Velocity is deliberately
+    // not a camera heading: every impact can reverse it for a moment.
+    if (airborne) { this.landed(); return this.direction; }
+    if (this.flight) {
+      this.roadTime += dt;
+      if (this.roadTime < 0.55) return this.direction;
+      this.flight = false;
+    }
+    const requested = yawOf(road);
+    // A brief change of the supporting road must not commit to a U-turn.
     if (Math.abs(angleDelta(this.target, requested)) > Math.PI / 2) {
       if (Math.abs(angleDelta(this.candidate, requested)) > 0.35) { this.candidate = requested; this.candidateTime = 0; }
       this.candidateTime += dt;
       if (this.candidateTime >= 0.25) this.target = requested;
     } else { this.target = this.candidate = requested; this.candidateTime = 0; }
-    if (this.landingHold > 0) { this.landingHold = Math.max(0, this.landingHold - dt); return this.direction; }
     let error = angleDelta(this.yaw, this.target);
     // Near 180 degrees, tiny left/right noise must not keep changing the chosen arc.
     if (Math.abs(error) > 2.6) error = Math.abs(error) * this.turnSide;
     else if (Math.abs(error) > 0.03) this.turnSide = Math.sign(error);
-    const maxRate = this.landingSettle > 0 ? 1 : 1.4;
-    const desiredRate = MathUtils.clamp(error * 3.2, -maxRate, maxRate);
+    const desiredRate = MathUtils.clamp(error * 3.2, -1.4, 1.4);
     this.turnRate += MathUtils.clamp(desiredRate - this.turnRate, -dt * 3.5, dt * 3.5);
     const turn = this.turnRate * dt;
     if (Math.sign(turn) === Math.sign(error) && Math.abs(turn) >= Math.abs(error)) { this.yaw += error; this.turnRate = 0; }
@@ -117,24 +123,43 @@ export class ChaseRig {
   private readonly direction = new Vector3();
   private yaw = 0;
   private lookY = 0;
+  private flight = 0;
+  private aimPitch = 0;
+  get flightAmount() { return this.flight; }
   reset(position: Vector3, direction: Vector3) {
-    this.anchor.copy(position); this.yaw = yawOf(direction); this.lookY = 0;
+    this.anchor.copy(position); this.yaw = yawOf(direction); this.lookY = this.flight = 0;
     this.pose();
+    this.aimPitch = Math.atan2(this.target.y - this.position.y, 20);
   }
   shift(offset: Vector3) { this.anchor.sub(offset); this.position.sub(offset); this.target.sub(offset); }
-  step(dt: number, egg: Vector3, facing: Vector3, lookY: number) {
+  step(dt: number, egg: Vector3, facing: Vector3, lookY: number, flight = false, landing?: Vector3) {
     const rate = 1 - Math.exp(-dt * 8);
     this.yaw += MathUtils.clamp(angleDelta(this.yaw, yawOf(facing)) * rate, -dt * 2.4, dt * 2.4);
     this.lookY = MathUtils.lerp(this.lookY, lookY, rate);
+    this.flight = MathUtils.lerp(this.flight, Number(flight), 1 - Math.exp(-dt * (flight ? 3 : 2)));
     this.anchor.lerp(egg, rate);
     this.offset.copy(this.anchor).sub(egg).clampLength(0, 2);
     this.anchor.copy(egg).add(this.offset);
     this.pose();
+    const reach = this.target.clone().sub(this.position).dot(this.direction);
+    let pitch = Math.atan2(this.target.y - this.position.y, reach);
+    if (flight && landing) {
+      const eggAhead = egg.clone().sub(this.position).dot(this.direction);
+      const landingAhead = landing.clone().sub(this.position).dot(this.direction);
+      if (eggAhead > 2 && landingAhead > 2) {
+        // Frame both the egg and first contact vertically without changing yaw.
+        const eggAngle = Math.atan2(egg.y - this.position.y, eggAhead);
+        const contactAngle = Math.atan2(landing.y - this.position.y, landingAhead);
+        pitch = (eggAngle + contactAngle) / 2 - this.lookY * 0.2;
+      }
+    }
+    this.aimPitch += MathUtils.clamp((pitch - this.aimPitch) * rate, -dt * 0.9, dt * 0.9);
+    this.target.y = this.position.y + Math.tan(this.aimPitch) * reach;
   }
   private pose() {
     this.direction.set(Math.sin(this.yaw), 0, -Math.cos(this.yaw));
-    this.position.copy(this.anchor).addScaledVector(this.direction, -12); this.position.y += 6.4 + this.lookY * 3.4;
-    this.target.copy(this.anchor).addScaledVector(this.direction, 8); this.target.y += 0.2 - this.lookY * 1.5;
+    this.position.copy(this.anchor).addScaledVector(this.direction, -12 - this.flight * 6); this.position.y += 6.4 + this.flight * 5 + this.lookY * 3.4;
+    this.target.copy(this.anchor).addScaledVector(this.direction, 8 - this.flight * 3); this.target.y += 0.2 - this.flight * 6 - this.lookY * 1.5;
   }
 }
 
@@ -159,7 +184,7 @@ export class CameraLook {
   x = 0;
   y = 0;
   gyroState: GyroState = "off";
-  private manual = { x: 0, y: 0 };
+  private manualY = 0;
   private orbit = 0;
   private sensor = { x: 0, y: 0 };
   private origin: { beta: number; gamma: number; angle: number } | null = null;
@@ -170,25 +195,30 @@ export class CameraLook {
   private readonly changed: (state: GyroState) => void;
 
   constructor(changed: (state: GyroState) => void) { this.changed = changed; }
-  setManual(x: number, y: number) { this.manual = { x: MathUtils.clamp(x, -1, 1), y: MathUtils.clamp(y, -1, 1) }; }
-  recenter() { this.x = this.y = this.orbit = 0; this.origin = null; this.sensor = { x: 0, y: 0 }; this.setManual(0, 0); }
-  centerView() { this.x = this.y = this.orbit = 0; this.setManual(0, 0); }
+  drag(dx: number, dy: number) {
+    if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
+    this.orbit = MathUtils.clamp(this.orbit + dx * 0.004 * (0.9 - 0.35 * Math.abs(this.orbit)), -1, 1);
+    this.manualY = MathUtils.clamp(this.manualY + dy * 0.008, -1, 1);
+  }
+  resetView() { this.orbit = this.manualY = 0; }
+  recenter() { this.x = this.y = 0; this.origin = null; this.sensor = { x: 0, y: 0 }; this.resetView(); }
+  centerView() { this.x = this.y = 0; this.resetView(); }
   calibrate() {
     if (!this.latest || this.gyroState !== "on") return false;
-    this.origin = { ...this.latest }; this.sensor = { x: 0, y: 0 }; this.x = this.y = this.orbit = 0;
+    this.origin = { ...this.latest }; this.sensor = { x: 0, y: 0 }; this.centerView();
     return true;
   }
   step(dt: number, keyboard = 0) {
-    const input = MathUtils.clamp(this.manual.x + keyboard, -1, 1);
+    const input = MathUtils.clamp(keyboard, -1, 1);
     if (Math.abs(input) > 0.03) {
       // A held gesture turns gradually, slowing as it approaches the rear view.
       this.orbit = MathUtils.clamp(this.orbit + input * (0.62 - 0.42 * Math.abs(this.orbit)) * dt, -1, 1);
-    } else this.orbit *= Math.exp(-dt * 3.5);
+    }
     const rate = 1 - Math.exp(-dt * 6);
     const target = MathUtils.clamp(this.orbit + this.sensor.x * GYRO_LOOK_YAW / MAX_LOOK_YAW, -1, 1);
-    // Also cap the return speed, so releasing a rearward look cannot whip around.
+    // Dragging and explicit recentering share the same bounded angular speed.
     this.x += MathUtils.clamp((target - this.x) * rate, -0.65 * dt, 0.65 * dt);
-    this.y = MathUtils.lerp(this.y, MathUtils.clamp(this.manual.y + this.sensor.y, -1, 1), rate);
+    this.y = MathUtils.lerp(this.y, MathUtils.clamp(this.manualY + this.sensor.y, -1, 1), rate);
   }
   private status(state: GyroState) { this.gyroState = state; this.changed(state); }
 

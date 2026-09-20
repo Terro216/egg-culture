@@ -144,7 +144,7 @@ test("one ground jump lifts the real egg, preserves its spin, freezes rhythm and
   } finally { sim.dispose(); }
 });
 
-test("an air jump arrests a fast fall and gives a late rescue time to work, once", () => {
+test("a late air jump restarts the full death timer without changing the drop or granting another charge", () => {
   const sim = new RoadSimulation(track);
   try {
     sim.start(); sim.body.setTranslation({ x: 500, y: 300, z: 500 }, true);
@@ -153,15 +153,19 @@ test("an air jump arrests a fast fall and gives a late rescue time to work, once
     sim.step(0);
     assert.equal(sim.grounded, false);
     const before = { ...sim.body.linvel() };
+    const drop = { height: sim.dropHeight, airTime: sim.airTime, gates: sim.gates, score: sim.score };
     assert.equal(sim.jump(), true);
     assert.ok(sim.body.linvel().y > 0);
     const after = sim.body.linvel();
     assert.ok(Math.hypot(after.x, after.z) < Math.hypot(before.x, before.z) * .76);
     assert.ok(new Vector3(after.x, 0, after.z).angleTo(new Vector3(before.x, 0, before.z)) < 1e-6);
-    assert.ok(sim.snapshot().flightLeft >= .99);
-    advance(sim, .5);
+    assert.equal(sim.snapshot().flightLeft, FLIGHT_LIMIT);
+    assert.deepEqual({ height: sim.dropHeight, airTime: sim.airTime, gates: sim.gates, score: sim.score }, drop);
+    advance(sim, FLIGHT_LIMIT - .2);
     assert.equal(sim.phase, "running"); assert.equal(sim.jump(), false);
-    advance(sim, .7);
+    assert.ok(sim.snapshot().flightLeft < .21, "a rejected second jump cannot reset the timer");
+    assert.equal(sim.jumpCooldown, 6, "the new flight allowance cannot recharge the jump");
+    advance(sim, .3);
     assert.equal(sim.phase, "over"); assert.equal(sim.jump(), false);
   } finally { sim.dispose(); }
 });

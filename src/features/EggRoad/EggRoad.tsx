@@ -45,6 +45,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const [menu, setMenu] = useState(true);
   const [menuTab, setMenuTab] = useState<"modes" | "popular">("modes");
   const [muted, setMuted] = useState(true); const mutedRef = useRef(true);
+  const [landingGuide, setLandingGuide] = useState(false); const landingGuideRef = useRef(false);
   const [best, setBest] = useState(0), [newBest, setNewBest] = useState(false);
   const [pressed, setPressed] = useState(0), [gyro, setGyro] = useState<GyroState>("off");
   const [calibrated, setCalibrated] = useState(false);
@@ -62,7 +63,11 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
     const previousFocus = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden"; modal.current?.focus();
     setBest(readTrackBest(initialSnapshot.code)); setSaved(readSavedRoads()); setProgress(readRoadProgress());
-    try { mutedRef.current = JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "null")?.muted !== false; setMuted(mutedRef.current); } catch { /* Optional storage. */ }
+    try {
+      const settings = JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "null");
+      mutedRef.current = settings?.muted !== false; setMuted(mutedRef.current);
+      landingGuideRef.current = settings?.landingGuide === true; setLandingGuide(landingGuideRef.current);
+    } catch { /* Optional storage. */ }
     const abort = new AbortController(); let instance: RoadEngine | null = null;
     void import("./engine.ts").then(({ createRoadEngine }) => {
       if (abort.signal.aborted || !canvasHost.current) return null;
@@ -77,7 +82,8 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
     }).then(created => {
       if (!created) return;
       if (abort.signal.aborted) { created.dispose(); return; }
-      instance = created; engine.current = created; created.setMuted(mutedRef.current); setReady(true);
+      instance = created; engine.current = created; created.setMuted(mutedRef.current);
+      created.setLandingGuide(landingGuideRef.current); setReady(true);
       const shared = new URL(window.location.href).searchParams.get("road");
       if (shared) {
         const spec = parseRoadCode(shared);
@@ -120,6 +126,11 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
   const toggleSound = () => {
     mutedRef.current = !mutedRef.current; setMuted(mutedRef.current); engine.current?.setMuted(mutedRef.current);
     try { localStorage.setItem(ROAD_STORAGE_KEY, JSON.stringify({ ...JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "{}"), muted: mutedRef.current })); } catch { /* Optional. */ }
+  };
+  const toggleLandingGuide = () => {
+    landingGuideRef.current = !landingGuideRef.current; setLandingGuide(landingGuideRef.current);
+    engine.current?.setLandingGuide(landingGuideRef.current);
+    try { localStorage.setItem(ROAD_STORAGE_KEY, JSON.stringify({ ...JSON.parse(localStorage.getItem(ROAD_STORAGE_KEY) ?? "{}"), landingGuide: landingGuideRef.current })); } catch { /* Optional. */ }
   };
   const copySeed = async (link = false) => {
     const url = new URL(`/${lang}/play/`, window.location.origin); url.searchParams.set("road", snapshot.code);
@@ -271,6 +282,7 @@ export default function EggRoad({ lang, onClose, onComplete, publicPage = false 
           </>}
         </>}
         {!error && ready && <div className="egg-road-options">
+          <button type="button" className="egg-road-guide-toggle" role="switch" aria-checked={landingGuide} onClick={toggleLandingGuide}><span className="egg-road-switch" aria-hidden="true" />{ui.landingGuide}</button>
           <button type="button" aria-pressed={gyro === "on" || gyro === "waiting"} onClick={() => engine.current?.toggleGyro()}>{gyro === "on" ? ui.gyroOn : gyro === "waiting" ? ui.gyroWaiting : ui.gyroOff}</button>
           {gyro === "on" && <><button type="button" onClick={calibrate}>{calibrated ? ui.calibrated : ui.calibrate}</button><p>{ui.tiltNote}</p></>}
           {gyro === "unavailable" && <p role="status">{ui.gyroMissing}</p>}

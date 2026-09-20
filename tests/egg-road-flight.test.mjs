@@ -3,7 +3,7 @@ import test from 'node:test';
 import { Sphere, Vector3 } from 'three';
 import { initializePhysics, RoadSimulation, PHYSICS_STEP, JUMP_RECHARGE_SECONDS } from '../src/features/EggRoad/simulation.ts';
 import { roadCollider, createRoadTrack } from '../src/features/EggRoad/track.ts';
-import { predictLanding } from '../src/features/EggRoad/landing.ts';
+import { predictLanding, predictLandingGuide } from '../src/features/EggRoad/landing.ts';
 
 await initializePhysics();
 const advance = (sim, seconds) => { for (let i = 0; i < Math.round(seconds / PHYSICS_STEP); i++) sim.step(0); };
@@ -76,4 +76,26 @@ test('no landing promise appears for empty space, road undersides or an exhauste
     assert.equal(predictLanding(sim),null,'hitting an underside does not suggest a safe landing');
     sim.flightTime=4.2;assert.equal(predictLanding(sim),null);
   } finally {sim.dispose();}
+});
+
+test('the optional guide excludes ordinary hops and only appears on a sustained high descent', () => {
+  for (const height of [5, 7.5, 16]) {
+    const sim=new RoadSimulation(straightRoad());
+    try {
+      sim.start();sim.body.setTranslation({x:0,y:height,z:-50},true);
+      sim.body.setLinvel({x:0,y:-8,z:-3},true);sim.body.setAngvel({x:0,y:0,z:0},true);sim.step(0);
+      assert.ok(predictLanding(sim),'a predictable landing alone must not show the guide');
+      sim.flightTime=.74;assert.equal(predictLandingGuide(sim),null,'short flight is not enough');
+      sim.flightTime=.76;
+      if (height<8) assert.equal(predictLandingGuide(sim),null,'strong hops below eight metres keep their suspense');
+      else {
+        assert.ok(predictLandingGuide(sim),'a sustained high drop can show the first contact');
+        sim.body.setLinvel({x:0,y:6,z:-3},true);assert.equal(predictLandingGuide(sim),null,'an upward rescue hides the target');
+        sim.body.setLinvel({x:0,y:-8,z:-3},true);sim.pause();assert.equal(predictLandingGuide(sim),null);
+        sim.resume();advance(sim,.3);assert.ok(predictLandingGuide(sim),'approaching the contact does not lose the original height');
+        while(sim.phase==='running' && !sim.grounded && sim.seconds<3)sim.step(0);
+        assert.ok(sim.grounded);assert.equal(predictLandingGuide(sim),null,'contact hides the ring immediately');
+      }
+    } finally {sim.dispose();}
+  }
 });

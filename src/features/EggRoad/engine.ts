@@ -7,7 +7,7 @@ import { RoadJourney } from "./journey.ts";
 import { readRoadProgress, saveRoadProgress } from "./storage.ts";
 import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, FLYBY_SECONDS, flybyPose, overviewPose, lookDirection } from "./camera.ts";
 import { KeyboardSteering } from "./controls.ts";
-import { predictLanding } from "./landing.ts";
+import { landingGuideEligible, predictLandingGuide } from "./landing.ts";
 import type { RoadSpec } from "./seed.ts";
 import type { GyroState } from "./camera.ts";
 
@@ -80,6 +80,7 @@ export class RoadEngine {
   private readonly keyboardSteering = new KeyboardSteering();
   private readonly lookTarget = new THREE.Vector3();
   private readonly landingMarker = new THREE.Group();
+  private landingGuide = false;
   private lastPrediction = 0;
   private readonly lightOffset = new THREE.Vector3(-18, 34, 9);
   private frame = 0;
@@ -263,19 +264,15 @@ export class RoadEngine {
   private buildLandingMarker() {
     const material = this.keep(new THREE.MeshBasicMaterial({ color: 0xffedc4, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
     this.landingMarker.add(new THREE.Mesh(this.keep(new THREE.RingGeometry(0.9, 1.04, 40)), material));
-    const arrow = new THREE.Shape();
-    arrow.moveTo(0, 2.1); arrow.lineTo(-0.45, 1.4); arrow.lineTo(-0.14, 1.4); arrow.lineTo(-0.14, 0.15);
-    arrow.lineTo(0.14, 0.15); arrow.lineTo(0.14, 1.4); arrow.lineTo(0.45, 1.4); arrow.closePath();
-    this.landingMarker.add(new THREE.Mesh(this.keep(new THREE.ShapeGeometry(arrow)), material));
     this.scene.add(this.landingMarker);
   }
 
   private updateLandingMarker(now: number) {
-    if (!this.chaseHeading.inFlight) { this.landingMarker.visible = false; return; }
+    if (!this.landingGuide || !landingGuideEligible(this.simulation)) { this.landingMarker.visible = false; return; }
     // Ten bounded predictions per second; never step or clone the physics world.
-    if (now - this.lastPrediction < 100 || this.simulation.rollingOnRoad) return;
+    if (now - this.lastPrediction < 100) return;
     this.lastPrediction = now;
-    const landing = predictLanding(this.simulation);
+    const landing = predictLandingGuide(this.simulation);
     this.landingMarker.visible = Boolean(landing);
     if (!landing) return;
     this.landingMarker.position.copy(landing.position).addScaledVector(landing.sample.normal, 0.07);
@@ -402,6 +399,10 @@ export class RoadEngine {
   toggleGyro() { if (this.look.gyroState === "on" || this.look.gyroState === "waiting") this.look.disableGyro(); else void this.look.enableGyro(); }
   calibrateGyro() { return this.look.calibrate(); }
   setMuted(muted: boolean) { this.audio.muted = muted; if (!muted) this.audio.unlock(); }
+  setLandingGuide(enabled: boolean) {
+    this.landingGuide = enabled; this.landingMarker.visible = false;
+    this.lastPrediction = 0; this.needsRender = true;
+  }
   private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.keyboardSteering.reset(); }
   private notify() { this.callbacks.update(this.simulation.snapshot()); }
   private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro" || this.simulation.phase === "overview") this.pause(); else this.clearInput(); };
@@ -509,7 +510,7 @@ export class RoadEngine {
 
     if (!wasIntro && sim.phase === "running") {
       const airborne = !sim.rollingOnRoad && (this.chaseHeading.inFlight || sim.flightTime > 0.2);
-      this.heading.copy(this.chaseHeading.step(dt, sim.track.samples[sim.sampleIndex].tangent, airborne));
+      this.heading.copy(this.chaseHeading.step(dt, sim.body.linvel(), airborne));
       this.look.step(dt, Number(this.keys.has("KeyE")) - Number(this.keys.has("KeyQ")));
       const facing = lookDirection(this.heading, this.look.x);
       this.updateLandingMarker(now);

@@ -73,6 +73,7 @@ export class RoadSimulation {
   readonly scoring = new RoadScoring();
   get score() { return this.scoring.total; }
   private flightPeak = 0;
+  get dropHeight() { return Math.max(0, this.flightPeak - this.position.y); }
   skipped = 0;
   bestSkip = 0;
   lastSkip = 0;
@@ -170,8 +171,9 @@ export class RoadSimulation {
     this.jumpStarted = this.seconds;
     if (this.grounded) this.takeoffGate = this.gates;
     this.grounded = this.nearRoad = false;
-    // A last-second rescue gets time to work, without replenishing the jump.
-    this.flightTime = Math.min(this.flightTime, FLIGHT_LIMIT - 1);
+    // Every successful rescue starts a full return window, without changing
+    // the drop's height, scoring history or the spent jump charge.
+    this.flightTime = 0;
     return true;
   }
 

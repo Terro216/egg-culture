@@ -216,7 +216,9 @@ export class RoadSimulation {
       this.velocity.copy(this.body.linvel());
     }
     this.body.resetForces(true);
-    this.force.copy(sample.right).multiplyScalar(input * (this.nearRoad ? 25 : 11));
+    // Ordinary shell hops keep the same steering authority as rolling; losing
+    // a close contact must not halve a correction the player is already making.
+    this.force.copy(sample.right).multiplyScalar(input * (this.rollingOnRoad ? 25 : 11));
     if (!this.jumping && (this.nearRoad || this.seconds < 0.15)) {
       const acceleration = MathUtils.clamp((targetSpeed - this.velocity.dot(sample.tangent)) * 2.5, -4, 17);
       this.force.addScaledVector(sample.tangent, acceleration);

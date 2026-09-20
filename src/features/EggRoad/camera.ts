@@ -197,9 +197,15 @@ export class CameraLook {
   private timeout: ReturnType<typeof setTimeout> | undefined;
   private generation = 0;
   private disposed = false;
+  private viewRotation = 0;
   private readonly changed: (state: GyroState) => void;
 
   constructor(changed: (state: GyroState) => void) { this.changed = changed; }
+  setViewRotation(rotation: number) {
+    if (this.viewRotation === rotation) return;
+    this.viewRotation = rotation;
+    this.origin = this.latest = null; this.sensor = { x: 0, y: 0 };
+  }
   drag(dx: number, dy: number) {
     if (!Number.isFinite(dx) || !Number.isFinite(dy)) return;
     this.orbit = MathUtils.clamp(this.orbit + dx * 0.004 * (0.9 - 0.35 * Math.abs(this.orbit)), -1, 1);
@@ -246,7 +252,7 @@ export class CameraLook {
 
   private orientation = (event: DeviceOrientationEvent) => {
     if (event.beta === null || event.gamma === null || !Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
-    const angle = window.screen.orientation?.angle ?? Number((window as Window & { orientation?: number }).orientation ?? 0);
+    const angle = (window.screen.orientation?.angle ?? Number((window as Window & { orientation?: number }).orientation ?? 0)) + this.viewRotation;
     this.latest = { beta: event.beta, gamma: event.gamma, angle };
     if (!this.origin || this.origin.angle !== angle) this.origin = { beta: event.beta, gamma: event.gamma, angle };
     this.sensor = orientationLook(event.beta, event.gamma, this.origin.beta, this.origin.gamma, angle);

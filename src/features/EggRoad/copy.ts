@@ -79,7 +79,8 @@ export const copy = {
 
     title: "Путь формы", kicker: "Третье испытание", intro: "Удерживайте яйцо на дороге. Падайте на нижние витки, чтобы срезать путь.",
     character: "Небольшие перекаты влево-вправо дают разгон. Удачный перекат отзывается коротким звуком, если он включён.",
-    controls: "Касание слева или справа — мягкий поворот. Потяните палец в сторону: дальше — сильнее. Можно менять направление, не отрывая палец.", keyboard: "← → или A / D: коротко — мягко, удерживать — сильнее · Пробел — прыжок · P — пауза · R — заново · F — полный экран",
+    controls: "Нажимайте в любом месте левой или правой половины экрана. Коротко — небольшая поправка, удерживать — полный поворот. Перенесите палец через середину, чтобы сменить направление.", keyboard: "← → или A / D: коротко — мягко, удерживать — сильнее · Пробел — прыжок · P — пауза · R — заново · F — полный экран",
+    portrait: "Переключить вертикально", landscape: "Переключить горизонтально",
     fullscreenEnter: "На весь экран", fullscreenExit: "Выйти из полного экрана",
     fullscreenInstall: "На iPhone откройте страницу игры в Safari → «Поделиться» → «На экран Домой». Запускайте игру с этой иконки — панели браузера не будут закрывать дорогу.",
     fullscreenUnavailable: "Браузер не разрешил полный экран. Попробуйте открыть игру напрямую в Safari, Chrome или Firefox.",
@@ -176,7 +177,8 @@ export const copy = {
 
     title: "Path of Form", kicker: "The third trial", intro: "Keep the egg on the road. Land on the lower turns to take a shortcut.",
     character: "Small left-right strokes build speed. A good stroke plays a brief tone if sound is on.",
-    controls: "Touch the left or right side for a gentle turn. Drag sideways: further means stronger. You can change direction without lifting your finger.", keyboard: "← → or A / D: tap gently, hold for more · Space to jump · P to pause · R to restart · F for fullscreen",
+    controls: "Press anywhere on the left or right half of the screen. Tap for a small correction, hold for a full turn. Slide across the centre to change direction.", keyboard: "← → or A / D: tap gently, hold for more · Space to jump · P to pause · R to restart · F for fullscreen",
+    portrait: "Switch to portrait", landscape: "Switch to landscape",
     fullscreenEnter: "Enter fullscreen", fullscreenExit: "Exit fullscreen",
     fullscreenInstall: "On iPhone, open the game page in Safari → Share → Add to Home Screen. Launch it from that icon to keep browser bars off the road.",
     fullscreenUnavailable: "The browser did not allow fullscreen. Try opening the game directly in Safari, Chrome or Firefox.",

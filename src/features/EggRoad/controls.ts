@@ -1,31 +1,23 @@
-const clamp = (value: number) => Math.max(-1, Math.min(1, value));
-
-/** Each finger keeps its own anchor, even after crossing the screen midpoint. */
+/** Whole-screen buttons: hold a half to turn, slide across the centre to reverse. */
 export class RoadSteering {
-  private readonly pointers = new Map<number, { x: number; side: number; value: number }>();
+  private readonly pointers = new Map<number, -1 | 1>();
 
-  begin(id: number, x: number, side: -1 | 1) {
-    if (Number.isFinite(x)) this.pointers.set(id, { x, side, value: side * 0.25 });
-  }
-  move(id: number, x: number) {
-    const pointer = this.pointers.get(id);
-    if (!pointer || !Number.isFinite(x)) return;
-    const distance = x - pointer.x;
-    const drag = Math.sign(distance) * Math.max(0, Math.abs(distance) - 3) / 64;
-    const value = clamp(pointer.side * 0.25 + drag);
-    pointer.value = Math.abs(value) < 0.035 ? 0 : value;
+  begin(id: number, side: -1 | 1) { this.pointers.set(id, side); }
+  move(id: number, side: -1 | 1) {
+    if (!this.pointers.has(id)) return false;
+    this.pointers.set(id, side); return true;
   }
   end(id: number) { this.pointers.delete(id); }
   clear() { this.pointers.clear(); }
   get value() {
     let left = 0, right = 0;
-    for (const { value } of this.pointers.values()) { left = Math.min(left, value); right = Math.max(right, value); }
+    for (const value of this.pointers.values()) { left = Math.min(left, value); right = Math.max(right, value); }
     return left + right;
   }
 }
 
-/** Short keyboard presses make small corrections; holding reaches full force. */
-export class KeyboardSteering {
+/** Short taps make small corrections; either keys or touch reach full force in 180 ms. */
+export class SteeringRamp {
   private value = 0;
   step(dt: number, direction: number) {
     if (!direction) { this.value = 0; return 0; }

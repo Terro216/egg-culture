@@ -2,20 +2,23 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
 import { PerspectiveCamera, Vector3 } from "three";
-import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, lookDirection, orientationLook, overviewPose } from "../src/features/EggRoad/camera.ts";
+import { CameraLook, ChaseHeading, ChaseRig, CHASE_TURN_SPEED, MapOrbit, lookDirection, orientationLook, overviewPose } from "../src/features/EggRoad/camera.ts";
 import { createRoadTrack } from "../src/features/EggRoad/track.ts";
 import { RollRhythm } from "../src/features/EggRoad/rhythm.ts";
 
-test('a sustained road reversal follows a bounded arc after a settled landing', () => {
+test('a sustained travel reversal puts the camera behind the moving egg without waiting for a landing', () => {
   const road = new Vector3(0, 0, -1), results = [];
   for (const fps of [30, 60, 120]) {
-    const heading = new ChaseHeading(); heading.reset(road); heading.landed();
+    const heading = new ChaseHeading(), rig = new ChaseRig(), egg = new Vector3();
+    heading.reset(road); heading.landed(); rig.reset(egg, road);
     let travelled = 0;
     for (let i = 0; i < fps * 5; i++) {
       const before = heading.direction.clone();
-      heading.step(1/fps, { x: i%2 ? .001 : -.001, z: 1 }, false);
+      heading.step(1/fps, { x: i%2 ? .01 : -.01, z: 12 }, true);
+      rig.step(1/fps, egg, heading.direction, 0, true);
+      if (i >= fps) assert.ok(rig.position.z < 0, 'after one second the camera is behind backward motion, even while airborne');
       const turn = before.angleTo(heading.direction); travelled += turn;
-      assert.ok(Number.isFinite(turn) && turn <= 1.4/fps + 1e-6);
+      assert.ok(Number.isFinite(turn) && turn <= CHASE_TURN_SPEED/fps + 1e-6);
       assert.ok(Math.abs(heading.direction.length() - 1) < 1e-10, 'no zero vector at the halfway point');
     }
     assert.ok(heading.direction.z > .999, 'a sustained reversal is eventually followed');
@@ -25,19 +28,26 @@ test('a sustained road reversal follows a bounded arc after a settled landing', 
   assert.ok(results[0].angleTo(results[2]) < .01);
 });
 
-test('chained drops keep one heading until the egg stays on the new road', () => {
-  const forward = new Vector3(0, 0, -1), road = new Vector3(1, 0, 0), heading = new ChaseHeading();
+test('short impact reversals and almost stationary noise do not turn the camera; chained drops follow sustained motion', () => {
+  const forward = new Vector3(0, 0, -1), velocity = new Vector3(12, 0, 0), heading = new ChaseHeading();
   heading.reset(forward);
-  for (let bounce = 0; bounce < 4; bounce++) {
-    for (let i = 0; i < 90; i++) heading.step(1/60, road, true);
+  for (let bounce = 0; bounce < 5; bounce++) {
+    for (let i = 0; i < 6; i++) heading.step(1/60, { x: 0, z: 12 }, true);
     heading.landed();
-    for (let i = 0; i < 20; i++) heading.step(1/60, road, false);
-    assert.ok(heading.direction.angleTo(forward) < 1e-9, 'brief contacts cannot reorient the series');
+    for (let i = 0; i < 20; i++) heading.step(1/60, { x: 0, z: -12 }, false);
+    assert.ok(heading.direction.angleTo(forward) < 1e-9, 'a tenth-second reversed impact cannot commit to a U-turn');
     assert.equal(heading.inFlight, true);
   }
-  for (let i = 0; i < 180; i++) heading.step(1/60, road, false);
+  for (let i = 0; i < 120; i++) heading.step(1/60, { x: Math.sin(i) * 2, z: Math.cos(i) * 2 }, Boolean(i%2));
+  assert.ok(heading.direction.angleTo(forward) < 1e-9, 'vertical bounce and low horizontal speed keep the last useful direction');
+  for (let i = 0; i < 120; i++) {
+    if (i%20===0) heading.landed();
+    heading.step(1/60, velocity, i%20<10);
+  }
+  assert.ok(heading.direction.angleTo(velocity) < .01, 'successive impacts cannot freeze a real change of travel direction');
+  for (let i = 0; i < 40; i++) heading.step(1/60, velocity, false);
   assert.equal(heading.inFlight, false);
-  assert.ok(heading.direction.angleTo(road) < .01, 'stable rolling restores the new road heading');
+  assert.ok(heading.direction.angleTo(velocity) < .01, 'contact does not switch the camera back to a road tangent');
 });
 
 test('the camera orbits outside the egg through reversals, hard bounces and origin rebasing', () => {
@@ -48,7 +58,7 @@ test('the camera orbits outside the egg through reversals, hard bounces and orig
   for (let i = 0; i < 180; i++) {
     rig.step(1/60, egg, backward, 0);
     assert.ok(Math.hypot(rig.position.x, rig.position.z) > 11.99, 'an orbit must not cut through the egg');
-    assert.ok(previous.clone().setY(0).angleTo(rig.position.clone().setY(0)) <= 2.4/60 + 1e-6);
+    assert.ok(previous.clone().setY(0).angleTo(rig.position.clone().setY(0)) <= CHASE_TURN_SPEED/60 + 1e-6);
     previous.copy(rig.position);
   }
   for (const y of [-30, -60, -20, 20, 0]) {

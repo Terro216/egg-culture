@@ -3,6 +3,19 @@ import type { RoadSimulation } from "./simulation.ts";
 import { FLIGHT_LIMIT } from "./simulation.ts";
 import { nearestRoadSample } from "./track.ts";
 
+export function landingGuideEligible(sim: RoadSimulation) {
+  return sim.phase === "running" && !sim.rollingOnRoad && sim.flightTime >= 0.75 && sim.body.linvel().y < -4;
+}
+
+/** Ordinary shell hops must not reveal the next contact. Once the drop is
+ * large enough, its peak keeps the ring visible as the egg approaches it. */
+export function predictLandingGuide(sim: RoadSimulation) {
+  if (!landingGuideEligible(sim)) return null;
+  const landing = predictLanding(sim);
+  const height = landing ? sim.dropHeight + sim.position.y - landing.position.y : 0;
+  return height >= 8 ? landing : null;
+}
+
 /** First-contact estimate only: future input and the impact itself can change it. */
 export function predictLanding(sim: RoadSimulation) {
   const position = sim.position.clone(), rotation = sim.rotation.clone();

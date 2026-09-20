@@ -5,6 +5,7 @@ const UP = new Vector3(0, 1, 0);
 export const FLYBY_SECONDS = 4.6;
 export const MAX_LOOK_YAW = MathUtils.degToRad(200);
 const GYRO_LOOK_YAW = 0.65;
+export const CHASE_TURN_SPEED = 3.6;
 const MAP_YAW = 0.68;
 const MAP_PITCH = Math.atan(0.52);
 const angleDelta = (from: number, to: number) => MathUtils.euclideanModulo(to - from + Math.PI, Math.PI * 2) - Math.PI;
@@ -83,29 +84,33 @@ export class ChaseHeading {
     this.turnSide = 1;
     this.direction.set(Math.sin(this.yaw), 0, -Math.cos(this.yaw));
   }
-  landed() { this.flight = true; this.roadTime = this.turnRate = this.candidateTime = 0; this.target = this.yaw; }
-  step(dt: number, road: { x: number; z: number }, airborne: boolean) {
-    // A drop and its short rebounds share one view. Velocity is deliberately
-    // not a camera heading: every impact can reverse it for a moment.
-    if (airborne) { this.landed(); return this.direction; }
-    if (this.flight) {
+  landed() { this.flight = true; this.roadTime = 0; }
+  step(dt: number, velocity: { x: number; z: number }, airborne: boolean) {
+    // Flight changes the framing, never the reference direction. Follow the
+    // same actual horizontal motion on the road, in the air and after a bounce.
+    if (airborne) this.landed();
+    else if (this.flight) {
       this.roadTime += dt;
-      if (this.roadTime < 0.55) return this.direction;
-      this.flight = false;
+      if (this.roadTime >= 0.55) this.flight = false;
     }
-    const requested = yawOf(road);
-    // A brief change of the supporting road must not commit to a U-turn.
+    // A nearly stopped egg has no useful travel heading; preserve the view.
+    if (Math.hypot(velocity.x, velocity.z) < 3) {
+      this.target = this.yaw; this.turnRate = this.candidateTime = 0;
+      return this.direction;
+    }
+    const requested = yawOf(velocity);
+    // Ignore a fleeting impact reversal, but do not wait for a settled landing.
     if (Math.abs(angleDelta(this.target, requested)) > Math.PI / 2) {
       if (Math.abs(angleDelta(this.candidate, requested)) > 0.35) { this.candidate = requested; this.candidateTime = 0; }
       this.candidateTime += dt;
-      if (this.candidateTime >= 0.25) this.target = requested;
+      if (this.candidateTime >= 0.16) this.target = requested;
     } else { this.target = this.candidate = requested; this.candidateTime = 0; }
     let error = angleDelta(this.yaw, this.target);
     // Near 180 degrees, tiny left/right noise must not keep changing the chosen arc.
     if (Math.abs(error) > 2.6) error = Math.abs(error) * this.turnSide;
     else if (Math.abs(error) > 0.03) this.turnSide = Math.sign(error);
-    const desiredRate = MathUtils.clamp(error * 3.2, -1.4, 1.4);
-    this.turnRate += MathUtils.clamp(desiredRate - this.turnRate, -dt * 3.5, dt * 3.5);
+    const desiredRate = MathUtils.clamp(error * 6, -CHASE_TURN_SPEED, CHASE_TURN_SPEED);
+    this.turnRate += MathUtils.clamp(desiredRate - this.turnRate, -dt * 12, dt * 12);
     const turn = this.turnRate * dt;
     if (Math.sign(turn) === Math.sign(error) && Math.abs(turn) >= Math.abs(error)) { this.yaw += error; this.turnRate = 0; }
     else this.yaw += turn;
@@ -134,7 +139,7 @@ export class ChaseRig {
   shift(offset: Vector3) { this.anchor.sub(offset); this.position.sub(offset); this.target.sub(offset); }
   step(dt: number, egg: Vector3, facing: Vector3, lookY: number, flight = false, landing?: Vector3) {
     const rate = 1 - Math.exp(-dt * 8);
-    this.yaw += MathUtils.clamp(angleDelta(this.yaw, yawOf(facing)) * rate, -dt * 2.4, dt * 2.4);
+    this.yaw += MathUtils.clamp(angleDelta(this.yaw, yawOf(facing)) * (1 - Math.exp(-dt * 12)), -dt * CHASE_TURN_SPEED, dt * CHASE_TURN_SPEED);
     this.lookY = MathUtils.lerp(this.lookY, lookY, rate);
     this.flight = MathUtils.lerp(this.flight, Number(flight), 1 - Math.exp(-dt * (flight ? 3 : 2)));
     this.anchor.lerp(egg, rate);

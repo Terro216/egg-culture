@@ -1,42 +1,37 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Sphere, Vector3 } from 'three';
-import { RoadSteering, KeyboardSteering } from '../src/features/EggRoad/controls.ts';
+import { RoadSteering, SteeringRamp } from '../src/features/EggRoad/controls.ts';
 import { createRoadTrack, roadCollider } from '../src/features/EggRoad/track.ts';
 import { initializePhysics, RoadSimulation } from '../src/features/EggRoad/simulation.ts';
 import { RollRhythm } from '../src/features/EggRoad/rhythm.ts';
 
-test('a finger starts gently, can increase force and reverse without lifting or changing its anchor', () => {
+test('holding either screen half reaches full input without dragging; crossing the centre reverses it', () => {
   const input = new RoadSteering();
-  input.begin(1, 200, 1);
-  assert.ok(input.value > .1 && input.value < .4);
-  const initial = input.value;
-  input.move(1, 202); assert.equal(input.value, initial, 'small touch jitter is ignored');
-  input.move(1, 220); assert.ok(input.value > initial && input.value < .7);
-  input.move(1, 260); assert.equal(input.value, 1);
-  input.move(1, 130); assert.ok(input.value < -.5, 'captured drag can steer across the centre');
-  input.move(1, 200); assert.equal(input.value, initial, 'moving back has no cumulative drift');
-  input.move(1, -1000); assert.equal(input.value, -1);
+  input.begin(1, 1); assert.equal(input.value, 1);
+  input.move(1, 1); assert.equal(input.value, 1, 'movement inside the same half does not weaken steering');
+  input.move(1, -1); assert.equal(input.value, -1);
+  input.move(1, 1); assert.equal(input.value, 1);
   input.end(1); assert.equal(input.value, 0);
-  input.move(1, 900); assert.equal(input.value, 0, 'released or cancelled pointers cannot keep steering');
+  assert.equal(input.move(1, -1), false, 'a cancelled or released pointer cannot resume steering');
+  assert.equal(input.value, 0);
 });
 
 test('multiple fingers, cancellation and pause clear independently without latching a turn', () => {
   const input = new RoadSteering();
-  input.begin(1, 100, -1); input.begin(2, 300, 1); assert.equal(input.value, 0);
-  input.move(1, 45); assert.ok(input.value < -.7);
+  input.begin(1, -1); input.begin(2, 1); assert.equal(input.value, 0);
   input.end(2); assert.equal(input.value, -1);
-  input.begin(3, 120, -1); assert.equal(input.value, -1, 'two fingers do not double the force');
-  input.end(1); assert.ok(input.value > -.4 && input.value < 0);
+  input.begin(3, -1); assert.equal(input.value, -1, 'two fingers do not double the force');
+  input.end(1); assert.equal(input.value, -1, 'releasing one finger leaves the other in control');
   input.clear(); assert.equal(input.value, 0);
-  input.move(3, 0); input.begin(4, NaN, 1); assert.equal(input.value, 0);
+  assert.equal(input.move(3, 1), false);
 });
 
-test('keyboard taps are gentle, holding reaches full force and release immediately stops applying it', () => {
-  const input = new KeyboardSteering();
+test('touch and keyboard taps are gentle, holding reaches full force and release immediately stops applying it', () => {
+  const input = new SteeringRamp();
   for (let i = 0; i < 6; i++) input.step(1/120, 1);
   assert.ok(input.step(0, 1) > .2 && input.step(0, 1) < .4);
-  for (let i = 0; i < 30; i++) input.step(1/120, 1);
+  for (let i = 0; i < 16; i++) input.step(1/120, 1);
   assert.equal(input.step(0, 1), 1);
   assert.equal(input.step(1/120, 0), 0);
   assert.ok(input.step(1/120, -1) < 0 && input.step(0, -1) > -.1);
@@ -56,6 +51,24 @@ test('gentle steering produces a smaller real correction and still allows rhythm
   const rhythm = new RollRhythm();
   for (const direction of [1,-1,1,-1]) for (let i = 0; i < 48; i++) rhythm.step(1/120, direction * .25, direction, 15, true);
   assert.ok(rhythm.chain >= 3 && rhythm.charge > .6, 'normal light corrections remain eligible for rhythm');
+});
+
+test('a stationary touch ramps to the same physical turn as a held key while taps stay smaller', async () => {
+  await initializePhysics();
+  const track = createRoadTrack();
+  const run = frames => {
+    const sim = new RoadSimulation(track), touch = new RoadSteering(), ramp = new SteeringRamp();
+    try {
+      sim.start(); touch.begin(1, 1);
+      for (let i=0; i<36; i++) {
+        if (i === frames) touch.end(1);
+        sim.step(ramp.step(1/120, touch.value));
+      }
+      return sim.position.x;
+    } finally { sim.dispose(); }
+  };
+  const tap = run(6), hold = run(36);
+  assert.ok(tap > 0 && hold > tap * 3, 'holding without any pointer move supplies a strong turn');
 });
 
 function straightRoad() {

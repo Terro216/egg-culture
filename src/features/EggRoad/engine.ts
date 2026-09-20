@@ -6,7 +6,7 @@ import type { RoadResult, RoadSnapshot } from "./simulation.ts";
 import { RoadJourney } from "./journey.ts";
 import { readRoadProgress, saveRoadProgress } from "./storage.ts";
 import { CameraLook, ChaseHeading, ChaseRig, MapOrbit, FLYBY_SECONDS, flybyPose, overviewPose, lookDirection } from "./camera.ts";
-import { KeyboardSteering } from "./controls.ts";
+import { SteeringRamp } from "./controls.ts";
 import { landingGuideEligible, predictLandingGuide } from "./landing.ts";
 import type { RoadSpec } from "./seed.ts";
 import type { GyroState } from "./camera.ts";
@@ -77,7 +77,7 @@ export class RoadEngine {
   private readonly chaseHeading = new ChaseHeading();
   private readonly chaseRig = new ChaseRig();
   private readonly mapOrbit = new MapOrbit();
-  private readonly keyboardSteering = new KeyboardSteering();
+  private readonly steeringRamp = new SteeringRamp();
   private readonly lookTarget = new THREE.Vector3();
   private readonly landingMarker = new THREE.Group();
   private landingGuide = false;
@@ -385,13 +385,14 @@ export class RoadEngine {
 
   openMenu() { this.pause(); this.menuOpen = true; }
   pause = () => { this.simulation.pause(); this.clearInput(); this.accumulator = 0; this.notify(); };
-  steer(value: number) { this.pointerSteering = value; }
+  steer(value: number) { this.pointerSteering = value; if (!value) this.steeringRamp.reset(); }
   jump = () => {
     if (!this.simulation.jump()) return;
     this.audio.unlock(); this.audio.tone(520, 0.16);
     this.notify();
   };
   lookAround(dx: number, dy: number) { this.look.drag(dx, dy); }
+  setViewRotation(rotation: number) { this.look.setViewRotation(rotation); }
   centerLook = () => { this.look.resetView(); };
   grabOverview() { if (this.simulation.phase === "overview") this.mapOrbit.grab(); }
   rotateOverview(dx: number, dy: number) { if (this.simulation.phase === "overview") this.mapOrbit.drag(dx, dy); }
@@ -403,7 +404,7 @@ export class RoadEngine {
     this.landingGuide = enabled; this.landingMarker.visible = false;
     this.lastPrediction = 0; this.needsRender = true;
   }
-  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.keyboardSteering.reset(); }
+  private clearInput() { this.keys.clear(); this.pointerSteering = 0; this.steeringRamp.reset(); }
   private notify() { this.callbacks.update(this.simulation.snapshot()); }
   private loseFocus = () => { if (this.simulation.phase === "running" || this.simulation.phase === "intro" || this.simulation.phase === "overview") this.pause(); else this.clearInput(); };
   private visibility = () => { if (document.hidden) this.loseFocus(); };
@@ -478,7 +479,7 @@ export class RoadEngine {
       this.accumulator += dt;
       const keyboard = Number(this.keys.has("ArrowRight") || this.keys.has("KeyD")) - Number(this.keys.has("ArrowLeft") || this.keys.has("KeyA"));
       while (this.accumulator >= PHYSICS_STEP && sim.phase === "running") {
-        const steering = THREE.MathUtils.clamp(this.keyboardSteering.step(PHYSICS_STEP, keyboard) + this.pointerSteering, -1, 1);
+        const steering = this.steeringRamp.step(PHYSICS_STEP, THREE.MathUtils.clamp(keyboard + this.pointerSteering, -1, 1));
         this.previousPosition.copy(sim.position);
         this.previousRotation.copy(sim.rotation);
         const hardLandings = sim.hardLandings;

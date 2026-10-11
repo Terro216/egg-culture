@@ -19,7 +19,7 @@ test('map codes round-trip their geometry and reject typos, versions and invalid
     const parsed=parseRoadCode(code);
     assert.deepEqual(createRoadTrack(parsed.level,parsed.seed).chunks[0].vertices,createRoadTrack(spec.level,spec.seed).chunks[0].vertices);
   }
-  for(const bad of ['','EGG2-R-2-ABC','EGG1-E-1-ABC','EGG1-R-0-ABC','EGG1-R-1001-1','EGG1-R-2-ZZZZZZZ','EGG1-R-2-ABC extra','https://example.org/?other=ABC']) assert.equal(parseRoadCode(bad),null);
+  for(const bad of ['','EGG4-R-2-ABC','EGG1-E-1-ABC','EGG1-R-0-ABC','EGG1-R-1001-1','EGG1-R-2-ZZZZZZZ','EGG1-R-2-ABC extra','https://example.org/?other=ABC']) assert.equal(parseRoadCode(bad),null);
 });
 
 test('endless roads join exactly and stream indefinitely with bounded geometry', () => {
@@ -118,8 +118,8 @@ test('high-drop bonuses are banked on a real landing, while an unsuccessful fall
   } finally {sim.dispose();}
 });
 
-test('natural corrections with pauses and uneven timing earn rhythm without watching a cue', () => {
-  const r=new RollRhythm();assert.equal(r.cue(true).state,'start');
+test('classic roads retain natural corrections with longer pauses and uneven timing', () => {
+  const r=new RollRhythm(2);assert.equal(r.cue(true).state,'start');
   let direction=1;
   for(const duration of [.2,.37,.68,1.4,.25]) {
     for(let i=0;i<Math.ceil(duration*120);i++)r.step(1/120,direction,.8,12,true);

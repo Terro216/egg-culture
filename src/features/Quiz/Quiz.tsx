@@ -1,5 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Quiz.css";
+import { useAdept } from "../Portal/useAdept.ts";
+import { usePortal } from "../Portal/PortalPresence.tsx";
+import { refreshPortal, portalIdentityReady, portalState } from "../Portal/client.ts";
+import { INITIATION_ANSWERS } from "../Portal/initiation.ts";
+import { quizFeedback } from "./feedback.ts";
+import {
+  canCorrectQuiz, evaluateQuiz, failQuiz, loadQuizProgress, newQuizProgress,
+  quizOwner, quizStorageKey, retryQuiz, saveQuizProgress,
+  type QuizProgress,
+} from "./progress.ts";
+import { recordInitiation } from "../Portal/adept.ts";
 
 const questionsRu = [
   {
@@ -10,7 +21,6 @@ const questionsRu = [
       "В) Желток может треснуть от перепада температур.",
       "Г) Низкая температура искажает вес яйца.",
     ],
-    correct: 1,
   },
   {
     text: "2. Что означает термин «Меловой след» (Chalky trail) в послевкусии?",
@@ -20,7 +30,6 @@ const questionsRu = [
       "В) Специфическое ощущение сухости и минеральности, характерное для благородных белых яиц.",
       "Г) Ощущение, возникающее только при дегустации вареного вкрутую желтка.",
     ],
-    correct: 2,
   },
   {
     text: "3. Какое состояние Яй Ци описывается фразой: «Взгляд становится яснее, внимание расширяется, позвоночник обретает ось»?",
@@ -30,7 +39,6 @@ const questionsRu = [
       "В) Хищное.",
       "Г) Пустотное.",
     ],
-    correct: 1,
   },
   {
     text: "4. В чем заключается главная ценность «Белого яйца» (Blanc Style), согласно Манифесту?",
@@ -40,7 +48,6 @@ const questionsRu = [
       "В) В повышенном содержании альбумина по сравнению с коричневыми яйцами.",
       "Г) Это маркетинговый миф, адепты предпочитают только тёмные яйца.",
     ],
-    correct: 1,
   },
   {
     text: "5. Что такое «Пустотность» (The Void) в дегустационной заметке?",
@@ -50,7 +57,6 @@ const questionsRu = [
       "В) Состояние рецепторов после употребления слишком острого соуса.",
       "Г) Яйцо с очень большой воздушной камерой (пугой).",
     ],
-    correct: 1,
   },
   {
     text: "6. Как Адепт относится к «Рыбной тени» во вкусе?",
@@ -60,7 +66,6 @@ const questionsRu = [
       "В) Одобряет, если яйцо подается к белому вину.",
       "Г) Это миф, у яиц не может быть рыбного привкуса.",
     ],
-    correct: 1,
   },
   {
     text: "7. Какова роль «Халазы» (белкового канатика) в Яичной Культуре?",
@@ -70,7 +75,6 @@ const questionsRu = [
       "В) Она отвечает за уровень сернистости в послевкусии.",
       "Г) Это индикатор того, что яйцо было заморожено.",
     ],
-    correct: 1,
   },
   {
     text: "8. На какой день выдержки яйцо обычно переходит из стадии «Юного» в стадию «Раскрывшегося/Собранного»?",
@@ -80,7 +84,6 @@ const questionsRu = [
       "В) Между 10-м и 14-м днем.",
       "Г) После 45 дней в погребе.",
     ],
-    correct: 2,
   },
   {
     text: "9. Что из перечисленного является «Яичным варварством»?",
@@ -90,7 +93,6 @@ const questionsRu = [
       "В) Сравнение яиц разных пород кур.",
       "Г) Ожидание термического баланса продукта в течение 20 минут.",
     ],
-    correct: 1,
   },
   {
     text: "10. Завершите цитату Манифеста: «Корм — это не просто еда для птицы, это…»",
@@ -100,7 +102,6 @@ const questionsRu = [
       "В) …язык будущего желтка.",
       "Г) …способ повысить питательную ценность продукта.",
     ],
-    correct: 2,
   },
 ];
 
@@ -113,7 +114,6 @@ const questionsEn = [
       "C) The yolk may crack from the temperature difference.",
       "D) Low temperature distorts the weight of the egg.",
     ],
-    correct: 1,
   },
   {
     text: "2. What does the term 'Chalky Trail' mean in the aftertaste?",
@@ -123,7 +123,6 @@ const questionsEn = [
       "C) A specific sensation of dryness and minerality, characteristic of noble white eggs.",
       "D) A sensation that arises only when tasting a hard-boiled yolk.",
     ],
-    correct: 2,
   },
   {
     text: "3. Which state of Egg Qi is described by the phrase: 'The gaze grows clearer, attention expands, the spine finds its axis'?",
@@ -133,7 +132,6 @@ const questionsEn = [
       "C) Predatory.",
       "D) Void-like.",
     ],
-    correct: 1,
   },
   {
     text: "4. What is the chief value of the white egg (Blanc Style), according to the Manifesto?",
@@ -143,7 +141,6 @@ const questionsEn = [
       "C) Its higher albumin content compared to brown eggs.",
       "D) It is a marketing myth; Adepts prefer only dark eggs.",
     ],
-    correct: 1,
   },
   {
     text: "5. What is 'the Void' in a tasting note?",
@@ -153,7 +150,6 @@ const questionsEn = [
       "C) The state of the receptors after consuming a sauce that is too spicy.",
       "D) An egg with a very large air cell.",
     ],
-    correct: 1,
   },
   {
     text: "6. How does an Adept regard the 'Fishy Shadow' in the taste?",
@@ -163,7 +159,6 @@ const questionsEn = [
       "C) With approval, if the egg is served with white wine.",
       "D) It is a myth; eggs cannot have a fishy taste.",
     ],
-    correct: 1,
   },
   {
     text: "7. What is the role of the Chalaza (the protein cord) in Egg Culture?",
@@ -173,7 +168,6 @@ const questionsEn = [
       "C) It is responsible for the level of sulfur in the aftertaste.",
       "D) It is an indicator that the egg has been frozen.",
     ],
-    correct: 1,
   },
   {
     text: "8. On which day of aging does an egg usually pass from the 'Young' stage to the 'Opened/Composed' stage?",
@@ -183,7 +177,6 @@ const questionsEn = [
       "C) Between the 10th and 14th day.",
       "D) After 45 days in the cellar.",
     ],
-    correct: 2,
   },
   {
     text: "9. Which of the following is 'Egg Barbarism'?",
@@ -193,7 +186,6 @@ const questionsEn = [
       "C) Comparing eggs of different hen breeds.",
       "D) Waiting 20 minutes for the product's thermal balance.",
     ],
-    correct: 1,
   },
   {
     text: "10. Complete the quote from the Manifesto: 'Feed is not just food for the bird, it is…'",
@@ -203,7 +195,6 @@ const questionsEn = [
       "C) …the language of the future yolk.",
       "D) …a way to increase the nutritional value of the product.",
     ],
-    correct: 2,
   },
 ];
 
@@ -234,6 +225,15 @@ const STRINGS = {
     rankLabel: "Ваше звание:",
     mistakesTitle: "Ошибки в вопросах:",
     retry: "Начать заново",
+    review: "Разобрать ошибку",
+    selected: "Ваш ответ:",
+    expected: "Верный ответ:",
+    guide: "Открыть справочник",
+    correctMistakes: "Исправить ошибки",
+    correctionsLocked: "Исправление ошибок доступно после третьей полной неудачной попытки. Сейчас требуется пройти Инициацию заново.",
+    correctionsReady: "Три полные попытки рассмотрены. Разрешено исправить ошибки, сохранив верные ответы.",
+    correctionInstruction: "Исправьте отмеченные ответы. Засчитанные ответы сохранены. Допуск по-прежнему требует 10 из 10.",
+    acceptedAnswer: "Ответ засчитан.",
     instruction:
       "Инструкция: Выберите один верный ответ. Для прохождения необходимо ответить правильно на все вопросы.",
     submit: "Завершить тест",
@@ -247,6 +247,15 @@ const STRINGS = {
     rankLabel: "Your rank:",
     mistakesTitle: "Mistakes in questions:",
     retry: "Start over",
+    review: "Review this error",
+    selected: "Your answer:",
+    expected: "Correct answer:",
+    guide: "Open the guide",
+    correctMistakes: "Correct mistakes",
+    correctionsLocked: "Correction is available after the third complete failed attempt. For now, the Initiation must be taken again in full.",
+    correctionsReady: "Three complete attempts have been reviewed. You may correct your mistakes while retaining accepted answers.",
+    correctionInstruction: "Correct the marked answers. Accepted answers have been retained. Admission still requires 10 out of 10.",
+    acceptedAnswer: "Answer accepted.",
     instruction:
       "Instructions: choose one correct answer. To pass, you must answer every question correctly.",
     submit: "Complete the trial",
@@ -269,7 +278,8 @@ interface QuizProps {
 const getRedirectTarget = (lang: string) => {
   if (typeof window === "undefined") return `/${lang}/dark-side`;
 
-  const storedTarget = localStorage.getItem("egg_after_quiz");
+  let storedTarget: string | null = null;
+  try { storedTarget = localStorage.getItem("egg_after_quiz"); } catch { /* Storage is optional. */ }
   const defaultTarget = `/${lang}/dark-side`;
 
   if (!storedTarget) return defaultTarget;
@@ -286,125 +296,223 @@ export const Quiz: React.FC<QuizProps> = ({ lang }) => {
   const uiLang: "ru" | "en" = lang === "en" ? "en" : "ru";
   const questions = uiLang === "en" ? questionsEn : questionsRu;
   const s = STRINGS[uiLang];
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [result, setResult] = useState<{
-    score: number;
-    mistakes: number[];
-  } | null>(null);
+  const adept = useAdept(), portal = usePortal();
+  const owner = portalIdentityReady(portal) ? quizOwner(portal.account) : null;
+  const [progress, setProgress] = useState<QuizProgress | null>(null);
+  const progressRef = useRef<QuizProgress | null>(null);
+  const remembered = useRef(new Map<string, QuizProgress>());
+  const activeRef = useRef(true);
+  const redirectRef = useRef<number | null>(null);
+  const pendingFocusRef = useRef<number | null>(null);
+  const savingRef = useRef(false);
   const [fading, setFading] = useState(false);
+  const [saving, setSaving] = useState(false), [saveError, setSaveError] = useState("");
+  // Never show another identity's draft while its replacement is being loaded.
+  const current = progress?.owner === owner ? progress : null;
+  const answers = current?.answers ?? {};
+  const result = current?.review ? evaluateQuiz(answers) : null;
+  const correcting = current?.correcting ?? [];
+  const correctionAllowed = current ? canCorrectQuiz(current) : false;
+
+  const liveOwner = () => {
+    const live = portalState();
+    return portalIdentityReady(live) ? quizOwner(live.account) : null;
+  };
+  const putProgress = (next: QuizProgress) => {
+    let saved = next;
+    try { saved = saveQuizProgress(window.localStorage, next); } catch { /* Keep the current tab usable. */ }
+    progressRef.current = saved;
+    remembered.current.set(saved.owner, saved);
+    setProgress(saved);
+  };
+  const readyProgress = () => {
+    const value = progressRef.current;
+    return value && value.owner === owner && liveOwner() === owner ? value : null;
+  };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isAdept = localStorage.getItem("egg_adept");
-      if (isAdept === "true") {
-        const target = getRedirectTarget(lang);
-        localStorage.removeItem("egg_after_quiz");
-        window.location.href = target;
-      }
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+      if (redirectRef.current !== null) window.clearTimeout(redirectRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (redirectRef.current !== null) window.clearTimeout(redirectRef.current);
+    savingRef.current = false;
+    setSaving(false);
+    setFading(false);
+    setSaveError("");
+    pendingFocusRef.current = null;
+    if (!owner) {
+      progressRef.current = null;
+      setProgress(null);
+      return;
     }
-  }, [lang]);
+    let restored = remembered.current.get(owner) ?? newQuizProgress(owner, crypto.randomUUID());
+    try {
+      if (!remembered.current.has(owner)) restored = loadQuizProgress(window.localStorage, owner, restored.attemptId);
+    } catch { /* Browser storage is optional. */ }
+    progressRef.current = restored;
+    remembered.current.set(owner, restored);
+    setProgress(restored);
+
+    const storageChanged = (event: StorageEvent) => {
+      if (!event.key?.startsWith(`${quizStorageKey(owner)}:failure:`)) return;
+      const previous = progressRef.current;
+      if (!previous || previous.owner !== owner) return;
+      try {
+        const stored = loadQuizProgress(window.localStorage, owner, previous.attemptId);
+        const failures = [...new Set([...previous.failures, ...stored.failures])].slice(0, 3);
+        const next = { ...previous, failures };
+        progressRef.current = next;
+        remembered.current.set(owner, next);
+        setProgress(next);
+      } catch { /* Keep the current draft if storage becomes unavailable. */ }
+    };
+    window.addEventListener("storage", storageChanged);
+    return () => window.removeEventListener("storage", storageChanged);
+  }, [owner]);
+
+  useEffect(() => {
+    if (adept && owner && liveOwner() === owner && !fading && !saving) {
+      const target = getRedirectTarget(lang);
+      try { localStorage.removeItem("egg_after_quiz"); } catch { /* Navigation remains available. */ }
+      window.location.href = target;
+    }
+  }, [adept, owner, fading, saving, lang]);
+
+  useEffect(() => {
+    const index = pendingFocusRef.current;
+    if (index === null || !current || current.review) return;
+    pendingFocusRef.current = null;
+    const heading = document.getElementById(`quiz-question-${index}`);
+    heading?.focus({ preventScroll: true });
+    heading?.scrollIntoView({ block: "center", behavior: "auto" });
+  }, [current?.attemptId]);
 
   const handleSelect = (qIndex: number, aIndex: number) => {
-    setAnswers((prev) => ({ ...prev, [qIndex]: aIndex }));
+    const previous = readyProgress();
+    if (!previous || previous.review || savingRef.current ||
+      (previous.correcting.length > 0 && !previous.correcting.includes(qIndex))) return;
+    putProgress({ ...previous, answers: { ...previous.answers, [qIndex]: aIndex } });
+    setSaveError("");
   };
 
-  const handleSubmit = () => {
-    let score = 0;
-    const mistakes: number[] = [];
-    questions.forEach((q, i) => {
-      if (answers[i] === q.correct) {
-        score++;
-      } else {
-        mistakes.push(i);
-      }
-    });
+  const handleSubmit = async () => {
+    const previous = readyProgress();
+    if (!previous || previous.review || savingRef.current || portalState().failed) return;
+    const evaluated = evaluateQuiz(previous.answers);
+    if (!evaluated) return; // An incomplete form is never an attempt.
+    setSaveError("");
+    if (evaluated.score !== questions.length) {
+      putProgress(failQuiz(previous));
+      return;
+    }
 
-    if (score === questions.length) {
+    savingRef.current = true;
+    setSaving(true);
+    const submittedOwner = previous.owner;
+    const stillHere = () => activeRef.current && liveOwner() === submittedOwner &&
+      progressRef.current?.owner === submittedOwner && progressRef.current.attemptId === previous.attemptId;
+    try {
+      // Only the existing verified path can grant Initiation. Local correction
+      // permission and failed-attempt receipts never grant access.
+      await recordInitiation(questions.map((_, i) => previous.answers[i]));
+      if (!stillHere()) return;
       setFading(true);
-      setTimeout(() => {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("egg_adept", "true");
-          const target = getRedirectTarget(lang);
-          localStorage.removeItem("egg_after_quiz");
-          window.location.href = target;
-        }
+      redirectRef.current = window.setTimeout(() => {
+        if (!stillHere()) return;
+        const target = getRedirectTarget(lang);
+        try { localStorage.removeItem("egg_after_quiz"); } catch { /* Navigation remains available. */ }
+        window.location.href = target;
       }, 2000);
-    } else {
-      setResult({ score, mistakes });
+    } catch {
+      if (stillHere()) setSaveError(uiLang === "ru"
+        ? "Не удалось сохранить Инициацию. Ответы сохранены — повторите отправку."
+        : "Could not save your Initiation. Your answers have been retained — please retry.");
+    } finally {
+      if (stillHere()) { savingRef.current = false; setSaving(false); }
     }
   };
 
-  const handleRetry = () => {
-    setAnswers({});
-    setResult(null);
+  const handleRetry = (correctOnly = false) => {
+    const previous = readyProgress();
+    if (!previous || savingRef.current) return;
+    const next = retryQuiz(previous, crypto.randomUUID(), correctOnly);
+    if (next === previous) return;
+    pendingFocusRef.current = correctOnly ? next.correcting[0] : 0;
+    setSaveError("");
+    putProgress(next);
   };
 
-  if (fading) {
-    return (
-      <div className="quiz-success">
-        <p>{s.success}</p>
-      </div>
-    );
+  if (fading && current) {
+    return <div className="quiz-success"><p>{s.success}</p></div>;
   }
 
-  if (result) {
+  if (result && current) {
     return (
-      <div className="quiz-result">
+      <div className="quiz-result" data-failed-attempts={current.failures.length}>
         <h2>{s.deniedTitle}</h2>
         <p>{s.deniedText}</p>
         <div className="result-stats">
-          <p>
-            {s.correctLabel} {result.score} / {questions.length}
-          </p>
-          <p>
-            {s.rankLabel} <strong>{getRank(uiLang, result.mistakes.length)}</strong>
-          </p>
+          <p>{s.correctLabel} {result.score} / {questions.length}</p>
+          <p>{s.rankLabel} <strong>{getRank(uiLang, result.mistakes.length)}</strong></p>
         </div>
-
-        {result.mistakes.length > 0 && (
-          <div className="mistakes-list">
-            <h3>{s.mistakesTitle}</h3>
-            <ul>
-              {result.mistakes.map((mIndex) => (
-                <li key={mIndex}>{questions[mIndex].text}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <button className="quiz-btn" onClick={handleRetry}>
-          {s.retry}
-        </button>
+        <div className="mistakes-list">
+          <h3>{s.mistakesTitle}</h3>
+          <ul>
+            {result.mistakes.map((index) => (
+              <li key={index}>
+                <p className="quiz-mistake-question">{questions[index].text}</p>
+                <details className="quiz-feedback">
+                  <summary>{s.review}</summary>
+                  <p><strong>{s.selected}</strong> {questions[index].options[answers[index]]}</p>
+                  <p><strong>{s.expected}</strong> {questions[index].options[INITIATION_ANSWERS[index]]}</p>
+                  <p>{quizFeedback[index][uiLang]}</p>
+                  <a href={`/${uiLang}/guide#${quizFeedback[index].anchor}`}>{s.guide}</a>
+                </details>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="quiz-correction-policy">{correctionAllowed ? s.correctionsReady : s.correctionsLocked}</p>
+        <div className="quiz-actions">
+          {correctionAllowed && (
+            <button className="quiz-btn" data-action="correct-mistakes" onClick={() => handleRetry(true)}>{s.correctMistakes}</button>
+          )}
+          <button className={`quiz-btn${correctionAllowed ? " quiz-btn-secondary" : ""}`} data-action="start-over" onClick={() => handleRetry()}>{s.retry}</button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="quiz-container">
-      <p className="quiz-instruction">{s.instruction}</p>
-      {questions.map((q, qIndex) => (
-        <div key={qIndex} className="quiz-question">
-          <h3>{q.text}</h3>
-          <div className="quiz-options">
-            {q.options.map((opt, oIndex) => (
-              <label key={oIndex} className="quiz-option">
-                <input
-                  type="radio"
-                  name={`question-${qIndex}`}
-                  checked={answers[qIndex] === oIndex}
-                  onChange={() => handleSelect(qIndex, oIndex)}
-                />
-                <span className="quiz-option-text">{opt}</span>
-              </label>
-            ))}
+    <div className="quiz-container" data-ready={Boolean(current)} data-correcting={correcting.length > 0}>
+      {saveError && <p role="alert">{saveError}</p>}
+      {portal.failed && <p role="alert">{uiLang === "ru" ? "Не удалось проверить профиль. Ответы остаются на странице." : "Could not check your account. Your answers remain on this page."} <button type="button" onClick={() => void refreshPortal()}>{uiLang === "ru" ? "Повторить" : "Retry"}</button></p>}
+      <p className="quiz-instruction">{correcting.length > 0 ? s.correctionInstruction : s.instruction}</p>
+      {questions.map((q, qIndex) => {
+        const accepted = correcting.length > 0 && !correcting.includes(qIndex);
+        const needsCorrection = correcting.includes(qIndex);
+        return (
+          <div key={qIndex} className={`quiz-question${needsCorrection ? " quiz-question-correction" : ""}`} data-question-index={qIndex} data-accepted={accepted}>
+            <h3 id={`quiz-question-${qIndex}`} tabIndex={-1}>{q.text}</h3>
+            {accepted && <p className="quiz-answer-accepted">{s.acceptedAnswer}</p>}
+            <div className="quiz-options" role="radiogroup" aria-labelledby={`quiz-question-${qIndex}`}>
+              {q.options.map((opt, oIndex) => (
+                <label key={oIndex} className="quiz-option">
+                  <input type="radio" name={`question-${qIndex}`} checked={answers[qIndex] === oIndex}
+                    disabled={!current || saving || accepted} onChange={() => handleSelect(qIndex, oIndex)} />
+                  <span className="quiz-option-text">{opt}</span>
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-      <button
-        className="quiz-btn"
-        onClick={handleSubmit}
-        disabled={Object.keys(answers).length !== questions.length}
-      >
+        );
+      })}
+      <button className="quiz-btn" onClick={handleSubmit} disabled={saving || !current || portal.failed || !evaluateQuiz(answers)}>
         {s.submit}
       </button>
     </div>

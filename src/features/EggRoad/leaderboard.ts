@@ -1,18 +1,21 @@
 import { parseRoadCode, roadCode } from "./seed.ts";
 import { emptyScore } from "./scoring.ts";
 import type { ScoreBreakdown } from "./scoring.ts";
+import { GATE_SPACING } from "./rules.ts";
 
 export type PublishedRun = {
   code: string; name: string; score: number; gates: number; distance: number;
   seconds: number; finished: boolean; breakdown: ScoreBreakdown;
+  expectedOwner?: string | null;
 };
 export type LeaderboardEntry = {
   rank: number; name: string; score: number; gates: number; distance: number;
-  seconds: number; finished: boolean; mine: boolean;
+  seconds: number; finished: boolean; mine: boolean; profileId?: string;
 };
 export type RoadLeaderboard = {
   code: string; entries: LeaderboardEntry[]; personal: LeaderboardEntry | null;
   total: number; name: string; nameClaimed: boolean; registered: boolean; endlessBest: number;
+  completedRoads?: string[]; unlocked?: string[];
 };
 export type RoadAccount = { name: string; registered: boolean };
 export type PopularFilter = "all" | "finite" | "endless";
@@ -43,8 +46,12 @@ export function parsePublishedRun(value: unknown): PublishedRun | null {
       !Number.isSafeInteger(run.gates) || run.gates < 0 || run.gates > 1e8 ||
       !Number.isFinite(run.distance) || run.distance < 0 || run.distance > 2e9 ||
       !Number.isFinite(run.seconds) || run.seconds < 0.1 || run.seconds > 604800) return null;
-  if (Math.floor(run.distance / 18) !== run.gates || run.score > run.distance * 100 + 1000 ||
-      (code.startsWith("EGG1-E-") && run.finished)) return null;
+  // Generous enough for falling across several turns, but not millions of
+  // metres in a fraction of a second. Exact finite geometry is checked server-side.
+  if (Math.floor(run.distance / GATE_SPACING) !== run.gates || run.score > run.distance * 100 + 1000 ||
+      run.distance > 60 + run.seconds * 600 || (parseRoadCode(code)?.mode === "endless" && run.finished)) return null;
+  if (run.expectedOwner !== undefined && run.expectedOwner !== null &&
+      (typeof run.expectedOwner !== "string" || normalizePlayerName(run.expectedOwner)?.key !== identity.key)) return null;
   const breakdown = emptyScore();
   for (const kind of Object.keys(breakdown) as (keyof ScoreBreakdown)[]) {
     const points = run.breakdown?.[kind];
@@ -52,5 +59,6 @@ export function parsePublishedRun(value: unknown): PublishedRun | null {
     breakdown[kind] = points;
   }
   if (breakdown.gates !== run.gates * 100 || Object.values(breakdown).reduce((a, b) => a + b, 0) !== run.score) return null;
-  return { code, name: identity.name, score: run.score, gates: run.gates, distance: run.distance, seconds: run.seconds, finished: run.finished, breakdown };
+  return { code, name: identity.name, score: run.score, gates: run.gates, distance: run.distance, seconds: run.seconds, finished: run.finished, breakdown,
+    ...(run.expectedOwner !== undefined ? { expectedOwner: run.expectedOwner } : {}) };
 }

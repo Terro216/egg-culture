@@ -1,6 +1,7 @@
 ---
 import Layout from '@app/layouts/Layout.astro';
 import AdeptCertificate from '@features/AdeptCertificate/AdeptCertificate';
+import { AdeptGames } from '@features/MotionTrials/AdeptGames';
 import { getLangFromUrl, useTranslations } from '@shared/i18n/utils';
 
 export function getStaticPaths() {
@@ -62,18 +63,11 @@ const t = useTranslations(lang);
             <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Получить пароль" : "Receive the password"}</a>
           </article>
 
-          <article class="secret-card">
-            <h2>{lang === 'ru' ? "Испытания формы" : "Trials of Form"}</h2>
-            <p>
-              {lang === 'ru'
-                ? "Халаза-тест, Оракул желтка и Путь формы открыты всем посвящённым. Поймайте центр, задайте вопрос или проведите яйцо по дороге над Пустотой."
-                : "The Chalaza Test, the Oracle of the Yolk, and the Path of Form are open to every initiate. Catch the centre, ask a question, or guide an egg along the road above the Void."}
-            </p>
-            <a href={`/${lang}/dark-side/games`} class="action-btn">
-              {lang === 'ru' ? "Войти в зал испытаний" : "Enter the hall of trials"}
-            </a>
-          </article>
         </div>
+
+        <section id="games" class="games-section" aria-label={lang === 'ru' ? 'Игры адептов' : 'Adept games'}>
+          <AdeptGames client:visible lang={lang} embedded />
+        </section>
 
         <section class="certificate-section">
           <h2 class="certificate-title">
@@ -95,23 +89,40 @@ const t = useTranslations(lang);
 </Layout>
 
 <script>
-  // Проверяем доступ
+  import { runInitiationGate } from "../../features/Portal/adept.ts";
+  // Account progress is authoritative; guest storage never grants another account access.
   if (typeof window !== 'undefined') {
-    const isAdept = localStorage.getItem('egg_adept');
-    if (isAdept !== 'true') {
-      window.location.href = window.location.pathname.replace('/dark-side', '/quiz');
+    runInitiationGate(isAdept => {
+    if (!isAdept) {
+      const query = new URLSearchParams(window.location.search);
+      if (query.get('game') === 'fry') {
+        const target = new URL(window.location.pathname.replace(/\/dark-side\/?$/, '/fry/'), window.location.origin);
+        const code = query.get('fry');
+        if (code) target.searchParams.set('fry', code);
+        window.location.replace(target.href);
+      } else {
+        try { localStorage.setItem('egg_after_quiz', window.location.pathname + window.location.search + window.location.hash); } catch { /* Quiz remains available. */ }
+        window.location.replace(window.location.pathname.replace(/\/dark-side\/?$/, '/quiz/'));
+      }
+    } else if (window.location.search && !window.location.hash) {
+      document.getElementById('games')?.scrollIntoView();
     }
+    });
   }
 </script>
 
-<script type="module">
-  import * as THREE from 'https://esm.sh/three@0.158.0';
+<script>
+  import * as THREE from 'three';
+  import { animateDecoration } from '@shared/utils/decorativeAnimation';
 
-  const canvas = document.getElementById('curtains-canvas');
+  function initCurtains() {
+  const canvas = document.getElementById('curtains-canvas') as HTMLCanvasElement | null;
   if (canvas) {
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    let renderer: THREE.WebGLRenderer;
+    try { renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true }); }
+    catch { canvas.hidden = true; return; }
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -122,7 +133,7 @@ const t = useTranslations(lang);
     const material = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
-        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        uResolution: { value: renderer.getDrawingBufferSize(new THREE.Vector2()) }
       },
       vertexShader: `
         varying vec2 vUv;
@@ -192,24 +203,31 @@ const t = useTranslations(lang);
 
     camera.position.z = 1;
 
-    const animate = () => {
-      requestAnimationFrame(animate);
-      material.uniforms.uTime.value += 0.05;
+    const stop = animateDecoration(canvas, seconds => {
+      material.uniforms.uTime.value = seconds * 3;
+      renderer.render(scene, camera);
+    });
+    const resize = () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.getDrawingBufferSize(material.uniforms.uResolution.value);
       renderer.render(scene, camera);
     };
-
-    animate();
-
-    window.addEventListener('resize', () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
-    });
+    const lost = (event: Event) => { event.preventDefault(); stop(); canvas.hidden = true; };
+    canvas.addEventListener('webglcontextlost', lost);
+    window.addEventListener('resize', resize);
+    document.addEventListener('astro:before-swap', () => {
+      stop(); window.removeEventListener('resize', resize); canvas.removeEventListener('webglcontextlost', lost);
+      geometry.dispose(); material.dispose(); renderer.dispose();
+    }, { once: true });
   }
+  }
+  initCurtains();
 </script>
 
 <style>
   /* Переопределение глобальных стилей для этой страницы */
   :global(body) {
+    --color-yolk-text: var(--color-yolk);
     background-color: #050000;
     color: #e0d5d5;
   }
@@ -305,6 +323,15 @@ const t = useTranslations(lang);
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin-bottom: 4rem;
+  }
+
+  .games-section {
+    scroll-margin-top: 2rem;
+    margin: 0 0 4rem;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid rgba(139, 0, 0, 0.5);
+    background: rgba(42, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
   }
 
   .secret-card {

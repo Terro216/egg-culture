@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useId, useState } from "react";
 
 const wheelData = [
   {
@@ -15,18 +15,21 @@ const wheelData = [
             title: "Сухой мел",
             color: "#FFFFFF",
             desc: "Ощущение сухости и чистоты, характерно для свежего белка без добавок.",
+            descEn: "A dry, clean sensation, typical of fresh egg white without additions.",
           },
           {
             name: "Limestone",
             title: "Известняк",
             color: "#EAEAEA",
             desc: "Легкая минеральность, напоминает запах чистой скорлупы.",
+            descEn: "A light minerality reminiscent of the scent of a clean shell.",
           },
           {
             name: "Gypsum",
             title: "Гипс",
             color: "#F2F2F2",
             desc: "Плотный, чуть вяжущий профиль белка.",
+            descEn: "A dense, slightly astringent egg-white profile.",
           },
         ],
       },
@@ -39,12 +42,14 @@ const wheelData = [
             title: "Мокрый камень",
             color: "#BDBDBD",
             desc: "Чистый, прохладный аромат, часто встречается в качественных фабричных яйцах.",
+            descEn: "A clean, cool aroma often found in well-made industrial eggs.",
           },
           {
             name: "Flint",
             title: "Кремень",
             color: "#9E9E9E",
             desc: "Острый, холодный профиль.",
+            descEn: "A sharp, cool profile.",
           },
         ],
       },
@@ -57,18 +62,21 @@ const wheelData = [
             title: "Железистая вода",
             color: "#A7B1B5",
             desc: "Легкий металлический привкус, связанный с минеральным составом воды для птиц.",
+            descEn: "A light metallic note associated with the mineral composition of the hens’ water.",
           },
           {
             name: "Aluminum spoon",
             title: "Алюминиевая ложка",
             color: "#D1D5D8",
             desc: "Гладкий, стерильный вкус с легкой прохладой.",
+            descEn: "A smooth, neutral taste with a cool finish.",
           },
           {
             name: "Raw blood",
             title: "Сырая кровь",
             color: "#E57373",
             desc: "Специфический железистый профиль, иногда признак стресса птицы.",
+            descEn: "A distinct iron-like profile, sometimes a sign of stress in the hen.",
           },
         ],
       },
@@ -88,18 +96,21 @@ const wheelData = [
             title: "Сливки 20%",
             color: "#FFF9E3",
             desc: "Округлая, мягкая текстура свежего желтка.",
+            descEn: "The rounded, soft texture of a fresh yolk.",
           },
           {
             name: "Milk foam",
             title: "Молочная пенка",
             color: "#FEFEE9",
             desc: "Легкость и сладость.",
+            descEn: "Lightness and sweetness.",
           },
           {
             name: "Unsalted butter",
             title: "Несоленое масло",
             color: "#FFF5BA",
             desc: "Богатый, жирный вкус с гладким послевкусием.",
+            descEn: "A rich, buttery taste with a smooth finish.",
           },
         ],
       },
@@ -112,12 +123,14 @@ const wheelData = [
             title: "Нейтральный йогурт",
             color: "#F5F5DC",
             desc: "Легкая кислинка, балансирующая жирность.",
+            descEn: "A gentle acidity that balances the richness.",
           },
           {
             name: "Cream cheese",
             title: "Творожный сыр",
             color: "#FFFDD0",
             desc: "Плотность и кремовость.",
+            descEn: "Density and creaminess.",
           },
         ],
       },
@@ -130,12 +143,14 @@ const wheelData = [
             title: "Пломбир без сахара",
             color: "#FFFFF0",
             desc: "Холодная, тающая сладость.",
+            descEn: "Cool, melting sweetness.",
           },
           {
             name: "Baked milk",
             title: "Топленое молоко",
             color: "#F3E5AB",
             desc: "Теплый, карамелизованный оттенок.",
+            descEn: "A warm, caramelised note.",
           },
         ],
       },
@@ -155,18 +170,21 @@ const wheelData = [
             title: "Сырое тесто",
             color: "#F3E3C3",
             desc: "Мучнистый, сытный профиль.",
+            descEn: "A floury, substantial profile.",
           },
           {
             name: "Oat flakes",
             title: "Овсяные хлопья",
             color: "#ECE0C1",
             desc: "Мягкий зерновой тон, признак качественного корма.",
+            descEn: "A soft grain note associated with good feed.",
           },
           {
             name: "Rice water",
             title: "Рисовая вода",
             color: "#FAF9F6",
             desc: "Очень нейтральный, чистый крахмалистый вкус.",
+            descEn: "A very neutral, clean, starchy taste.",
           },
         ],
       },
@@ -179,18 +197,21 @@ const wheelData = [
             title: "Сладкая кукуруза",
             color: "#FFD700",
             desc: "Яркий, сладковатый профиль, часто от кукурузного откорма.",
+            descEn: "A bright, sweetish profile, often associated with corn feed.",
           },
           {
             name: "Wheat bran",
             title: "Пшеничные отруби",
             color: "#D2B48C",
             desc: "Сухой, слегка пыльный, но приятный вкус.",
+            descEn: "A dry, slightly dusty but pleasant taste.",
           },
           {
             name: "Dry straw",
             title: "Сухая солома",
             color: "#E4D96F",
             desc: "Сенные ноты, типичные для фермерских яиц.",
+            descEn: "Hay notes typical of farm eggs.",
           },
         ],
       },
@@ -210,18 +231,21 @@ const wheelData = [
             title: "Мокрый пух",
             color: "#F5F5F5",
             desc: "Специфический животный аромат.",
+            descEn: "A distinctive animal aroma.",
           },
           {
             name: "Warm feather",
             title: "Теплое перо",
             color: "#D7CCC8",
             desc: "Характерно для дворовых яиц свободного выгула. Указывает на высокую витальность курицы.",
+            descEn: "Typical of free-range yard eggs; a sign of a lively hen.",
           },
           {
             name: "Chicken air",
             title: "Куриный дух",
             color: "#BCAAA4",
             desc: "Аромат курятника, признак минимальной обработки и ручного сбора.",
+            descEn: "The aroma of a henhouse, associated with minimal processing and hand collection.",
           },
         ],
       },
@@ -234,18 +258,21 @@ const wheelData = [
             title: "Слабый костный бульон",
             color: "#E0C097",
             desc: "Легкая мясная насыщенность.",
+            descEn: "A gentle, savoury richness.",
           },
           {
             name: "Yolk paste",
             title: "Желточная паста",
             color: "#F4A460",
             desc: "Концентрированный, густой вкус желтка.",
+            descEn: "The concentrated, dense taste of yolk.",
           },
           {
             name: "Chicken skin",
             title: "Куриная кожа",
             color: "#DEB887",
             desc: "Жирный, очень насыщенный вкус с нотами птицы.",
+            descEn: "A rich, fatty taste with poultry notes.",
           },
         ],
       },
@@ -265,12 +292,14 @@ const wheelData = [
             title: "Зажженная спичка",
             color: "#FFFF8D",
             desc: "Резкий сернистый профиль, типичный для переваренных яиц.",
+            descEn: "A sharp sulphurous profile typical of overcooked eggs.",
           },
           {
             name: "Wet sulfur",
             title: "Мокрая сера",
             color: "#C0CA33",
             desc: "Признак высокого содержания аминокислот.",
+            descEn: "A note associated with a high amino-acid content.",
           },
         ],
       },
@@ -283,18 +312,21 @@ const wheelData = [
             title: "Сырой погреб",
             color: "#8D6E63",
             desc: "Ноты влаги и земли.",
+            descEn: "Notes of dampness and earth.",
           },
           {
             name: "Wet black soil",
             title: "Влажный чернозем",
             color: "#4E342E",
             desc: "Глубокий земляной тон, характерен для свободного выгула в дождливую погоду.",
+            descEn: "A deep, earthy note associated with free-range hens in rainy weather.",
           },
           {
             name: "Forest floor",
             title: "Лесная подстилка",
             color: "#6D4C41",
             desc: "Органический, сложный профиль перегноя и листвы.",
+            descEn: "An organic, complex profile of humus and leaves.",
           },
         ],
       },
@@ -314,18 +346,21 @@ const wheelData = [
             title: "Стеклянный",
             color: "#E1F5FE",
             desc: "Гладкая, полупрозрачная текстура без ярко выраженного вкуса.",
+            descEn: "A smooth, translucent texture without a strong flavour.",
           },
           {
             name: "Silky",
             title: "Шелковистый",
             color: "#F3E5F5",
             desc: "Нежное, скользящее ощущение на языке.",
+            descEn: "A delicate sensation that glides across the tongue.",
           },
           {
             name: "Stringy",
             title: "Волокнистый",
             color: "#E8F5E9",
             desc: "Плотные белковые жгутики, признак свежести.",
+            descEn: "Firm strands of egg white, a sign of freshness.",
           },
         ],
       },
@@ -338,18 +373,21 @@ const wheelData = [
             title: "Тающий",
             color: "#FFF9C4",
             desc: "Идеальная консистенция, обволакивающая нёбо.",
+            descEn: "A texture that gently coats the palate.",
           },
           {
             name: "Pasty",
             title: "Пастообразный",
             color: "#FFE082",
             desc: "Густая, вязкая текстура, часто в перепелиных или цесариных яйцах.",
+            descEn: "A thick, viscous texture often found in quail or guinea-fowl eggs.",
           },
           {
             name: "Waxy",
             title: "Восковой",
             color: "#FFD54F",
             desc: "Слегка резиновый, плотный желток (характерно для некоторых фабричных).",
+            descEn: "A firm, slightly rubbery yolk, typical of some industrial eggs.",
           },
         ],
       },
@@ -369,18 +407,21 @@ const wheelData = [
             title: "Старый картон",
             color: "#A1887F",
             desc: "Запах упаковки, впитавшийся в пористую скорлупу.",
+            descEn: "The smell of packaging absorbed through the porous shell.",
           },
           {
             name: "Refrigerator",
             title: "Холодильник",
             color: "#B0BEC5",
             desc: "Впитывание посторонних запахов при неправильном хранении.",
+            descEn: "Unwanted odours absorbed during unsuitable storage.",
           },
           {
             name: "Pharmacy/Iodine",
             title: "Аптека/Йод",
             color: "#9575CD",
             desc: "Лекарственный привкус от добавок в корм.",
+            descEn: "A medicinal note from feed additives.",
           },
         ],
       },
@@ -393,18 +434,21 @@ const wheelData = [
             title: "Рыбная мука",
             color: "#90A4AE",
             desc: "Специфический рыбный привкус из-за избытка рыбной муки в рационе.",
+            descEn: "A distinct fishy note associated with too much fish meal in the feed.",
           },
           {
             name: "Mustiness",
             title: "Затхлость",
             color: "#78909C",
             desc: "Признак старого яйца или хранения во влажной среде.",
+            descEn: "A sign of an old egg or storage in damp conditions.",
           },
           {
             name: "Ammonia",
             title: "Аммиак",
             color: "#DCEDC8",
             desc: "Резкий запах, свидетельствующий о порче продукта.",
+            descEn: "A sharp smell indicating spoilage.",
           },
         ],
       },
@@ -412,312 +456,80 @@ const wheelData = [
   },
 ];
 
-function getContrastYIQ(hexcolor) {
-  hexcolor = hexcolor.replace("#", "");
-  if (hexcolor.length === 3) {
-    hexcolor = hexcolor
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  }
-  const r = parseInt(hexcolor.substr(0, 2), 16);
-  const g = parseInt(hexcolor.substr(2, 2), 16);
-  const b = parseInt(hexcolor.substr(4, 2), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "#2b2b2b" : "#ffffff";
+function getContrastText(hexcolor) {
+  const hex = hexcolor.slice(1);
+  const rgb = (hex.length === 3 ? [...hex].map(c => c + c).join("") : hex)
+    .match(/../g).map(c => parseInt(c, 16) / 255);
+  const linear = rgb.map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = linear.reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const textLuminance = ((43 / 255 + 0.055) / 1.055) ** 2.4;
+  if ((luminance + 0.05) / (textLuminance + 0.05) >= 4.5) return "#2b2b2b";
+  return 1.05 / (luminance + 0.05) >= 4.5 ? "#ffffff" : "#000000";
 }
 
-export default function DescriptorWheel() {
+export default function DescriptorWheel({ lang = "ru" }) {
+  const ru = lang === "ru";
+  const id = useId();
   const [mode, setMode] = useState("white");
-  const [hoveredItem, setHoveredItem] = useState(null);
-
-  // Фон страницы следует за активным дескриптором. Управляем им из эффекта,
-  // чтобы фон гарантированно возвращался при смене режима, исчезновении чипа
-  // из DOM и размонтировании — одного mouseleave для этого недостаточно
-  // (тач-устройства не присылают его вовсе).
-  useEffect(() => {
-    if (!hoveredItem) return;
-    const body = document.body;
-    const prevBg = body.style.backgroundColor;
-    const prevTransition = body.style.transition;
-    body.style.transition = "background-color 0.4s ease";
-    body.style.backgroundColor = hoveredItem.color;
-    return () => {
-      body.style.backgroundColor = prevBg;
-      body.style.transition = prevTransition;
-    };
-  }, [hoveredItem]);
-
-  const handleMouseEnter = (item) => {
-    setHoveredItem(item);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredItem(null);
-  };
-
-  const handleModeChange = (nextMode) => {
-    setMode(nextMode);
-    setHoveredItem(null);
-  };
-
-  // На тач-устройствах тап по чипу эмулирует mouseenter, а mouseleave не
-  // приходит — сбрасываем выбор тапом по любому месту вне чипов.
-  const handleTouchStart = (e) => {
-    if (!e.target.closest("[data-descriptor-chip]")) {
-      setHoveredItem(null);
-    }
-  };
-
-  const activeCategories = wheelData.filter((cat) => cat.modes.includes(mode));
-
-  return (
-    <>
-      <style>{`
-        .descriptor-container {
-          display: flex;
-          gap: 2rem;
-          padding: 2rem;
-          font-family: system-ui, sans-serif;
-        }
-        .descriptor-left {
-          flex: 2;
-        }
-        .descriptor-toggles {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 2rem;
-        }
-        .descriptor-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 1.5rem;
-        }
-        @media (max-width: 768px) {
-          .descriptor-container {
-            flex-direction: column-reverse;
-            padding: 1rem;
-            gap: 1rem;
-          }
-          .descriptor-toggles {
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-          .descriptor-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-      <div className="descriptor-container" onTouchStart={handleTouchStart}>
-        {/* Left Column: Controls & Grid */}
-        <div className="descriptor-left">
-          {/* Mode Toggles */}
-          <div className="descriptor-toggles">
-            <button
-              onClick={() => handleModeChange("white")}
-              style={{
-                padding: "0.75rem 1.5rem",
-                cursor: "pointer",
-                backgroundColor: mode === "white" ? "#fff" : "#eee",
-                border: mode === "white" ? "2px solid #ccc" : "1px solid #ddd",
-                borderRadius: "8px",
-                fontWeight: mode === "white" ? "bold" : "normal",
-                boxShadow:
-                  mode === "white" ? "0 4px 6px rgba(0,0,0,0.1)" : "none",
-              }}
-            >
-              ⚪ Колесо Белка
-            </button>
-            <button
-              onClick={() => handleModeChange("yolk")}
-              style={{
-                padding: "0.75rem 1.5rem",
-                cursor: "pointer",
-                backgroundColor: mode === "yolk" ? "#FFD54F" : "#FFF9C4",
-                border:
-                  mode === "yolk" ? "2px solid #F57F17" : "1px solid #FFF59D",
-                borderRadius: "8px",
-                fontWeight: mode === "yolk" ? "bold" : "normal",
-                boxShadow:
-                  mode === "yolk" ? "0 4px 6px rgba(0,0,0,0.1)" : "none",
-              }}
-            >
-              🟡 Колесо Желтка
-            </button>
-          </div>
-
-          {/* Categories Grid */}
-          <div className="descriptor-grid">
-            {activeCategories.map((cat, idx) => (
-              <div
-                key={idx}
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.8)",
-                  padding: "1rem",
-                  borderRadius: "12px",
-                  border: "1px solid #ddd",
-                }}
-              >
-                <h3
-                  style={{
-                    marginTop: 0,
-                    marginBottom: "1rem",
-                    fontSize: "1.1rem",
-                    borderBottom: "1px solid #eee",
-                    paddingBottom: "0.5rem",
-                  }}
-                >
-                  {cat.title}
-                </h3>
-
-                {cat.subcategories.map((sub, sidx) => {
-                  // Filter items if some subcategories are specific to white/yolk.
-                  // In our data, textural is split by subcategory name ('White', 'Yolk')
-                  let itemsToShow = sub.items;
-                  if (cat.category === "Textural") {
-                    if (mode === "white" && sub.name === "Yolk")
-                      itemsToShow = [];
-                    if (mode === "yolk" && sub.name === "White")
-                      itemsToShow = [];
-                  }
-
-                  if (itemsToShow.length === 0) return null;
-
-                  return (
-                    <div key={sidx} style={{ marginBottom: "1rem" }}>
-                      <h4
-                        style={{
-                          fontSize: "0.9rem",
-                          color: "#555",
-                          marginBottom: "0.5rem",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {sub.title}
-                      </h4>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "0.5rem",
-                        }}
-                      >
-                        {itemsToShow.map((item, iidx) => (
-                          <div
-                            key={iidx}
-                            data-descriptor-chip
-                            onMouseEnter={() => handleMouseEnter(item)}
-                            onMouseLeave={handleMouseLeave}
-                            style={{
-                              padding: "0.4rem 0.8rem",
-                              backgroundColor: item.color,
-                              color: getContrastYIQ(item.color),
-                              borderRadius: "20px",
-                              fontSize: "0.85rem",
-                              cursor: "pointer",
-                              border: "1px solid rgba(0,0,0,0.1)",
-                              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                              transition:
-                                "transform 0.1s ease, box-shadow 0.1s ease",
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.transform = "scale(1.05)";
-                              e.currentTarget.style.boxShadow =
-                                "0 4px 8px rgba(0,0,0,0.15)";
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 2px 4px rgba(0,0,0,0.05)";
-                            }}
-                          >
-                            {item.title}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Column: Info Panel */}
-        <div style={{ flex: "1", minWidth: "300px" }}>
-          <div
-            style={{
-              position: "sticky",
-              top: "2rem",
-              backgroundColor: "rgba(255,255,255,0.9)",
-              padding: "2rem",
-              borderRadius: "16px",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-              border: "1px solid #eaeaea",
-              minHeight: "250px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
-            {hoveredItem ? (
-              <div>
-                <div
-                  style={{
-                    display: "inline-block",
-                    width: "40px",
-                    height: "40px",
-                    backgroundColor: hoveredItem.color,
-                    borderRadius: "50%",
-                    border: "2px solid #ccc",
-                    marginBottom: "1rem",
-                  }}
-                ></div>
-                <h2 style={{ margin: "0 0 1rem 0", fontSize: "1.8rem" }}>
-                  {hoveredItem.title}
-                </h2>
-                <p
-                  style={{
-                    fontSize: "0.9rem",
-                    color: "#777",
-                    marginBottom: "1.5rem",
-                    fontStyle: "italic",
-                  }}
-                >
-                  En: {hoveredItem.name}
-                </p>
-                <p
-                  style={{
-                    fontSize: "1.1rem",
-                    lineHeight: "1.6",
-                    color: "#333",
-                  }}
-                >
-                  {hoveredItem.desc}
-                </p>
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  height: "100%",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#999",
-                  textAlign: "center",
-                  flexFlow: "column",
-                }}
-              >
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🥚</div>
-                <p>
-                  Наведите курсор на дескриптор, чтобы увидеть его описание и
-                  цвет.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+  const [selected, setSelected] = useState(null);
+  const activeCategories = wheelData.filter(category => category.modes.includes(mode));
+  const changeMode = next => { setMode(next); setSelected(null); };
+  const details = (item, inline = false) => <div className={inline ? "descriptor-info descriptor-info-inline" : "descriptor-info"} id={`${id}-${inline ? item.name.replace(/[^a-z0-9]/gi, "-") : "panel"}`} aria-live="polite">
+    {item ? <>
+      <span className="descriptor-swatch" style={{ backgroundColor: item.color }} aria-hidden="true" />
+      <h3>{ru ? item.title : item.name}</h3>
+      {ru && <p className="descriptor-translation" lang="en">{item.name}</p>}
+      <p>{ru ? item.desc : item.descEn}</p>
+    </> : <p>{ru ? "Выберите дескриптор, чтобы увидеть его описание и цвет." : "Select a descriptor to see its description and colour."}</p>}
+  </div>;
+  return <div className="descriptor-container">
+    <style>{`
+      .descriptor-container { display:grid; grid-template-columns:minmax(0,2fr) minmax(240px,1fr); gap:2rem; font-family:var(--font-sans-ui,system-ui,sans-serif); }
+      .descriptor-left { min-width:0; }
+      .descriptor-toggles { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
+      .descriptor-toggles button { min-height:44px; padding:.75rem 1rem; border:1px solid #bba85d; border-radius:8px; }
+      .descriptor-toggles [aria-pressed="true"] { background:#fff5ba; box-shadow:inset 0 0 0 1px #8b6914; }
+      .descriptor-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:1rem; }
+      .descriptor-category { min-width:0; padding:1rem; border:1px solid #ddd; border-radius:12px; background:#ffffffcc; }
+      .descriptor-category h3 { font-size:1.15rem; color:#67501a; }
+      .descriptor-category h4 { margin:1rem 0 .5rem; font-size:.95rem; color:#555; }
+      .descriptor-chips { display:flex; flex-wrap:wrap; gap:.5rem; align-items:flex-start; }
+      .descriptor-chip { min-height:44px; max-width:100%; padding:.5rem .8rem; border:1px solid #0003; border-radius:20px; font-size:.9rem; overflow-wrap:anywhere; }
+      .descriptor-chip[aria-pressed="true"] { outline:2px solid #67501a; outline-offset:2px; }
+      .descriptor-container button:focus-visible { outline:3px solid #2b2b2b; outline-offset:3px; }
+      .descriptor-sidebar { min-width:0; }
+      .descriptor-sidebar > .descriptor-info { position:sticky; top:1rem; }
+      .descriptor-info { padding:1.5rem; background:#fffffff2; border:1px solid #ddd; border-radius:12px; overflow-wrap:anywhere; }
+      .descriptor-info h3 { font-size:1.4rem; color:#67501a; }
+      .descriptor-info p { margin-top:.5rem; font-size:1rem; }
+      .descriptor-translation { font-style:italic; color:#666; }
+      .descriptor-swatch { display:block; width:40px; height:40px; border-radius:50%; border:1px solid #777; margin-bottom:.75rem; }
+      .descriptor-info-inline { display:none; }
+      @media(max-width:768px) {
+        .descriptor-container { grid-template-columns:minmax(0,1fr); }
+        .descriptor-sidebar { display:none; }
+        .descriptor-info-inline { display:block; flex-basis:100%; margin:.4rem 0; padding:1rem; }
+      }
+    `}</style>
+    <div className="descriptor-left">
+      <div className="descriptor-toggles" role="group" aria-label={ru ? "Часть яйца" : "Part of the egg"}>
+        <button type="button" onClick={() => changeMode("white")} aria-pressed={mode === "white"}>{ru ? "⚪ Колесо Белка" : "⚪ Egg White Wheel"}</button>
+        <button type="button" onClick={() => changeMode("yolk")} aria-pressed={mode === "yolk"}>{ru ? "🟡 Колесо Желтка" : "🟡 Yolk Wheel"}</button>
       </div>
-    </>
-  );
+      <div className="descriptor-grid">{activeCategories.map(category => <section key={category.category} className="descriptor-category">
+        <h3>{ru ? category.title : category.category}</h3>
+        {category.subcategories.filter(sub => category.category !== "Textural" || sub.name !== (mode === "white" ? "Yolk" : "White")).map(sub => <div key={sub.name}>
+          <h4>{ru ? sub.title : sub.name}</h4>
+          <div className="descriptor-chips">{sub.items.map(item => <React.Fragment key={item.name}>
+            <button type="button" className="descriptor-chip" data-descriptor-chip aria-pressed={selected === item} aria-controls={`${id}-panel ${id}-${item.name.replace(/[^a-z0-9]/gi, "-")}`}
+              onClick={() => setSelected(item)} onFocus={() => setSelected(item)}
+              onPointerEnter={event => { if (event.pointerType === "mouse") setSelected(item); }}
+              style={{ backgroundColor:item.color, color:getContrastText(item.color) }}>{ru ? item.title : item.name}</button>
+            {selected === item && details(item, true)}
+          </React.Fragment>)}</div>
+        </div>)}
+      </section>)}</div>
+    </div>
+    <aside className="descriptor-sidebar">{details(selected)}</aside>
+  </div>;
 }

@@ -1,0 +1,11 @@
+[Unit]
+Description=Monthly Egg Culture restore validation
+
+[Timer]
+OnCalendar=Tue *-*-01..07 08:30:00 Europe/Moscow
+RandomizedDelaySec=10min
+Persistent=true
+Unit=egg-culture-backup-monthly.service
+
+[Install]
+WantedBy=timers.target

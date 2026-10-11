@@ -14,9 +14,9 @@
     "heroTitle": "Egg Culture",
     "heroSubtitle": "The form is perfect. The content is nutritious.",
     "readManifesto": "Read Manifesto",
-    "boilFirst": "Boil an egg first",
+    "boilFirst": "Boil an egg",
     "askOracle": "Ask the Oracle",
-    "playRoad": "Roll the egg",
+    "playGames": "Egg Games",
     "metaDescription": "A gastronomic manifesto elevating the egg to the rank of specialty coffee and collectible wine. Terroirs, styles, Egg Qi."
   },
   "footer": {
@@ -32,7 +32,7 @@
     "title": "Adept's Tools",
     "subtitle": "Practice requires precision.",
     "wheelTitle": "Descriptor Wheel",
-    "wheelDesc": "Soon an interactive wheel of tastes and textures will appear here, helping you find the right words to describe your experience.",
+    "wheelDesc": "Choose egg white or yolk, then select a descriptor to read its description.",
     "inDev": "In development...",
     "noteGenTitle": "Tasting Note Generator",
     "noteGenDesc": "Assemble the batch profile from descriptors — and receive a note worthy of an Adept's diary.",
@@ -63,6 +63,7 @@
     "resume": "Resume",
     "reset": "Abort the ceremony",
     "ceremonyLabel": "The ceremony is underway",
+    "pausedLabel": "Paused",
     "phaseLabel": "Phase",
     "phases": [
       {
@@ -85,6 +86,7 @@
     "finishTitle": "The time has come",
     "finishText": "Quench the fire. An ice bath will fix the achieved form.",
     "soundOn": "🔔 ceremony sound: on",
+    "enableSound": "Enable sound",
     "soundOff": "🔕 ceremony sound: off"
   },
   "oracle": {

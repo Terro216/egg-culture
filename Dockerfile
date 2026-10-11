@@ -9,6 +9,10 @@ RUN npm ci
 
 COPY . .
 
+# Static canonical URLs and CSRF origin must match the deployed host.
+ARG DOMAIN=ilyamedve.dev
+ENV DOMAIN=$DOMAIN
+
 # Build the Astro project
 RUN npm run build
 

@@ -133,21 +133,32 @@ export class CeremonyAudio {
     });
   }
 
+  async activate() {
+    try {
+      const ctx = this.ensureContext();
+      if (!ctx) return false;
+      if (ctx.state === "suspended") await ctx.resume();
+      return ctx.state === "running";
+    } catch {
+      return false;
+    }
+  }
+
   start() {
     const ctx = this.ensureContext();
     if (!ctx || this.running) return;
-    if (ctx.state === "suspended") void ctx.resume();
+    if (ctx.state === "suspended") void ctx.resume().catch(() => {});
     this.running = true;
     this.startSimmer();
     this.scheduleBubbles();
   }
 
   suspend() {
-    if (this.ctx && this.ctx.state === "running") void this.ctx.suspend();
+    if (this.ctx && this.ctx.state === "running") void this.ctx.suspend().catch(() => {});
   }
 
   resume() {
-    if (this.ctx && this.ctx.state === "suspended") void this.ctx.resume();
+    if (this.ctx && this.ctx.state === "suspended") void this.ctx.resume().catch(() => {});
   }
 
   stop() {
@@ -170,13 +181,13 @@ export class CeremonyAudio {
       this.noiseSource = null;
       this.simmerGain = null;
     }
-    if (this.ctx && this.ctx.state === "suspended") void this.ctx.resume();
+    if (this.ctx && this.ctx.state === "suspended") void this.ctx.resume().catch(() => {});
   }
 
   dispose() {
     this.stop();
     if (this.ctx) {
-      void this.ctx.close();
+      void this.ctx.close().catch(() => {});
       this.ctx = null;
       this.master = null;
     }

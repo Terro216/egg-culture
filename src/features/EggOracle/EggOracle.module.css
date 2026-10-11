@@ -18,7 +18,7 @@
 
 .title {
   font-family: var(--font-serif-headers);
-  color: var(--color-yolk);
+  color: var(--color-yolk-text);
   font-size: 2rem;
   margin: 0;
 }
@@ -56,7 +56,7 @@
 .button {
   padding: 1rem;
   background: var(--color-yolk);
-  color: var(--color-shell);
+  color: var(--color-text);
   border: none;
   cursor: pointer;
   font-family: var(--font-sans-ui);

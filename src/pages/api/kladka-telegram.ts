@@ -1,10 +1,14 @@
 import type { APIRoute } from "astro";
-import { setPostStatus } from "@shared/utils/kladkaStore";
+import { kladkaStore, setPostStatus } from "../../shared/utils/kladkaStore.ts";
 import {
   answerCallback,
   markModerated,
   webhookSecret,
-} from "@shared/utils/kladkaTelegram";
+  isModerationEnabled,
+  isAdminCallback,
+  sendModerationRequest,
+} from "../../shared/utils/kladkaTelegram.ts";
+import { readJsonObject, RequestBodyError } from "../../server/requestBody.ts";
 
 export const prerender = false;
 
@@ -17,20 +21,30 @@ export const POST: APIRoute = async ({ request }) => {
   // Эндпоинт открыт наружу через Caddy, так что подпись обязательна:
   // поллер ставит тот же заголовок, что ставил Telegram.
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
-  if (secret !== webhookSecret()) {
+  if (!isModerationEnabled() || secret !== webhookSecret()) {
     return new Response("forbidden", { status: 403 });
   }
 
   let update: any;
   try {
-    update = await request.json();
-  } catch {
-    return new Response("bad request", { status: 400 });
+    update = await readJsonObject(request, 65536);
+  } catch (error) {
+    return new Response("bad request", { status: error instanceof RequestBodyError ? error.status : 400 });
+  }
+
+  if (update.action === "deliver_pending") {
+    try {
+      const result = await kladkaStore().deliverNext(sendModerationRequest);
+      return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+    } catch { return new Response("Book unavailable", { status: 503 }); }
   }
 
   const cb = update?.callback_query;
   // Отвечаем 200 на всё: Telegram иначе будет ретраить незнакомые апдейты.
   if (!cb?.data || !cb.message) return new Response("ok");
+  // Ignore unauthorized Telegram users without blocking the poller's update queue.
+  try { if (!await isAdminCallback(cb)) return new Response("ok"); }
+  catch { return new Response("Moderator authorization unavailable", { status: 503 }); }
 
   const [action, postId] = String(cb.data).split(":");
   if ((action !== "approve" && action !== "reject") || !postId) {

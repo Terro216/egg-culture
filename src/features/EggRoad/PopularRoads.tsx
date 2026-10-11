@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { PopularFilter, PopularRoads as PopularRoadsData } from "./leaderboard.ts";
 import { parseRoadCode } from "./seed.ts";
+import { funRoadCopy } from "./funRoads.ts";
 import { copy } from "./copy.ts";
 
 export function PopularRoads({ lang, ready, onChoose }: {
@@ -31,7 +32,7 @@ export function PopularRoads({ lang, ready, onChoose }: {
       : !data.tracks.length ? <p role="status">{ui.popularEmpty}</p>
       : <ol className="egg-road-popular-list">{data.tracks.map(road => {
         const spec = parseRoadCode(road.code);
-        const title = spec?.mode === "endless" ? `∞ ${ui.endless}` : spec?.level === 1 ? ui.tutorial : `${ui.level} ${spec?.level}`;
+        const title = (spec && funRoadCopy(spec, lang)?.title) ?? (spec?.mode === "straight" ? ui.straight : spec?.mode === "endless" ? `∞ ${ui.endless}` : spec?.level === 1 ? ui.tutorial : `${ui.level} ${spec?.level}`);
         return <li key={road.code}><button type="button" disabled={!ready} onClick={() => onChoose(road.code)} aria-label={`${ui.popularPlay}: ${title}, ${road.code}`}>
           <span className="egg-road-popular-title"><strong>{title}</strong><span>{ui.popularPlay} ↗</span></span>
           <code>{road.code}</code>

@@ -1,0 +1,12 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import Profile from "@features/Portal/Profile";
+import { getLangFromUrl } from "@shared/i18n/utils";
+export function getStaticPaths() { return [{ params: { lang: "ru" } }, { params: { lang: "en" } }]; }
+const lang = getLangFromUrl(Astro.url);
+const title = lang === "ru" ? "Личное дело адепта" : "Adept's record";
+---
+<Layout title={`${title} | Egg Culture`} lang={lang} noindex>
+  <section class="container portal-page"><h1>{title}</h1><Profile client:load lang={lang} /></section>
+</Layout>
+<style>.portal-page { max-width: 900px; padding-block: 36px 60px; } h1 { text-align: center; font-size: clamp(32px, 7vw, 50px); }</style>

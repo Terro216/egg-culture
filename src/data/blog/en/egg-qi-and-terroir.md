@@ -1,7 +1,7 @@
 ---
 title: "Egg Qi and Egg Terroir: The Energy of Place"
 excerpt: "How climate, breed, and a bird's diet shape the invisible energy of the product and build our internal Vertical."
-date: "10.12.26"
+date: "28.04.26"
 image: "/terroir.webp"
 ---
 

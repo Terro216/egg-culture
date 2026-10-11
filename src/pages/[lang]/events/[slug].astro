@@ -2,6 +2,7 @@
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from "@app/layouts/Layout.astro";
 import { eventItems } from "../../../data/content";
+import EventSubscription from "@features/EventSubscription/EventSubscription.astro";
 
 export function getStaticPaths() {
   const langs = ["ru", "en"];
@@ -40,17 +41,13 @@ const t = useTranslations(lang as Lang);
       </div>
       <header class="event-header">
         <h1 class="event-title">{event.title[lang as "ru" | "en"]}</h1>
-        <p class="event-date">{event.date}</p>
+        <p class="event-date">{event.date ?? (lang === "ru" ? "Дата будет объявлена" : "Date to be announced")}</p>
         <p class="event-location">📍 {event.location[lang as "ru" | "en"]}</p>
       </header>
 
       <div class="event-content" set:html={event.description[lang as "ru" | "en"]} />
 
-      <div class="event-action">
-        <a href="https://t.me/+QIepC6ildbdmMDBi" target="_blank" rel="noopener noreferrer" class="btn">
-          {lang === "ru" ? "Подписаться на канал" : "Subscribe to Channel"}
-        </a>
-      </div>
+      <EventSubscription lang={lang as Lang} />
     </article>
   </div>
 </Layout>
@@ -76,7 +73,7 @@ const t = useTranslations(lang as Lang);
 
   .back-link:hover {
     opacity: 1;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
   }
 
   .event-detail {
@@ -109,7 +106,7 @@ const t = useTranslations(lang as Lang);
 
   .event-title {
     font-size: 3rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     line-height: 1.2;
     padding: 0 0 1rem 0;
   }
@@ -149,20 +146,16 @@ const t = useTranslations(lang as Lang);
 
   .event-content :global(strong) {
     font-weight: 600;
-    color: var(--color-yolk);
-  }
-
-  .event-action {
-    text-align: center;
+    color: var(--color-yolk-text);
   }
 
   @media (max-width: 768px) {
     .event-detail {
-      padding: 2rem;
+      padding: 1.25rem;
     }
     .event-image-wrapper {
-      width: calc(100% + 4rem);
-      margin: -2rem -2rem 2rem -2rem;
+      width: calc(100% + 2.5rem);
+      margin: -1.25rem -1.25rem 2rem -1.25rem;
       height: 250px;
     }
     .event-title {

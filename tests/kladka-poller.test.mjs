@@ -13,7 +13,7 @@ function harness(fetchImpl) {
   return {
     controller, sleeps, health, logs,
     run: (overrides = {}) => startPolling({
-      env, fetchImpl, signal: controller.signal, now: () => 1_000_000,
+      env, fetchImpl: async (url, init) => JSON.parse(init.body)?.action === "deliver_pending" ? Response.json({ attempted: false, delivered: false }) : fetchImpl(url, init), signal: controller.signal, now: () => 1_000_000,
       saveHealth: async (state) => { health.push({ ...state }); },
       sleep: async (ms) => { sleeps.push(ms); },
       logger: { log: (s) => logs.push(s), warn: (s) => logs.push(s) },
@@ -146,4 +146,19 @@ test("empty optional webhook secret uses the API's token-derived fallback", asyn
   await h.run({ env: { ...env, KLADKA_WEBHOOK_SECRET: "" } });
   assert.equal(signature, crypto.createHash("sha256")
     .update(`kladka-webhook:${env.KLADKA_BOT_TOKEN}`).digest("hex").slice(0, 32));
+});
+
+
+test("outgoing outbox failure never prevents incoming moderation delivery", async () => {
+  const controller = new AbortController(), actions = [];
+  await startPolling({ env, signal: controller.signal, saveHealth: async () => {}, logger: { log() {}, warn() {} },
+    fetchImpl: async (url, init) => {
+      const body = JSON.parse(init.body);
+      if (body.action === 'deliver_pending') { actions.push('outbox'); return Response.json({ attempted: true, delivered: false }); }
+      if (url.endsWith('/deleteWebhook')) return telegram(true);
+      if (url.endsWith('/getUpdates')) return telegram([{ update_id: 10 }]);
+      actions.push('callback'); controller.abort(); return new Response('ok');
+    },
+  });
+  assert.deepEqual(actions, ['outbox', 'callback']);
 });

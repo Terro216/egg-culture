@@ -1,0 +1,41 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import PublicFry from "@features/EggFry/PublicFry";
+import { getLangFromUrl } from "@shared/i18n/utils";
+export function getStaticPaths() { return [{ params: { lang: "ru" } }, { params: { lang: "en" } }]; }
+const lang = getLangFromUrl(Astro.url), ru = lang === "ru";
+const title = ru ? "Великая Жарка" : "The Great Fry";
+const description = ru
+  ? "Начните с десятка яиц. Выбирайте ворота, обходите ловушки и довезите кладку до огромной сковороды — или рискните продолжить забег."
+  : "Start with ten eggs. Choose your gates, dodge traps and deliver the clutch to an enormous pan — or risk another stretch.";
+---
+<Layout title={`${title} | Egg Culture`} description={description} lang={lang}>
+  <section class="public-fry-page container">
+    <p class="public-fry-kicker">{ru ? "Десяток. Дорога. Сковорода." : "Ten eggs. One road. A pan."}</p>
+    <div class="public-fry-pan" aria-hidden="true"><i></i><i></i><i></i></div>
+    <h1>{title}</h1>
+    <p class="public-fry-description">{description}</p>
+    <PublicFry client:load lang={lang} />
+    <p class="public-fry-note">{ru ? "Играйте сразу, без регистрации и Инициации. Личный рекорд сохраняется в этом браузере. Один аккаунт объединяет результаты и достижения во всех играх." : "Play right away, without signing up or taking the Initiation. Your personal best stays in this browser. One account connects your results and achievements across all games."}</p>
+    <p class="public-fry-note">{ru ? "Ведите кладку пальцем или мышью. На клавиатуре — ← → или A / D." : "Drag the clutch with your finger or mouse. On a keyboard, use ← → or A / D."}</p>
+    <nav class="public-fry-more" aria-label={ru ? "Другие страницы" : "More to explore"}>
+      <a href={`/${lang}/games/`}>{ru ? "Все яичные игры →" : "All Egg Games →"}</a>
+      <a href={`/${lang}/play/`}>{ru ? "Путь формы →" : "Path of Form →"}</a>
+      <a href={`/${lang}/profile/`}>{ru ? "Единый профиль →" : "Shared profile →"}</a>
+    </nav>
+    <noscript><p>{ru ? "Для запуска игры включите JavaScript в браузере." : "Enable JavaScript in your browser to play."}</p></noscript>
+  </section>
+</Layout>
+<style>
+  .public-fry-page { max-width: 740px; padding-top: 3rem; padding-bottom: 4rem; text-align: center; }
+  .public-fry-kicker { margin: 0 0 2rem; font: .7rem/1.6 var(--font-sans-ui); letter-spacing: .16em; text-transform: uppercase; }
+  .public-fry-pan { position: relative; display: flex; align-items: center; justify-content: center; gap: 2px; width: 126px; height: 106px; margin: 0 auto 2.4rem; border: 8px solid #4d5151; border-radius: 50%; background: #242d30; box-shadow: inset 0 3px 12px #0006, 10px 12px 25px #8b633c26; transform: rotate(-18deg); }
+  .public-fry-pan::after { position: absolute; content: ""; left: 100%; top: 40%; width: 49px; height: 17px; border-radius: 0 9px 9px 0; background: #4d5151; }
+  .public-fry-pan i { display: block; width: 30px; height: 42px; border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%; background: radial-gradient(ellipse at 28% 23%, #fff9e9, #e8d7b4 65%, #b49972); }
+  .public-fry-pan i:nth-child(2) { transform: translateY(-7px) rotate(17deg); }
+  h1 { margin: 0 0 1.3rem; color: var(--color-yolk-text); font-size: clamp(2.8rem, 8vw, 4.7rem); }
+  .public-fry-description { margin: 0 auto 2rem; max-width: 560px; font-size: 1.15rem; line-height: 1.7; }
+  .public-fry-note { margin: 1.3rem auto 0; max-width: 510px; font: .85rem/1.7 var(--font-sans-ui); opacity: .8; }
+  .public-fry-more { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; margin-top: 2.4rem; padding-top: 1.5rem; border-top: 1px solid #b18e633d; font: .9rem/1.7 var(--font-sans-ui); }
+  .public-fry-more a { text-decoration: underline; text-underline-offset: 5px; }
+</style>

@@ -1,10 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CeremonyAudio } from "./ceremonyAudio";
 
-type Size = "S" | "M" | "L";
-type Temp = "fridge" | "room";
-type Doneness = "soft" | "medium" | "hard";
-type CeremonyState = "idle" | "running" | "paused" | "done";
+import {
+  CALCULATOR_STORAGE_KEY,
+  defaultCalculatorState,
+  loadCalculatorState,
+  remainingCalculatorMs,
+  saveCalculatorState,
+  type CalculatorState,
+  type Size,
+  type Temp,
+  type Doneness,
+} from "./calculatorState";
 
 export interface EggCalculatorProps {
   dict: {
@@ -29,12 +36,14 @@ export interface EggCalculatorProps {
     resume: string;
     reset: string;
     ceremonyLabel: string;
+    pausedLabel: string;
     phaseLabel: string;
     phases: { name: string; text: string }[];
     finishTitle: string;
     finishText: string;
     soundOn: string;
     soundOff: string;
+    enableSound: string;
   };
 }
 
@@ -73,112 +82,179 @@ function formatClock(totalSeconds: number) {
 }
 
 export default function EggCalculator({ dict }: EggCalculatorProps) {
-  const [size, setSize] = useState<Size>("M");
-  const [temp, setTemp] = useState<Temp>("fridge");
-  const [doneness, setDoneness] = useState<Doneness>("soft");
-
-  const [ceremony, setCeremony] = useState<CeremonyState>("idle");
-  const [remainingMs, setRemainingMs] = useState(0);
-  const [totalMs, setTotalMs] = useState(0);
-
-  const [soundOn, setSoundOn] = useState(true);
-
-  const endAtRef = useRef(0);
-  const intervalRef = useRef<number | null>(null);
+  // The server and first client render are identical; browser state is restored
+  // after hydration, before the controls become available.
+  const [state, setState] = useState(defaultCalculatorState);
+  const [ready, setReady] = useState(false);
+  const [now, setNow] = useState(0);
+  const [soundReady, setSoundReady] = useState(false);
+  const stateRef = useRef(state);
   const audioRef = useRef<CeremonyAudio | null>(null);
-  const soundOnRef = useRef(soundOn);
-  soundOnRef.current = soundOn;
+  const unsavedRef = useRef(false);
+  const { size, temp, doneness, ceremony, totalMs, soundOn } = state;
+  const remainingMs = remainingCalculatorMs(state, now);
 
-  const getAudio = () => {
-    if (!audioRef.current) audioRef.current = new CeremonyAudio();
-    return audioRef.current;
+  const withAudio = (action: (audio: CeremonyAudio) => void) => {
+    try {
+      if (audioRef.current) action(audioRef.current);
+    } catch {
+      // A browser audio restriction must never interrupt the cooking timer.
+    }
   };
+
+  const startAudio = (chime = false) => {
+    if (!audioRef.current) audioRef.current = new CeremonyAudio();
+    const audio = audioRef.current;
+    void audio.activate().then((available) => {
+      if (audioRef.current !== audio) return;
+      setSoundReady(available);
+      if (!available || stateRef.current.ceremony !== "running" || !stateRef.current.soundOn) return;
+      withAudio((activeAudio) => {
+        activeAudio.start();
+        if (chime) activeAudio.chime(660);
+      });
+    });
+  };
+
+  const applyState = (next: CalculatorState) => {
+    stateRef.current = next;
+    setNow(Date.now());
+    setState(next);
+  };
+
+  const commitState = (next: CalculatorState) => {
+    applyState(next);
+    try {
+      unsavedRef.current = !saveCalculatorState(window.localStorage, next);
+    } catch {
+      unsavedRef.current = true;
+      // Access to localStorage itself can be blocked in private browser modes.
+    }
+  };
+
+  const restoreState = () => {
+    if (unsavedRef.current) return null;
+    try {
+      const stored = loadCalculatorState(window.localStorage, Date.now());
+      if (stored) {
+        applyState(stored);
+        return stored;
+      }
+    } catch {
+      // The current tab continues to work when browser storage is unavailable.
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    restoreState();
+    setNow(Date.now());
+    setReady(true);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== CALCULATOR_STORAGE_KEY && event.key !== null) return;
+      try {
+        if (event.storageArea !== window.localStorage) return;
+        // Read the current value: several queued events may describe old states.
+        if (!restoreState() && window.localStorage.getItem(CALCULATOR_STORAGE_KEY) === null) {
+          applyState(defaultCalculatorState());
+        }
+        withAudio((audio) => audio.stop());
+        setSoundReady(false);
+      } catch {
+        // Storage access may be revoked while the page is open.
+      }
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        restoreState();
+        setNow(Date.now());
+      }
+    };
+    const onPageShow = () => {
+      restoreState();
+      setNow(Date.now());
+    };
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisible);
+      withAudio((audio) => audio.dispose());
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!soundOn || ceremony === "idle" || ceremony === "done") {
+      withAudio((audio) => audio.stop());
+      setSoundReady(false);
+    } else if (ceremony === "paused") {
+      withAudio((audio) => audio.suspend());
+      setSoundReady(false);
+    } else {
+      // Reloaded pages may resume Web Audio only after another user gesture.
+      startAudio();
+    }
+  }, [ready, ceremony, soundOn]);
+
+  useEffect(() => {
+    if (!ready || ceremony !== "running") return;
+    const tick = () => {
+      const time = Date.now();
+      setNow(time);
+      const current = stateRef.current;
+      if (current.ceremony !== "running" || current.endAt > time) return;
+      // A suspended tab must not finish over a pause/reset made in another tab.
+      const stored = restoreState();
+      if (stored && (stored.ceremony !== "done" || stored.totalMs !== current.totalMs)) return;
+      commitState({ ...(stored ?? current), ceremony: "done", remainingMs: 0, endAt: 0 });
+      withAudio((audio) => {
+        audio.stop();
+        if (stateRef.current.soundOn) audio.finale();
+      });
+      try { navigator.vibrate?.([220, 90, 220]); } catch { /* Optional browser feedback. */ }
+    };
+    tick();
+    const interval = window.setInterval(tick, 200);
+    return () => window.clearInterval(interval);
+  }, [ready, ceremony, state.endAt, totalMs]);
 
   const totalSeconds = calculateTimeSeconds(size, temp, doneness);
-
-  const stopInterval = () => {
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
-
-  useEffect(
-    () => () => {
-      stopInterval();
-      audioRef.current?.dispose();
-      audioRef.current = null;
-    },
-    [],
-  );
-
-  const startInterval = () => {
-    stopInterval();
-    intervalRef.current = window.setInterval(() => {
-      const left = endAtRef.current - Date.now();
-      if (left <= 0) {
-        stopInterval();
-        setRemainingMs(0);
-        setCeremony("done");
-        audioRef.current?.stop();
-        if (soundOnRef.current) audioRef.current?.finale();
-        if (typeof navigator !== "undefined") navigator.vibrate?.([220, 90, 220]);
-        return;
-      }
-      setRemainingMs(left);
-    }, 200);
-  };
-
   const startCeremony = () => {
     const ms = totalSeconds * 1000;
-    setTotalMs(ms);
-    setRemainingMs(ms);
-    endAtRef.current = Date.now() + ms;
-    setCeremony("running");
-    startInterval();
-    if (soundOn) {
-      const audio = getAudio();
-      audio.start();
-      audio.chime(660);
-    }
+    commitState({ ...stateRef.current, totalMs: ms, remainingMs: ms, endAt: Date.now() + ms, ceremony: "running" });
+    if (soundOn) startAudio(true);
   };
 
   const pauseCeremony = () => {
-    stopInterval();
-    setRemainingMs(Math.max(0, endAtRef.current - Date.now()));
-    setCeremony("paused");
-    audioRef.current?.suspend();
+    const left = remainingCalculatorMs(stateRef.current, Date.now());
+    commitState({ ...stateRef.current, remainingMs: left, endAt: 0, ceremony: left > 0 ? "paused" : "done" });
+    withAudio((audio) => audio.suspend());
   };
 
   const resumeCeremony = () => {
-    endAtRef.current = Date.now() + remainingMs;
-    setCeremony("running");
-    startInterval();
-    if (soundOn) {
-      const audio = getAudio();
-      audio.resume();
-      audio.start();
-    }
+    const current = stateRef.current;
+    commitState({ ...current, endAt: Date.now() + current.remainingMs, ceremony: "running" });
+    if (soundOn) startAudio();
   };
 
   const resetCeremony = () => {
-    stopInterval();
-    setCeremony("idle");
-    setRemainingMs(0);
-    setTotalMs(0);
-    audioRef.current?.stop();
+    commitState({ ...stateRef.current, ceremony: "idle", remainingMs: 0, totalMs: 0, endAt: 0 });
+    withAudio((audio) => audio.stop());
   };
 
   const toggleSound = () => {
-    const next = !soundOn;
-    setSoundOn(next);
-    if (!next) {
-      audioRef.current?.stop();
-    } else if (ceremony === "running") {
-      const audio = getAudio();
-      audio.resume();
-      audio.start();
+    if (stateRef.current.soundOn && ceremony === "running" && !soundReady) {
+      startAudio();
+      return;
     }
+    const next = !stateRef.current.soundOn;
+    commitState({ ...stateRef.current, soundOn: next });
+    if (!next) withAudio((audio) => audio.stop());
+    else if (ceremony === "running") startAudio();
   };
 
   const elapsedFraction =
@@ -191,6 +267,9 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
   );
   const phase = dict.phases[phaseIndex];
   const ceremonyActive = ceremony === "running" || ceremony === "paused";
+  const soundLabel = soundOn
+    ? ceremony === "running" && !soundReady ? dict.enableSound : dict.soundOn
+    : dict.soundOff;
 
   const prevPhaseRef = useRef(0);
   useEffect(() => {
@@ -198,9 +277,9 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
       prevPhaseRef.current = phaseIndex;
       return;
     }
-    if (phaseIndex > prevPhaseRef.current && soundOnRef.current) {
+    if (phaseIndex > prevPhaseRef.current && stateRef.current.soundOn) {
       // Смена фазы церемонии — колокол чуть выше с каждой фазой.
-      audioRef.current?.chime(660 + phaseIndex * 110, 0.1);
+      withAudio((audio) => audio.chime(660 + phaseIndex * 110, 0.1));
     }
     prevPhaseRef.current = phaseIndex;
   }, [phaseIndex, ceremony]);
@@ -213,9 +292,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
     backgroundColor: isActive
       ? "var(--color-yolk, var(--accent-color, #d4af37))"
       : "transparent",
-    color: isActive
-      ? "var(--color-shell, var(--bg-color, #F0EAD6))"
-      : "var(--color-text, #2b2b2b)",
+    color: "var(--color-text, #2b2b2b)",
     fontFamily: "var(--font-sans-ui, sans-serif)",
     transition: "all 0.3s ease",
   });
@@ -274,11 +351,11 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
           }
         }
       `}</style>
-      <div className="egg-calculator-container">
+      <div className="egg-calculator-container" data-ready={ready} data-ceremony={ceremony}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <h3
             style={{
-              color: "var(--color-yolk, var(--accent-color, #d4af37))",
+              color: "var(--color-yolk-text, #80600f)",
               fontSize: "2rem",
               margin: 0,
               textAlign: "center",
@@ -307,8 +384,10 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {(["S", "M", "L"] as Size[]).map((s) => (
                   <button
+                    disabled={!ready}
                     key={s}
-                    onClick={() => setSize(s)}
+                    onClick={() => commitState({ ...stateRef.current, size: s })}
+                    aria-pressed={size === s}
                     style={{ ...buttonStyle(size === s), flex: 1 }}
                   >
                     {s === "S" && dict.sizeS}
@@ -325,13 +404,17 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               <p style={{ margin: 0, fontWeight: 600 }}>{dict.temp}</p>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 <button
-                  onClick={() => setTemp("fridge")}
+                  disabled={!ready}
+                  onClick={() => commitState({ ...stateRef.current, temp: "fridge" })}
+                  aria-pressed={temp === "fridge"}
                   style={{ ...buttonStyle(temp === "fridge"), flex: 1 }}
                 >
                   {dict.tempFridge}
                 </button>
                 <button
-                  onClick={() => setTemp("room")}
+                  disabled={!ready}
+                  onClick={() => commitState({ ...stateRef.current, temp: "room" })}
+                  aria-pressed={temp === "room"}
                   style={{ ...buttonStyle(temp === "room"), flex: 1 }}
                 >
                   {dict.tempRoom}
@@ -347,19 +430,25 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                 style={{ display: "flex", gap: "1rem", flexDirection: "column" }}
               >
                 <button
-                  onClick={() => setDoneness("soft")}
+                  disabled={!ready}
+                  onClick={() => commitState({ ...stateRef.current, doneness: "soft" })}
+                  aria-pressed={doneness === "soft"}
                   style={buttonStyle(doneness === "soft")}
                 >
                   {dict.doneSoft}
                 </button>
                 <button
-                  onClick={() => setDoneness("medium")}
+                  disabled={!ready}
+                  onClick={() => commitState({ ...stateRef.current, doneness: "medium" })}
+                  aria-pressed={doneness === "medium"}
                   style={buttonStyle(doneness === "medium")}
                 >
                   {dict.doneMedium}
                 </button>
                 <button
-                  onClick={() => setDoneness("hard")}
+                  disabled={!ready}
+                  onClick={() => commitState({ ...stateRef.current, doneness: "hard" })}
+                  aria-pressed={doneness === "hard"}
                   style={buttonStyle(doneness === "hard")}
                 >
                   {dict.doneHard}
@@ -398,7 +487,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                 className="egg-calculator-result"
                 style={{
                   fontWeight: 600,
-                  color: "var(--color-yolk, var(--accent-color, #d4af37))",
+                  color: "var(--color-yolk-text, #80600f)",
                   margin: 0,
                   fontFamily: "var(--font-serif-headers, serif)",
                 }}
@@ -408,15 +497,16 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   ? `${totalSeconds % 60} ${dict.seconds}`
                   : ""}
               </p>
-              <button onClick={startCeremony} style={actionButtonStyle}>
+              <button disabled={!ready} onClick={startCeremony} style={actionButtonStyle}>
                 {dict.startCeremony}
               </button>
               <button
+                disabled={!ready}
                 onClick={toggleSound}
                 className="text-ui"
                 style={{ opacity: 0.6, fontSize: "0.8rem" }}
               >
-                {soundOn ? dict.soundOn : dict.soundOff}
+                {soundLabel}
               </button>
             </>
           )}
@@ -432,14 +522,14 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   letterSpacing: "0.1em",
                 }}
               >
-                {dict.ceremonyLabel} · {dict.phaseLabel} {phaseIndex + 1}/
+                {ceremony === "paused" ? dict.pausedLabel : dict.ceremonyLabel} · {dict.phaseLabel} {phaseIndex + 1}/
                 {dict.phases.length} · {phase.name}
               </p>
               <p
                 className="ceremony-clock"
                 style={{
                   fontWeight: 600,
-                  color: "var(--color-yolk, var(--accent-color, #d4af37))",
+                  color: "var(--color-yolk-text, #80600f)",
                   margin: 0,
                   fontFamily: "var(--font-serif-headers, serif)",
                 }}
@@ -454,24 +544,25 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               </p>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {ceremony === "running" ? (
-                  <button onClick={pauseCeremony} style={ghostButtonStyle}>
+                  <button disabled={!ready} onClick={pauseCeremony} style={ghostButtonStyle}>
                     {dict.pause}
                   </button>
                 ) : (
-                  <button onClick={resumeCeremony} style={actionButtonStyle}>
+                  <button disabled={!ready} onClick={resumeCeremony} style={actionButtonStyle}>
                     {dict.resume}
                   </button>
                 )}
-                <button onClick={resetCeremony} style={ghostButtonStyle}>
+                <button disabled={!ready} onClick={resetCeremony} style={ghostButtonStyle}>
                   {dict.reset}
                 </button>
               </div>
               <button
+                disabled={!ready}
                 onClick={toggleSound}
                 className="text-ui"
                 style={{ opacity: 0.6, fontSize: "0.8rem" }}
               >
-                {soundOn ? dict.soundOn : dict.soundOff}
+                {soundLabel}
               </button>
             </>
           )}
@@ -493,7 +584,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                 className="egg-calculator-result"
                 style={{
                   fontWeight: 600,
-                  color: "var(--color-yolk, var(--accent-color, #d4af37))",
+                  color: "var(--color-yolk-text, #80600f)",
                   margin: 0,
                   fontFamily: "var(--font-serif-headers, serif)",
                 }}
@@ -504,10 +595,10 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                 {dict.finishText}
               </p>
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                <button onClick={startCeremony} style={actionButtonStyle}>
+                <button disabled={!ready} onClick={startCeremony} style={actionButtonStyle}>
                   {dict.startCeremony}
                 </button>
-                <button onClick={resetCeremony} style={ghostButtonStyle}>
+                <button disabled={!ready} onClick={resetCeremony} style={ghostButtonStyle}>
                   {dict.reset}
                 </button>
               </div>

@@ -2,7 +2,7 @@
 // MonumentalEgg.astro
 ---
 
-<div class="egg-container" id="monumental-egg-container"></div>
+<div class="egg-container" id="monumental-egg-container" aria-hidden="true"><div class="egg-fallback"></div></div>
 
 <style>
   .egg-container {
@@ -15,17 +15,24 @@
     position: relative;
     overflow: hidden;
   }
+  .egg-fallback { height: 75%; aspect-ratio: .68; border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%; background: radial-gradient(ellipse at 35% 30%, #fff 10%, #f5efdf 55%, #c8b983 100%); box-shadow: inset -14px -12px 30px #88794322, 0 14px 30px #6a572817; }
+  .egg-container.has-webgl .egg-fallback { display: none; }
 </style>
 
 <script>
   import * as THREE from "three";
+  import { animateDecoration } from "@shared/utils/decorativeAnimation";
+
+  let cleanup = () => {};
 
   function init() {
+    cleanup();
     const container = document.getElementById("monumental-egg-container");
     if (!container) return;
 
     // Remove any existing canvas if script re-runs (HMR)
-    container.innerHTML = "";
+    container.querySelector("canvas")?.remove();
+    container.classList.remove("has-webgl");
 
     const scene = new THREE.Scene();
 
@@ -39,10 +46,13 @@
     camera.position.z = 12;
 
     // Setup renderer with transparent background to blend into the site's palette
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    let renderer: THREE.WebGLRenderer;
+    try { renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); }
+    catch { return; }
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
+    container.classList.add("has-webgl");
 
     // Create Egg Geometry
     // We start with a sphere and deform its vertices to form an elegant egg shape
@@ -94,11 +104,7 @@
     window.addEventListener("resize", onWindowResize);
 
     // Animation loop
-    const clock = new THREE.Clock();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+    const stop = animateDecoration(container, (elapsedTime) => {
 
       // Slow, majestic rotation (the Kubrick monolith feel)
       // Slight tilt on X and Z makes the rotation around Y much more visible
@@ -110,9 +116,11 @@
       egg.position.y = Math.sin(elapsedTime * 0.5) * 0.15;
 
       renderer.render(scene, camera);
-    }
-
-    animate();
+    });
+    const lost = (event: Event) => { event.preventDefault(); stop(); container.classList.remove("has-webgl"); renderer.domElement.hidden = true; };
+    renderer.domElement.addEventListener("webglcontextlost", lost);
+    renderer.domElement.addEventListener("webglcontextrestored", init);
+    cleanup = () => { stop(); window.removeEventListener("resize", onWindowResize); renderer.domElement.removeEventListener("webglcontextlost", lost); renderer.domElement.removeEventListener("webglcontextrestored", init); geometry.dispose(); material.dispose(); renderer.dispose(); renderer.domElement.remove(); container.classList.remove("has-webgl"); };
   }
 
   // Initialize on mount
@@ -120,4 +128,5 @@
 
   // Re-initialize if Astro view transitions are used
   document.addEventListener("astro:page-load", init);
+  document.addEventListener("astro:before-swap", () => cleanup());
 </script>

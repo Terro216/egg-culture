@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useAdept } from "../Portal/useAdept.ts";
+import React, { useId, useMemo, useState } from "react";
 
 interface TastingNoteGeneratorProps {
   lang: "ru" | "en";
@@ -259,14 +260,13 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
 }) => {
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
-  const [isAdept, setIsAdept] = useState(false);
-
-  useEffect(() => {
-    setIsAdept(localStorage.getItem("egg_adept") === "true");
-  }, []);
+  const isAdept = useAdept();
+  const id = useId();
 
   const note = useMemo(() => buildNote(lang, selection), [lang, selection]);
   const ui = UI[lang];
+  const missing = CATEGORIES.filter((category) => !selection[category.id]);
+  const selectedCount = CATEGORIES.length - missing.length;
 
   const select = (categoryId: string, optionId: string) => {
     setCopied(false);
@@ -312,6 +312,26 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+          border-left: 3px solid transparent;
+          padding-left: 0.75rem;
+          scroll-margin-top: 2rem;
+        }
+        .tasting-note-category.is-missing {
+          border-left-color: var(--color-yolk-text, #80600f);
+        }
+        .tasting-note-progress {
+          padding: 1rem 1.25rem;
+          border: 1px solid rgba(43, 43, 43, 0.2);
+          background: rgba(255, 255, 255, 0.3);
+          font-family: var(--font-sans-ui, sans-serif);
+          font-size: 0.95rem;
+          overflow-wrap: anywhere;
+        }
+        .tasting-note-progress p { margin: 0.25rem 0 0; }
+        .tasting-note-progress a { text-decoration: underline; text-underline-offset: 0.15em; }
+        .tasting-note-chip:focus-visible {
+          outline: 2px solid var(--color-text, #2b2b2b);
+          outline-offset: 3px;
         }
         .tasting-note-category > p {
           margin: 0;
@@ -334,7 +354,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
         }
         .tasting-note-chip.is-active {
           background: var(--color-yolk, #d4af37);
-          color: var(--color-shell, #F0EAD6);
+          color: var(--color-text, #2b2b2b);
         }
         .tasting-note-result {
           padding: 2rem;
@@ -351,7 +371,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
           text-align: center;
         }
         .tasting-note-result.is-empty {
-          opacity: 0.55;
+          opacity: 0.75;
         }
         .tasting-note-copy {
           align-self: center;
@@ -361,7 +381,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
           letter-spacing: 0.1em;
           border: 1px solid var(--color-yolk, #d4af37);
           background: var(--color-yolk, #d4af37);
-          color: var(--color-shell, #F0EAD6);
+          color: var(--color-text, #2b2b2b);
           cursor: pointer;
           transition: opacity 0.25s ease;
         }
@@ -384,18 +404,35 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
           text-align: center;
           font-size: 0.85rem;
           font-style: italic;
-          opacity: 0.55;
+          opacity: 0.75;
         }
       `}</style>
 
+      <div className="tasting-note-progress" role="status" aria-live="polite" aria-atomic="true">
+        <strong>{lang === "ru" ? `Выбрано ${selectedCount} из ${CATEGORIES.length}` : `Selected ${selectedCount} of ${CATEGORIES.length}`}</strong>
+        {missing.length > 0 ? <p>
+          {lang === "ru" ? "Осталось выбрать: " : "Still to choose: "}
+          {missing.map((category, index) => <React.Fragment key={category.id}>
+            {index > 0 && ", "}
+            <a href={`#${id}-${category.id}`} onClick={(event) => {
+              event.preventDefault();
+              const group = document.getElementById(`${id}-${category.id}`);
+              group?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+              group?.scrollIntoView({ block: "start" });
+            }}>{category.title[lang]}</a>
+          </React.Fragment>)}.
+        </p> : <p>{lang === "ru" ? "Профиль партии собран. Заметка готова." : "The batch profile is complete. Your note is ready."}</p>}
+      </div>
+
       {CATEGORIES.map((category) => (
-        <div className="tasting-note-category" key={category.id}>
-          <p>{category.title[lang]}</p>
+        <div className={`tasting-note-category ${selectedCount > 0 && !selection[category.id] ? "is-missing" : ""}`} key={category.id} id={`${id}-${category.id}`} role="group" aria-labelledby={`${id}-${category.id}-title`}>
+          <p id={`${id}-${category.id}-title`}>{category.title[lang]}</p>
           <div className="tasting-note-chips">
             {category.options.map((option) => (
               <button
                 key={option.id}
                 type="button"
+                aria-pressed={selection[category.id] === option.id}
                 className={`tasting-note-chip ${
                   selection[category.id] === option.id ? "is-active" : ""
                 }`}

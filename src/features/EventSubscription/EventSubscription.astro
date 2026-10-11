@@ -1,0 +1,30 @@
+---
+interface Props {
+  lang: "ru" | "en";
+}
+const { lang } = Astro.props;
+const ru = lang === "ru";
+---
+
+<aside class="event-subscription">
+  <h2>{ru ? "Извещения Клуба" : "Club Notices"}</h2>
+  <p>{ru
+    ? "Даты встреч, место сбора и условия участия — в извещениях Клуба. Подпишитесь, чтобы прибыть к назначенному часу."
+    : "Meeting dates, assembly points and terms of participation appear in the Club Notices. Subscribe to arrive at the appointed hour."}</p>
+  <a href="https://t.me/+QIepC6ildbdmMDBi" target="_blank" rel="noopener noreferrer" class="btn">
+    {ru ? "Подписаться на извещения" : "Subscribe to notices"}
+  </a>
+</aside>
+
+<style>
+  .event-subscription {
+    padding: clamp(1.25rem, 4vw, 2rem);
+    border: 1px solid var(--color-yolk);
+    background: rgba(212, 175, 55, 0.06);
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  h2 { margin: 0 0 1rem; font-size: 1.8rem; }
+  p { max-width: 42rem; margin: 0 auto 1.5rem; }
+  a { max-width: 100%; font-size: 1rem; }
+</style>

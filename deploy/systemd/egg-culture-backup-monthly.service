@@ -1,0 +1,14 @@
+[Unit]
+Description=Egg Culture full backup read and restore validation
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=me
+UMask=0077
+WorkingDirectory=/home/me/server/projects/egg-culture
+ExecStart=/home/me/server/projects/egg-culture/scripts/restic-maintenance.sh monthly
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=2h

@@ -1,0 +1,16 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import { AdeptGames } from "@features/MotionTrials/AdeptGames";
+import { getLangFromUrl } from "@shared/i18n/utils";
+
+export function getStaticPaths() { return [{ params: { lang: "ru" } }, { params: { lang: "en" } }]; }
+const lang = getLangFromUrl(Astro.url), ru = lang === "ru";
+const title = ru ? "Яичные игры" : "Egg Games";
+const description = ru
+  ? "Катите яйцо, умножайте кладку и распутывайте халазы. Пять игр Яичной Культуры; Халаза-тест и Оракул желтка открываются после Инициации."
+  : "Roll an egg, multiply the clutch and untangle the chalazae. Five Egg Culture games; the Chalaza Test and Oracle of the Yolk unlock after the Initiation.";
+---
+<Layout title={`${title} | Egg Culture`} description={description} lang={lang}>
+  <AdeptGames client:load lang={lang} publicHub />
+  <noscript><p class="container text-center">{ru ? "Для Инициации и игр включите JavaScript в браузере." : "Enable JavaScript in your browser for the Initiation and games."}</p></noscript>
+</Layout>

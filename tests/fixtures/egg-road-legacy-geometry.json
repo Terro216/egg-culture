@@ -1,0 +1,50 @@
+[
+  {
+    "version": 1,
+    "level": 1,
+    "seed": 0,
+    "hash": "d156159289bf8e97e45d35e5493ff0f6f80a21f67332b5eea59a778b40156229"
+  },
+  {
+    "version": 1,
+    "level": 2,
+    "seed": 739,
+    "hash": "125425c843246ce71e612870cc4a0f3aad5bb10ad042a062597313d62d68d862"
+  },
+  {
+    "version": 1,
+    "level": 5,
+    "seed": 17,
+    "hash": "cf948bbe75ab84941a8a1fecdfb460cae4c5648f84f00e04e4c409f241182277"
+  },
+  {
+    "version": 1,
+    "level": 20,
+    "seed": 101,
+    "hash": "1d3a813f9932e5e91106c3eb4231bbb8fa4277c62b9b8036e89cb3a61a94096e"
+  },
+  {
+    "version": 2,
+    "level": 1,
+    "seed": 0,
+    "hash": "954fb3544efa3cf153772ef3d4727e8d95cdd387912b4b07ec6f31def1be0461"
+  },
+  {
+    "version": 2,
+    "level": 2,
+    "seed": 739,
+    "hash": "0e1187263938275a9d72ac0019514312b2734e64d5cf32f911c99b4d0c9d882d"
+  },
+  {
+    "version": 2,
+    "level": 5,
+    "seed": 17,
+    "hash": "ae2c69d6b8cef12948c82e87eec6b2b3dadad5ef43dbdcdcf08276bdcf41ba6b"
+  },
+  {
+    "version": 2,
+    "level": 20,
+    "seed": 101,
+    "hash": "9fe81aabd61e6b820ad9cf947c23ad091edc9e54a3800d54fc48c521cf75ffec"
+  }
+]

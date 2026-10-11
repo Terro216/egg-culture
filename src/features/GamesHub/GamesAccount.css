@@ -1,0 +1,24 @@
+.games-account { margin: 0 auto 2rem; max-width: 680px; text-align: center; }
+.games-account-open, .games-account-profile {
+  display: inline-block; padding: .8rem 1.1rem; border: 1px solid #a2823d;
+  border-radius: 4px 18px 4px 18px; background: #d4af370c;
+  color: var(--color-text); font: .88rem/1.6 var(--font-sans-ui); cursor: pointer;
+  max-width: 100%; overflow-wrap: anywhere;
+}
+.games-account-open:hover, .games-account-profile:hover { background: #d4af3726; }
+.games-account-note { margin: .6rem 0 0; font: .78rem/1.65 var(--font-sans-ui); color: #6d604e; }
+.games-account-panel { margin-top: 1rem; padding: 1.2rem; border: 1px solid #b18e6359; border-radius: 12px; background: #fffaf0; text-align: left; }
+.games-account .games-account-panel details { border: 0; padding: 0; margin: 0; color: #493817; }
+.games-account .games-account-panel summary { cursor: pointer; color: #493817; font: 600 .95rem/1.6 var(--font-sans-ui); }
+.games-account .games-account-panel p, .games-account .games-account-panel small { color: #60543f; font: .85rem/1.65 var(--font-sans-ui); }
+.games-account .games-account-panel label { color: #493817; font: .85rem/1.6 var(--font-sans-ui); }
+.games-account .games-account-panel .egg-road-account-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.games-account .games-account-panel .egg-road-account-form { display: grid; gap: .65rem; margin-top: 1rem; }
+.games-account .games-account-panel input { box-sizing: border-box; width: 100%; min-width: 0; padding: .8rem; border: 1px solid #b18e6380; border-radius: 6px; background: #fff; color: #2b2b2b; font: 1rem var(--font-sans-ui); }
+.games-account .games-account-panel button { min-height: 44px; padding: .7rem 1rem; border: 1px solid #a2823d; border-radius: 6px; background: transparent; color: #493817; cursor: pointer; font: .8rem/1.5 var(--font-sans-ui); }
+.games-account .games-account-panel button[aria-pressed="true"], .games-account .games-account-panel .egg-road-account-submit { background: #eedb9f; color: #33260c; }
+.games-account .games-account-panel .egg-road-account-submit { width: 100%; margin-top: .5rem; }
+.games-account .games-account-panel button:disabled { opacity: .6; cursor: wait; }
+.games-account .games-account-panel [role="alert"] { color: #9d2917; }
+.games-account .games-account-panel [role="status"] { color: #4e6525; }
+.games-account .games-account-panel a { color: #78591f; text-decoration: underline; text-underline-offset: 3px; }

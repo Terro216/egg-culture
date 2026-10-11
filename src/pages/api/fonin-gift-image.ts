@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { verifyFoninGiftToken } from "@shared/utils/foninGiftToken";
+import { verifyFoninGiftToken } from "../../shared/utils/foninGiftToken.ts";
 
 export const prerender = false;
 
@@ -9,15 +9,15 @@ export const prerender = false;
 // а .env в Docker-образ не попадает (секреты приходят через env_file в рантайме).
 const accessWord =
   process.env.FONIN_ACCESS_WORD ??
-  import.meta.env.FONIN_ACCESS_WORD ??
+  import.meta.env?.FONIN_ACCESS_WORD ??
   "Яй Ци";
 const tokenSecret =
   process.env.FONIN_GIFT_TOKEN_SECRET ??
-  import.meta.env.FONIN_GIFT_TOKEN_SECRET ??
+  import.meta.env?.FONIN_GIFT_TOKEN_SECRET ??
   accessWord;
 const privateDir =
   process.env.FONIN_GIFT_PRIVATE_DIR ??
-  import.meta.env.FONIN_GIFT_PRIVATE_DIR ??
+  import.meta.env?.FONIN_GIFT_PRIVATE_DIR ??
   join(process.cwd(), "private", "fonin-gifts");
 
 const giftFiles: Record<string, { fileName: string; contentType: string }> = {
@@ -37,7 +37,7 @@ const text = (message: string, status: number) =>
 export const GET: APIRoute = async ({ url }) => {
   const giftId = url.searchParams.get("id") ?? "";
   const token = url.searchParams.get("token") ?? "";
-  const giftFile = giftFiles[giftId];
+  const giftFile = Object.hasOwn(giftFiles, giftId) ? giftFiles[giftId] : null;
 
   if (!giftFile || !token) {
     return text("Дар не найден.", 404);

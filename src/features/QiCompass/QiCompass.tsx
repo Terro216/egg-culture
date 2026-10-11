@@ -190,9 +190,12 @@ export const QiCompass: React.FC<QiCompassProps> = ({ lang }) => {
           transition: r 0.2s ease, fill 0.2s ease;
         }
         .qi-compass-point:hover,
+        .qi-compass-point:focus-visible,
         .qi-compass-point.is-active {
           fill: var(--color-yolk, #d4af37);
         }
+        .qi-compass-point:focus-visible { outline: none; stroke: #2b2b2b; stroke-width: 3; }
+        .qi-compass-choices button:focus-visible { outline: 2px solid #2b2b2b; outline-offset: 3px; }
         .qi-compass-point-label {
           font-family: var(--font-serif-body, serif);
           font-size: 14px;
@@ -216,7 +219,7 @@ export const QiCompass: React.FC<QiCompassProps> = ({ lang }) => {
         .qi-compass-panel h3 {
           margin: 0;
           font-family: var(--font-serif-headers, serif);
-          color: var(--color-yolk, #d4af37);
+          color: var(--color-yolk-text, #80600f);
           font-size: 1.4rem;
         }
         .qi-compass-panel p {
@@ -241,7 +244,7 @@ export const QiCompass: React.FC<QiCompassProps> = ({ lang }) => {
       <svg
         className="qi-compass-svg"
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        role="img"
+        role="group"
         aria-label={lang === "ru" ? "Компас Яй Ци" : "Egg Qi Compass"}
       >
         <circle className="qi-compass-ring" cx={center} cy={center} r={(SIZE - PADDING * 2) / 2} />
@@ -308,6 +311,11 @@ export const QiCompass: React.FC<QiCompassProps> = ({ lang }) => {
                 cx={cx}
                 cy={cy}
                 r={isActive ? 12 : 8}
+                role="button"
+                tabIndex={0}
+                aria-label={point[lang].name}
+                aria-pressed={isActive}
+                onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setActiveId(point.id); } }}
                 onClick={() =>
                   setActiveId((prev) => (prev === point.id ? null : point.id))
                 }
@@ -325,6 +333,10 @@ export const QiCompass: React.FC<QiCompassProps> = ({ lang }) => {
           );
         })}
       </svg>
+
+      <div className="qi-compass-choices" role="group" aria-label={lang === "ru" ? "Выберите стиль" : "Choose a style"} style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" }}>
+        {POINTS.map(point => <button type="button" key={point.id} aria-pressed={point.id === activeId} onClick={() => setActiveId(point.id)} style={{ minHeight: "44px", padding: "8px 12px", border: "1px solid #9f823c", borderRadius: "6px", background: point.id === activeId ? "#fff2b5" : "transparent" }}>{point[lang].name}</button>)}
+      </div>
 
       <div className="qi-compass-panel" aria-live="polite">
         {active ? (

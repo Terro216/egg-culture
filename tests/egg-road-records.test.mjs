@@ -139,9 +139,15 @@ test('popular roads count distinct published players, support endless filters an
     assert.equal(store.popular('endless').tracks.length,1);
     assert.equal(store.popular('endless').tracks[0].code,'EGG1-E-2-ABC');
     assert.equal(store.popular('finite').tracks[0].code,run().code);
+    store.submit('a',run(900,'EGG3-R-5-ABC'));
+    const dates=new DatabaseSync(join(dir,'records.sqlite'));
+    dates.prepare('UPDATE records SET created = 1 WHERE code = ?').run('EGG3-R-5-ABC');dates.close();
     for(let i=0;i<24;i++)store.submit('a',run(100,`EGG1-R-3-${(i+1).toString(36).toUpperCase()}`));
     assert.equal(store.popular().tracks.length,20);
     assert.equal(store.popular().tracks[0].players,2);
+    assert.equal(store.popular().tracks[1].code,'EGG3-R-5-ABC','an older high score outranks newer low scores when player counts tie');
+    assert.equal(store.popular('finite').tracks[1].code,'EGG3-R-5-ABC');
+    assert.equal(store.popular('endless').tracks[0].code,'EGG1-E-2-ABC');
     assert.deepEqual(Object.keys(store.popular().tracks[0]).sort(),['bestScore','code','players']);
   } finally {store.close();await rm(dir,{recursive:true,force:true});}
 });

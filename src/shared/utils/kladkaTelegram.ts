@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
-import type { KladkaPost } from "./kladkaStore";
+import type { KladkaPost } from "./kladkaStore.ts";
+import { postVisibility } from "./kladkaStore.ts";
 
 // Модерация Книги Кладки через Telegram-бота: каждая новая запись
 // прилетает админу сообщением с кнопками «Одобрить / Отклонить».
@@ -12,12 +13,27 @@ import type { KladkaPost } from "./kladkaStore";
 // Без токена бот отключен — записи публикуются сразу (режим разработки).
 
 const env = (key: string) =>
-  process.env[key] ?? (import.meta.env[key] as string | undefined);
+  process.env[key] ?? (import.meta.env?.[key] as string | undefined);
 
 export const botToken = () => env("KLADKA_BOT_TOKEN");
 export const adminChatId = () => env("KLADKA_ADMIN_CHAT_ID");
 
 export const isModerationEnabled = () => Boolean(botToken() && adminChatId());
+
+export async function isAdminCallback(callback: { from?: { id?: unknown }; message?: { chat?: { id?: unknown } } }) {
+  const chat = adminChatId();
+  if (!chat || String(callback.message?.chat?.id) !== chat) return false;
+  const user = String(callback.from?.id);
+  if (!/^\d+$/.test(user)) return false;
+  const delegated = env("KLADKA_ADMIN_USER_IDS");
+  if (delegated) return delegated.split(",").map(id => id.trim()).includes(user);
+  if (!chat.startsWith("-")) return user === chat;
+  // Existing group setups need no new setting: Telegram's own administrators
+  // remain moderators. A transport failure is retryable, not a rejected update.
+  const member = await call("getChatMember", { chat_id: chat, user_id: Number(user) });
+  if (!member) throw new Error("Moderator authorization unavailable");
+  return ["creator", "administrator"].includes(member.result?.status);
+}
 
 // Секрет, которым подписан вызов /api/kladka-telegram: свой из .env или
 // производный от токена бота. Ту же формулу повторяет поллер.
@@ -43,15 +59,13 @@ async function call(method: string, body: FormData | object): Promise<any> {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         };
-  const res = await fetch(api(method), {
-    ...init,
-    signal: AbortSignal.timeout(15_000),
-  });
-  const data = await res.json().catch(() => null);
-  if (!data?.ok) {
-    console.warn(`Telegram ${method} failed:`, data?.description ?? res.status);
-  }
-  return data;
+  try {
+    const res = await fetch(api(method), { ...init, signal: AbortSignal.timeout(15_000) });
+    const data = await res.json().catch(() => null);
+    if (res.ok && data?.ok) return data;
+    console.warn(`Telegram ${method} failed: HTTP_${res.status}`);
+  } catch { console.warn(`Telegram ${method} failed: transport_error`); }
+  return null;
 }
 
 function moderationCaption(post: KladkaPost): string {
@@ -59,9 +73,10 @@ function moderationCaption(post: KladkaPost): string {
     timeZone: "Europe/Moscow",
   });
   const style = post.style ? `\nСтиль: ${post.style}` : "";
+  const visibility = postVisibility(post) === "adepts" ? "Только адептам" : "Для всех";
   return (
     `📖 Новая запись в Книге Кладки\n\n` +
-    `От: ${post.name}${style}\n${date} · ip:${post.ipHash.slice(0, 8)}\n\n` +
+    `От: ${post.name}${style}\nКто увидит: ${visibility}\n${date} · ip:${post.ipHash.slice(0, 8)}\n\n` +
     `${post.text}`
   ).slice(0, 1000);
 }
@@ -107,13 +122,14 @@ export async function sendModerationRequest(
     if (asDocument?.ok) return;
   }
 
-  await call("sendMessage", {
+  const message = await call("sendMessage", {
     chat_id: adminChatId(),
     text:
       moderationCaption(post) +
       (post.image ? "\n\n⚠️ Фото не удалось приложить — оно сохранено и появится в Книге после одобрения." : ""),
     reply_markup: moderationKeyboard(post.id),
   });
+  if (!message?.ok) throw new Error("Moderation delivery failed");
 }
 
 export async function answerCallback(callbackId: string, text: string) {

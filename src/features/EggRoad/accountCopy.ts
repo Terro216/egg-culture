@@ -1,8 +1,7 @@
 export const accountCopy = {
   ru: {
     open: "Закрепить имя / Войти", player: "Игрок", protected: "Имя закреплено", register: "Закрепить имя", login: "Войти", logout: "Выйти",
-    intro: "Имя и пароль откроют ваши опубликованные рекорды на любом устройстве. Почта не нужна.",
-    existing: "Если вы уже публиковали результат, закрепите имя в том же браузере — рекорды останутся с вами.",
+    intro: "Один аккаунт для всего Egg Culture. Имя и пароль позволят сохранять прогресс в играх, достижения и состояние Инкубатора, а затем возвращаться к ним с любого устройства. Почта не нужна.",
     name: "Имя игрока", password: "Пароль", current: "Текущий пароль", newPassword: "Новый пароль", confirm: "Повторите пароль",
     hint: "От 15 до 128 символов. Можно использовать длинную фразу.",
     forgot: "Забыли пароль?", recover: "Восстановить доступ", recoveryInput: "Код восстановления", recoveryIntro: "Введите имя, сохранённый код и новый пароль. Старый код и входы на других устройствах перестанут работать.",
@@ -19,8 +18,7 @@ export const accountCopy = {
   },
   en: {
     open: "Reserve a name / Sign in", player: "Player", protected: "Name reserved", register: "Reserve my name", login: "Sign in", logout: "Sign out",
-    intro: "Your name and password unlock your published records on any device. No email needed.",
-    existing: "Already published a score? Reserve your name in that same browser to keep your records.",
+    intro: "One account for all of Egg Culture. Your name and password let you save game progress, achievements and your Incubator, then return to them from any device. No email needed.",
     name: "Player name", password: "Password", current: "Current password", newPassword: "New password", confirm: "Repeat password",
     hint: "15 to 128 characters. A long phrase works well.",
     forgot: "Forgot your password?", recover: "Recover access", recoveryInput: "Recovery code", recoveryIntro: "Enter your name, saved code and a new password. Your old code and sessions on other devices will stop working.",

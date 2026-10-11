@@ -16,6 +16,8 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.backup
+__pycache__/
 
 # private gift assets
 private/

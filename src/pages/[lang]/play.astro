@@ -19,6 +19,8 @@ const description = ru
     <PublicRoad client:load lang={lang} />
     <p class="public-road-controls">{ru ? "На телефоне — касания по сторонам экрана. На клавиатуре — ← → или A / D." : "On your phone, hold either side of the screen. On a keyboard, use ← → or A / D."}</p>
     <aside class="public-road-more">
+      <p><a href={`/${lang}/games/`}>{ru ? "Все яичные игры" : "All Egg Games"} →</a></p>
+      <p><a href={`/${lang}/fry/`}>{ru ? "Великая Жарка — забег с кладкой яиц" : "The Great Fry — an egg-clutch runner"} →</a></p>
       <p>{ru ? "Больше испытаний доступно адептам." : "More trials await adepts."}</p>
       <a href={`/${lang}/quiz/`}>{ru ? "Пройти Инициацию" : "Take the Initiation"} →</a>
     </aside>
@@ -28,7 +30,7 @@ const description = ru
   .public-road-page { max-width: 720px; padding-top: 3rem; padding-bottom: 4rem; text-align: center; }
   .public-road-kicker { margin: 0 0 2rem; font-family: var(--font-sans-ui); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
   .public-road-egg { width: 88px; height: 115px; margin: 0 auto 2rem; border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%; transform: rotate(25deg); background: radial-gradient(ellipse at 28% 23%, #fff9e9, #e8d7b4 58%, #b49972); box-shadow: 15px 18px 30px #8b633c26, inset -8px -8px 20px #85663520; }
-  h1 { margin: 0 0 1.4rem; color: var(--color-yolk); font-size: clamp(3rem, 8vw, 5rem); }
+  h1 { margin: 0 0 1.4rem; color: var(--color-yolk-text); font-size: clamp(3rem, 8vw, 5rem); }
   .public-road-description { margin: 0 auto 2rem; max-width: 530px; font-size: 1.2rem; line-height: 1.7; }
   .public-road-controls { margin: 1.3rem auto 0; max-width: 460px; font: .8rem/1.7 var(--font-sans-ui); opacity: .7; }
   .public-road-more { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #b18e633d; font: .9rem/1.8 var(--font-sans-ui); }

@@ -1,7 +1,9 @@
 ---
 import Layout from '@app/layouts/Layout.astro';
 import KladkaForm from '@features/KladkaBook/KladkaForm';
-import { getApprovedPosts } from '@shared/utils/kladkaStore';
+import KladkaFeed from '@features/KladkaBook/KladkaFeed';
+import { getApprovedPosts, visibleKladkaEntries } from '@shared/utils/kladkaStore';
+import { isKladkaAdept, KLADKA_PRIVATE_HEADERS } from '../../server/kladkaAccess';
 import { type Lang } from '@shared/i18n/utils';
 
 // SSR: лента читается из файлового хранилища при каждом запросе.
@@ -13,7 +15,8 @@ if (langParam !== "ru" && langParam !== "en") {
 }
 const lang = langParam as Lang;
 
-const posts = await getApprovedPosts(100);
+for (const [key, value] of Object.entries(KLADKA_PRIVATE_HEADERS)) Astro.response.headers.set(key, value);
+const posts = visibleKladkaEntries(await getApprovedPosts(100), isKladkaAdept(Astro));
 
 const title =
   lang === "ru" ? "Книга Кладки | Яичная Культура" : "Book of the Clutch | Egg Culture";
@@ -22,26 +25,6 @@ const description =
     ? "Общая книга записей адептов: завтраки, партии, текстуры и Яй Ци. Писать могут только прошедшие Инициацию."
     : "The shared book of Adepts' entries: breakfasts, batches, textures and Egg Qi. Only the initiated may write.";
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-// Ссылки в записях делаем кликабельными, всё остальное — экранированный текст.
-const escapeHtml = (s: string) =>
-  s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-
-const renderText = (text: string) =>
-  escapeHtml(text).replace(
-    /(https?:\/\/[^\s<]+)/g,
-    '<a href="$1" target="_blank" rel="nofollow noopener noreferrer">$1</a>',
-  );
 ---
 
 <Layout title={title} description={description} lang={lang}>
@@ -71,48 +54,14 @@ const renderText = (text: string) =>
 
     <KladkaForm client:load lang={lang} />
 
-    <section class="kladka-feed flex-col gap-lg">
-      {posts.length === 0 && (
-        <p class="kladka-empty text-center">
-          {
-            lang === "ru"
-              ? "Книга еще чиста. Первая запись — самая тихая."
-              : "The Book is still blank. The first entry is the quietest."
-          }
-        </p>
-      )}
-      {
-        posts.map((post) => (
-          <article class="kladka-post">
-            <header class="kladka-post-head">
-              <span class="kladka-post-name">{post.name}</span>
-              <span class="kladka-post-meta">
-                {post.style && <span class="kladka-post-style">{post.style}</span>}
-                <time datetime={post.createdAt}>{formatDate(post.createdAt)}</time>
-              </span>
-            </header>
-            {post.image && (
-              <img
-                class="kladka-post-image"
-                src={`/api/kladka-image?id=${post.id}`}
-                alt=""
-                loading="lazy"
-              />
-            )}
-            {post.text && (
-              <p class="kladka-post-text" set:html={renderText(post.text)} />
-            )}
-          </article>
-        ))
-      }
-    </section>
+    <KladkaFeed client:load lang={lang} initialPosts={posts} />
   </div>
 </Layout>
 
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     margin: 0;
   }
 
@@ -121,72 +70,9 @@ const renderText = (text: string) =>
     margin: 0;
   }
 
-  .kladka-empty {
-    font-style: italic;
-    opacity: 0.6;
-    padding: var(--spacing-2xl) 0;
-  }
-
-  .kladka-post {
-    border: 1px solid rgba(212, 175, 55, 0.35);
-    background: rgba(255, 255, 255, 0.35);
-    padding: var(--spacing-lg) var(--spacing-xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-  }
-
-  .kladka-post-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .kladka-post-name {
-    font-family: var(--font-serif-headers);
-    font-size: 1.3rem;
-    color: var(--color-yolk);
-  }
-
-  .kladka-post-meta {
-    font-family: var(--font-sans-ui);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    opacity: 0.55;
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .kladka-post-image {
-    width: 100%;
-    height: auto;
-    max-height: 560px;
-    object-fit: contain;
-    background: rgba(43, 43, 43, 0.04);
-  }
-
-  .kladka-post-text {
-    margin: 0;
-    line-height: 1.7;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-
-  .kladka-post-text :global(a) {
-    color: var(--color-yolk);
-    text-decoration: underline;
-  }
-
   @media (max-width: 768px) {
     .page-title {
       font-size: 2rem;
-    }
-    .kladka-post {
-      padding: var(--spacing-md);
     }
   }
 </style>

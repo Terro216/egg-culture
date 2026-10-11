@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 
 interface AdeptCertificateProps {
   lang: "ru" | "en";
+  initialName?: string;
 }
 
 type Gender = "m" | "f";
@@ -259,7 +260,7 @@ function drawCertificate(
 
   // Шапка
   ctx.font = "600 34px 'Playfair Display', serif";
-  ctx.fillStyle = "#b8963a";
+  ctx.fillStyle = "#80600f";
   ctx.fillText("EGG CULTURE — ЯИЧНАЯ КУЛЬТУРА", W / 2, 165);
 
   ctx.font = "600 96px 'Playfair Display', serif";
@@ -276,6 +277,8 @@ function drawCertificate(
   ctx.fillText(s.body1, W / 2, 470);
 
   ctx.font = "italic 600 76px 'Playfair Display', serif";
+  const nameWidth = ctx.measureText(name).width;
+  if (nameWidth > W - 260) ctx.font = `italic 600 ${Math.floor(76 * (W - 260) / nameWidth)}px 'Playfair Display', serif`;
   ctx.fillStyle = "#8b6914";
   ctx.fillText(name, W / 2, 580);
 
@@ -321,9 +324,9 @@ function drawCertificate(
   ctx.fillText(s.site, W / 2, H - 92);
 }
 
-export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
+export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang, initialName = "" }) => {
   const s = STRINGS[lang];
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName);
   const [gender, setGender] = useState<Gender>("m");
   const [issued, setIssued] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -342,6 +345,7 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
     } catch {
       // рисуем как есть
     }
+    if (!canvasRef.current) return;
     drawCertificate(canvasRef.current, trimmed, lang, g);
     setIssued(true);
     (window as any).plausible?.("Adept Certificate");
@@ -377,6 +381,8 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
           gap: 1rem;
           flex-wrap: wrap;
           justify-content: center;
+          width: 100%;
+          min-width: 0;
         }
         .adept-cert-input {
           background: rgba(0, 0, 0, 0.4);
@@ -385,7 +391,9 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
           padding: 0.8rem 1.2rem;
           font-family: var(--font-serif-body, serif);
           font-size: 1.1rem;
-          min-width: 260px;
+          min-width: 0;
+          width: min(100%, 360px);
+          max-width: 100%;
           outline: none;
         }
         .adept-cert-input:focus {
@@ -447,17 +455,19 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
           type="text"
           maxLength={40}
           placeholder={s.placeholder}
+          aria-label={s.placeholder}
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") void issue();
           }}
         />
-        <div className="adept-cert-gender" role="group">
+        <div className="adept-cert-gender" role="group" aria-label={lang === "ru" ? "Обращение" : "Form of address"}>
           {(["m", "f"] as Gender[]).map((g) => (
             <button
               key={g}
               className={gender === g ? "is-active" : ""}
+              aria-pressed={gender === g}
               onClick={() => {
                 setGender(g);
                 // Уже выданный документ переоформляется сразу.
@@ -485,6 +495,8 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang }) => {
       <canvas
         ref={canvasRef}
         className="adept-cert-canvas"
+        role="img"
+        aria-label={`${s.heading}: ${name}`}
         style={{ display: issued ? "block" : "none" }}
       />
     </div>

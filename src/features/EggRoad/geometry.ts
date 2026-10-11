@@ -15,9 +15,11 @@ export function createEggGeometry(widthSegments = 32, heightSegments = 24) {
 }
 
 /** The collider uses every visible vertex, including the narrow tip. */
+let hull: Float32Array | undefined;
 export function createEggHull() {
+  if (hull) return hull;
   const geometry = createEggGeometry();
   const points = new Float32Array(geometry.getAttribute("position").array);
   geometry.dispose();
-  return points;
+  return hull = points;
 }

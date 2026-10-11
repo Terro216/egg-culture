@@ -3,9 +3,11 @@ import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import node from "@astrojs/node";
 import { loadEnv } from "vite";
+import { roadOffline } from "./scripts/road-offline.mjs";
 
 const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
-const domain = env.DOMAIN || "ilyamedve.dev";
+const domain = process.env.DOMAIN || env.DOMAIN || "ilyamedve.dev";
+if (!/^[a-z0-9.-]+$/i.test(domain)) throw new Error("DOMAIN must be a bare domain name");
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,7 +22,7 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
-  integrations: [react()],
+  integrations: [react(), roadOffline()],
   i18n: {
     locales: ["ru", "en"],
     defaultLocale: "ru",

@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly Egg Culture backup maintenance
+
+[Timer]
+OnCalendar=Wed *-*-* 07:20:00 Europe/Moscow
+RandomizedDelaySec=10min
+Persistent=true
+Unit=egg-culture-backup-weekly.service
+
+[Install]
+WantedBy=timers.target

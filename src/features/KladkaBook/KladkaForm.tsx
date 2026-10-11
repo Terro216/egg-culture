@@ -1,4 +1,6 @@
+import { useAdept } from "../Portal/useAdept.ts";
 import React, { useEffect, useRef, useState } from "react";
+import type { KladkaVisibility } from "../../shared/utils/kladkaStore.ts";
 
 // Форма Книги Кладки: писать могут только адепты (прошедшие квиз).
 // Запись уходит на премодерацию Хранителю Книги (Telegram-бот).
@@ -32,7 +34,7 @@ const STYLES = {
 
 const STRINGS = {
   ru: {
-    gateTitle: "Книга открыта только адептам",
+    gateTitle: "Оставлять записи могут только адепты",
     gateText:
       "Чтобы оставить запись, нужно пройти Инициацию. Книга не терпит случайных рук.",
     gateBtn: "Пройти Инициацию",
@@ -41,6 +43,10 @@ const STRINGS = {
       "Что было на завтрак? Партия, текстура, Яй Ци, обстоятельства тишины…",
     styleLabel: "Стиль партии (необязательно)",
     styleNone: "— без стиля —",
+    visibilityLabel: "Кто увидит запись",
+    visibilityPublic: "Для всех",
+    visibilityAdepts: "Только адептам",
+    visibilityHint: "Неофиты увидят заглушку с приглашением пройти Инициацию.",
     photoBtn: "Приложить фотографию",
     photoChange: "Заменить фотографию",
     submit: "Оставить запись",
@@ -48,9 +54,24 @@ const STRINGS = {
     counter: (n: number, max: number) => `${n} / ${max}`,
     errorGeneric: "Книга не приняла запись. Попробуйте позже.",
     errorImageSize: "Фотография тяжелее 5 МБ.",
+    saved: "Запись легла в Книгу.",
+    pending: "Запись сохранена для Хранителя Книги. Она появится после одобрения.",
+    errors: {
+      invalid_body: "Книга не распознала запись. Проверьте текст и фотографию.",
+      invalid_visibility: "Выберите, кто увидит запись.",
+      rate_limit: "Слишком много попыток. Подождите минуту.",
+      empty: "Запись пуста: нужен текст или фотография.",
+      text_length: "Книга принимает до 500 знаков.",
+      too_large: "Фотография тяжелее 5 МБ.",
+      image_format: "Книга принимает только JPEG, PNG, WebP или GIF.",
+      daily_limit: "Три записи в день — предел. Тепло не терпит жадности.",
+      unavailable: "Книга временно недоступна. Попробуйте позже.",
+      busy: "Книга занята. Попробуйте немного позже.",
+      timeout: "Загрузка заняла слишком много времени. Попробуйте ещё раз.",
+    },
   },
   en: {
-    gateTitle: "The Book is open to Adepts only",
+    gateTitle: "Only Adepts may leave entries",
     gateText:
       "To leave an entry you must pass the Initiation. The Book tolerates no random hands.",
     gateBtn: "Pass the Initiation",
@@ -59,6 +80,10 @@ const STRINGS = {
       "What was for breakfast? The batch, the texture, the Egg Qi, the circumstances of silence…",
     styleLabel: "Batch style (optional)",
     styleNone: "— no style —",
+    visibilityLabel: "Who can see this entry",
+    visibilityPublic: "Everyone",
+    visibilityAdepts: "Adepts only",
+    visibilityHint: "Neophytes will see an invitation to pass the Initiation.",
     photoBtn: "Attach a photograph",
     photoChange: "Replace the photograph",
     submit: "Leave an entry",
@@ -66,6 +91,21 @@ const STRINGS = {
     counter: (n: number, max: number) => `${n} / ${max}`,
     errorGeneric: "The Book did not accept the entry. Try again later.",
     errorImageSize: "The photograph is heavier than 5 MB.",
+    saved: "The entry has settled into the Book.",
+    pending: "The entry has been saved for the Keeper of the Book. It will appear after approval.",
+    errors: {
+      invalid_body: "The Book could not read the entry. Check the text and photograph.",
+      invalid_visibility: "Choose who can see this entry.",
+      rate_limit: "Too many attempts. Please wait a minute.",
+      empty: "The entry is empty: add text or a photograph.",
+      text_length: "The Book accepts up to 500 characters.",
+      too_large: "The photograph is heavier than 5 MB.",
+      image_format: "The Book accepts only JPEG, PNG, WebP or GIF.",
+      daily_limit: "Three entries a day is the limit. Warmth does not tolerate greed.",
+      unavailable: "The Book is temporarily unavailable. Try again later.",
+      busy: "The Book is busy. Please try again shortly.",
+      timeout: "The upload took too long. Please try again.",
+    },
   },
 };
 
@@ -77,10 +117,11 @@ const DRAFT_KEY = "kladka_draft";
 
 export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   const s = STRINGS[lang];
-  const [isAdept, setIsAdept] = useState<boolean | null>(null);
+  const isAdept = useAdept();
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [style, setStyle] = useState("");
+  const [visibility, setVisibility] = useState<KladkaVisibility>("public");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -89,9 +130,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const adept = localStorage.getItem("egg_adept") === "true";
-    setIsAdept(adept);
-    if (!adept) return;
+    if (!isAdept) return;
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY);
       if (!raw) return;
@@ -105,7 +144,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
     } catch {
       // Битый черновик — просто открываем чистую форму.
     }
-  }, [lang]);
+  }, [lang, isAdept]);
 
   useEffect(() => {
     if (!file) {
@@ -118,7 +157,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   }, [file]);
 
   const goToQuiz = () => {
-    localStorage.setItem("egg_after_quiz", `/${lang}/kladka`);
+    try { localStorage.setItem("egg_after_quiz", `/${lang}/kladka`); } catch { /* Navigation remains available. */ }
     window.location.href = `/${lang}/quiz`;
   };
 
@@ -139,6 +178,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
       const form = new FormData();
       form.append("name", name);
       form.append("text", text);
+      form.append("visibility", visibility);
       if (style) form.append("style", style);
       if (file) form.append("image", file);
       const res = await fetch("/api/kladka-post", {
@@ -147,14 +187,17 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setNotice(data?.message ?? s.errorGeneric);
+        setNotice(typeof data?.error === "string" && Object.hasOwn(s.errors, data.error)
+          ? s.errors[data.error as keyof typeof s.errors] : s.errorGeneric);
         return;
       }
-      setNotice(data?.message ?? "");
+      setNotice(data?.status === "approved" ? s.saved : s.pending);
       setName("");
       setText("");
       setStyle("");
+      setVisibility("public");
       setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       (window as any).plausible?.("Kladka Post");
       // Если запись опубликована сразу (без модерации) — обновляем ленту.
       if (data?.status === "approved") {
@@ -278,6 +321,21 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
         </select>
       </label>
 
+      <label className="text-ui">
+        {s.visibilityLabel}
+        <select
+          className="kladka-select"
+          style={{ marginTop: "0.5rem" }}
+          value={visibility}
+          disabled={busy}
+          onChange={(e) => setVisibility(e.target.value as KladkaVisibility)}
+        >
+          <option value="public">{s.visibilityPublic}</option>
+          <option value="adepts">{s.visibilityAdepts}</option>
+        </select>
+      </label>
+      {visibility === "adepts" && <p className="kladka-notice">{s.visibilityHint}</p>}
+
       {preview && <img className="kladka-preview" src={preview} alt="" />}
 
       <input
@@ -288,6 +346,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
         onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
       />
       <div className="kladka-row">
+        {file && <button type="button" className="btn" disabled={busy} onClick={() => { setFile(null); setNotice(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>{lang === "ru" ? "Убрать фотографию" : "Remove photograph"}</button>}
         <button
           className="btn"
           style={{ opacity: 0.8 }}

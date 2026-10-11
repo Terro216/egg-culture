@@ -29,11 +29,11 @@ const t = useTranslations(lang as Lang);
     </div>
 
     <div id="calculator" class="tool-anchor">
-      <EggCalculator client:only="react" dict={t("calculator")} />
+      <EggCalculator client:load dict={t("calculator")} />
     </div>
 
     <div id="oracle" class="tool-anchor">
-      <EggOracle client:only="react" dict={t("oracle")} />
+      <EggOracle client:load dict={t("oracle")} />
       <p class="text-center" style="margin-top: 1.5rem;">
         <a href={`/${lang}/prophecy`} class="prophecy-link">
           {lang === "ru"
@@ -56,7 +56,7 @@ const t = useTranslations(lang as Lang);
         <h2>{t("tools.wheelTitle")}</h2>
         <p>{t("tools.wheelDesc")}</p>
       </div>
-      <DescriptorWheel client:load />
+      <DescriptorWheel client:load lang={lang} />
     </div>
 
     <div class="text-center flex-col gap-md persona-teaser">
@@ -67,12 +67,58 @@ const t = useTranslations(lang as Lang);
       </p>
     </div>
   </div>
+
+<script is:inline>
+  (() => {
+    const hash = window.location.hash;
+    if (hash !== "#calculator" && hash !== "#oracle") return;
+    // History navigation owns its saved scroll position.
+    if (performance.getEntriesByType("navigation")[0]?.type === "back_forward") return;
+    const calculator = document.querySelector(".egg-calculator-container");
+    const target = document.getElementById(hash.slice(1));
+    if (!calculator || !target) return;
+
+    let finished = false;
+    let fontsReady = false;
+    let frame = 0;
+    const inputEvents = ["wheel", "touchstart", "pointerdown", "keydown"];
+    const cleanup = () => {
+      finished = true;
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
+      for (const event of inputEvents) window.removeEventListener(event, cleanup, true);
+      window.removeEventListener("hashchange", cleanup);
+      window.removeEventListener("pagehide", cleanup);
+    };
+    const align = () => {
+      if (finished || frame || !fontsReady || calculator.dataset.ready !== "true") return;
+      observer.disconnect();
+      // Wait for the restored timer and the final font metrics to reach layout.
+      frame = window.requestAnimationFrame(() => {
+        if (!finished && window.location.hash === hash) {
+          target.scrollIntoView({ block: "start", behavior: "instant" });
+        }
+        cleanup();
+      });
+    };
+    const observer = new MutationObserver(align);
+    observer.observe(calculator, { attributes: true, attributeFilter: ["data-ready"] });
+    // Once the visitor interacts, never pull them back to the initial anchor.
+    for (const event of inputEvents) window.addEventListener(event, cleanup, { capture: true, passive: true });
+    window.addEventListener("hashchange", cleanup);
+    window.addEventListener("pagehide", cleanup);
+    (document.fonts?.ready ?? Promise.resolve()).then(() => {
+      fontsReady = true;
+      align();
+    });
+  })();
+</script>
 </Layout>
 
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     padding-bottom: 2rem;
     margin: 0;
   }

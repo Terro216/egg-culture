@@ -1,0 +1,28 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import EggUntangle from "@features/EggUntangle/EggUntangle";
+import { getLangFromUrl } from "@shared/i18n/utils";
+export function getStaticPaths() { return [{ params: { lang: "ru" } }, { params: { lang: "en" } }]; }
+const lang = getLangFromUrl(Astro.url), ru = lang === "ru";
+const title = ru ? "Халазы судьбы" : "Chalazae of Fate";
+const description = ru ? "Распутайте белковые нити и верните кладке Яй Ци. 24 сюжетных уровня, хардмод с обменом местами, кладка дня, вызовы по сиду и достижения адепта." : "Untangle the albumen threads and restore the clutch’s Egg Qi. 24 story levels, fixed-position hardmode, daily clutches, seed challenges and adept achievements.";
+---
+<Layout title={`${title} | Egg Culture`} description={description} lang={lang}>
+  <main class="untangle-page container">
+    <h1 class="untangle-page-title">{ru ? "Испытания формы" : "Trials of Form"}</h1>
+    <EggUntangle client:load lang={lang} />
+    <nav class="untangle-more" aria-label={ru ? "Другие испытания" : "Other trials"}>
+      <a href={`/${lang}/games/`}>{ru ? "Все яичные игры" : "All Egg Games"}</a>
+      <a href={`/${lang}/profile/`}>{ru ? "Мой профиль" : "My profile"}</a>
+      <a href={`/${lang}/fry/`}>{ru ? "Великая Жарка" : "The Great Fry"}</a>
+    </nav>
+    <noscript><p>{ru ? "Для игры включите JavaScript в браузере." : "Enable JavaScript in your browser to play."}</p></noscript>
+  </main>
+</Layout>
+<style>
+  .untangle-page { max-width: 1020px; padding-top: 2rem; padding-bottom: 4rem; }
+  .untangle-page-title { font: .7rem/1.6 var(--font-sans-ui); letter-spacing: .16em; text-transform: uppercase; text-align: center; margin: 0 0 1.5rem; }
+  .untangle-more { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 28px; margin: 2rem auto 0; font: .85rem/1.6 var(--font-sans-ui); }
+  .untangle-more a { text-decoration: underline; text-underline-offset: 5px; }
+  @media (max-width: 600px) { .untangle-page { width: 100%; padding-left: 8px; padding-right: 8px; padding-top: 1rem; } }
+</style>

@@ -1,15 +1,21 @@
 import { Box3, CatmullRomCurve3, MathUtils, Sphere, Vector3 } from "three";
+import type { RoadVersion } from "./rules.ts";
+import { varyStraightRoad } from "./variations.ts";
+import type { RoadVariation } from "./variations.ts";
 
-export const GATE_SPACING = 18;
+export { GATE_SPACING } from "./rules.ts";
 export const ROAD_THICKNESS = 0.4;
 const UP = new Vector3(0, 1, 0);
 
 export type RoadSample = { position: Vector3; tangent: Vector3; right: Vector3; normal: Vector3; width: number; distance: number };
-export type RoadChunk = { first: number; last: number; vertices: Float32Array; indices: Uint32Array };
+export type RoadChunk = { first: number; last: number; vertices: Float32Array; indices: Uint32Array; origin: Vector3; finish?: boolean; color?: number };
 export type RoadTrack = {
   samples: RoadSample[]; chunks: RoadChunk[]; length: number;
-  level: number; seed: number; bounds: Sphere;
-  endless?: { nextPart: number; revision: number };
+  level: number; seed: number; version: RoadVersion; bounds: Sphere;
+  variations?: RoadVariation[];
+  loop?: { first: number; last: number };
+  speedRun?: boolean;
+  endless?: { nextPart: number; revision: number; prepared?: { part: number; track: RoadTrack; fitted?: boolean } };
 };
 
 function randomSource(seed: number) {
@@ -23,20 +29,21 @@ function randomSource(seed: number) {
   };
 }
 
-function tutorialPoints() {
+function tutorialPoints(version: RoadVersion = 1) {
   const points = [new Vector3(0, 12, 32), new Vector3(0, 10, 16), new Vector3(0, 8, 0)];
-  for (let i = 1; i <= 4 * 24; i++) {
+  for (let i = 1; i <= (version === 1 ? 4 : 1.5) * 24; i++) {
     const angle = i / 24 * Math.PI * 2;
     const radius = 31 + Math.sin(angle * 0.47) * 5;
     points.push(new Vector3(radius * (1 - Math.cos(angle)), 8 - angle * 3.4 + Math.sin(angle * 1.5) * 0.8, -radius * Math.sin(angle)));
   }
   const end = points.at(-1)!;
-  points.push(end.clone().add(new Vector3(0, -2, -18)), end.clone().add(new Vector3(0, -3, -36)));
+  const exit = version === 1 ? -1 : 1;
+  points.push(end.clone().add(new Vector3(0, -2, exit * 18)), end.clone().add(new Vector3(0, -3, exit * 36)));
   return points;
 }
 
-function generatedPoints(level: number, seed: number, fallback = false) {
-  const random = randomSource(seed);
+function generatedPoints(level: number, seed: number, fallback = false, version: RoadVersion = 1) {
+  const random = randomSource(version === 1 ? seed : seed ^ Math.imul(level, 0x85ebca6b));
   const points = [new Vector3(0, 12, 32), new Vector3(0, 10, 16), new Vector3(0, 8, 0)];
   const position = points.at(-1)!.clone();
   let heading = 0;
@@ -60,6 +67,11 @@ function generatedPoints(level: number, seed: number, fallback = false) {
     const slope = 0.12 + random() * 0.045;
     if (fallback || i === 0 || random() < 0.32) {
       arc(direction * Math.PI * 2, radius, slope);
+    } else if (version >= 2 && i % 3 === 2) {
+      // A wide reversal followed by a gentler recovery, rather than ever-narrower lanes.
+      const side = random() > 0.5 ? 1 : -1;
+      arc(side * Math.PI * (0.8 + random() * 0.25), radius, slope);
+      arc(-side * Math.PI * (0.55 + random() * 0.2), radius * 1.3, slope);
     } else if (random() < 0.5) {
       const bend = Math.PI * (0.55 + random() * 0.3);
       const side = random() > 0.5 ? 1 : -1;
@@ -67,6 +79,13 @@ function generatedPoints(level: number, seed: number, fallback = false) {
       arc(-side * bend, radius * (0.95 + random() * 0.3), slope);
     } else {
       arc((random() > 0.5 ? 1 : -1) * Math.PI * (0.8 + random() * 0.8), radius, slope);
+    }
+    if (version >= 3 && i < motifs - 1) {
+      // Short breathing room between long turns; enough room for one small feature.
+      for (let j = 0; j < 18; j++) {
+        position.add(new Vector3(Math.sin(heading) * 4, -slope * 4, -Math.cos(heading) * 4));
+        points.push(position.clone());
+      }
     }
   }
   for (let i = 0; i < 3; i++) {
@@ -76,7 +95,7 @@ function generatedPoints(level: number, seed: number, fallback = false) {
   return points;
 }
 
-function sampleCurve(points: Vector3[], level: number): RoadSample[] {
+function sampleCurve(points: Vector3[], level: number, version: RoadVersion = 1): RoadSample[] {
   const curve = new CatmullRomCurve3(points, false, "centripetal");
   curve.arcLengthDivisions = 6000;
   const length = curve.getLength();
@@ -91,7 +110,7 @@ function sampleCurve(points: Vector3[], level: number): RoadSample[] {
     const right = new Vector3().crossVectors(tangent, UP).normalize().applyAxisAngle(tangent, bank);
     const normal = new Vector3().crossVectors(right, tangent).normalize();
     const distance = u * length;
-    const targetWidth = level === 1 ? 8.1 : Math.max(7.3, 9.5 - level * 0.24);
+    const targetWidth = level === 1 ? version === 1 ? 8.1 : 11.5 : Math.max(7.3, 9.5 - level * 0.24);
     const width = distance < 48 ? 10.6 : MathUtils.lerp(10.6, targetWidth, Math.min(1, (distance - 48) / 180));
     samples.push({ position: curve.getPointAt(u), tangent, right, normal, width, distance });
   }
@@ -129,23 +148,26 @@ export function roadCollider(samples: RoadSample[]): RoadChunk {
   indices.push(0, 2, 1, 1, 2, 3);
   const end = (samples.length - 1) * 4;
   indices.push(end, end+1, end+2, end+1, end+3, end+2);
-  return { first: 0, last: samples.length - 1, vertices: new Float32Array(vertices), indices: new Uint32Array(indices) };
+  return { first: 0, last: samples.length - 1, vertices: new Float32Array(vertices), indices: new Uint32Array(indices), origin: new Vector3() };
 }
 
 /** Level one stays familiar. Later levels are reproducible from their saved seed. */
-export function createRoadTrack(level = 1, seed = 0): RoadTrack {
+export function createRoadTrack(level = 1, seed = 0, version: RoadVersion = 1, distanceOffset = 0): RoadTrack {
   level = Math.max(1, Math.min(1000, Math.floor(level) || 1));
   seed >>>= 0;
-  let samples = sampleCurve(tutorialPoints(), 1);
+  let samples: RoadSample[] = [];
+  let variations: RoadVariation[] | undefined;
+  if (level === 1) samples = sampleCurve(tutorialPoints(version), 1, version);
   if (level > 1) {
     for (let attempt = 0; attempt < 14; attempt++) {
-      samples = sampleCurve(generatedPoints(level, seed + Math.imul(attempt, 0x9e3779b9), attempt >= 10), level);
+      samples = sampleCurve(generatedPoints(level, seed + Math.imul(attempt, 0x9e3779b9), attempt >= 10, version), level, version);
+      if (version >= 3) variations = varyStraightRoad(samples, seed, distanceOffset);
       if (hasRoadClearance(samples)) break;
       if (attempt === 13) throw new Error("Could not generate a road with safe crossings");
     }
   }
   const bounds = new Box3().setFromPoints(samples.map(s => s.position)).expandByScalar(6).getBoundingSphere(new Sphere());
-  return { samples, chunks: [roadCollider(samples)], length: samples.at(-1)!.distance, level, seed, bounds };
+  return { samples, chunks: [roadCollider(samples)], length: samples.at(-1)!.distance, level, seed, version, bounds, ...(variations ? { variations } : {}) };
 }
 
 export function nearestRoadSample(track: RoadTrack, position: Vector3, first = 0, last = track.samples.length - 1) {

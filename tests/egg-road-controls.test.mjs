@@ -50,7 +50,7 @@ test('gentle steering produces a smaller real correction and still allows rhythm
   assert.ok(soft > 0 && full > soft * 2, 'force changes the physical path, not just the indicator');
   const rhythm = new RollRhythm();
   for (const direction of [1,-1,1,-1]) for (let i = 0; i < 48; i++) rhythm.step(1/120, direction * .25, direction, 15, true);
-  assert.ok(rhythm.chain >= 3 && rhythm.charge > .6, 'normal light corrections remain eligible for rhythm');
+  assert.ok(rhythm.chain >= 3 && rhythm.speedBonus * 3.6 > 5, 'normal light corrections produce a real speed bonus');
 });
 
 test('a stationary touch ramps to the same physical turn as a held key while taps stay smaller', async () => {

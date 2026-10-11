@@ -1,0 +1,8 @@
+.portal-achievement-toast { position: fixed; z-index: 2147483646; right: max(18px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 15px; width: min(355px, calc(100vw - 36px)); padding: 16px; border: 1px solid #dfb85875; border-left: 3px solid #e7bd65; border-radius: 10px; background: linear-gradient(120deg, #34423b, #17232b 60%); color: #fff0cf; box-shadow: 0 10px 40px #0006; pointer-events: none; font: 13px/1.4 system-ui, sans-serif; animation: portal-achievement-in .3s ease-out; }
+.portal-achievement-toast small { display: block; color: #bdd0bd; font-size: 10px; margin-bottom: 5px; }
+.portal-achievement-toast strong { display: block; font-size: 14px; color: #f4dba0; }
+.portal-achievement-toast p { margin: 4px 0 0; font-size: 11px; color: #bdc7c6; }
+.portal-achievement-seal { display: grid; place-items: center; flex: 0 0 48px; height: 56px; border: 1px solid #dbc58c55; border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%; background: #d5af6015; font-size: 21px; color: #f0cf78; }
+@keyframes portal-achievement-in { from { transform: translateX(110%); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 600px) { .portal-achievement-toast { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 65px); padding: 12px; } }
+@media (prefers-reduced-motion: reduce) { .portal-achievement-toast { animation: none; } }

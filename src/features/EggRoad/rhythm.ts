@@ -8,6 +8,14 @@ export class RollRhythm {
   private rollingDistance = 0;
   private idle = 0;
   private quiet = 0;
+  private readonly version: number;
+  constructor(version = 3) { this.version = version; }
+
+  /** Both the growing series and its charge contribute from the first stroke.
+   * There is no separate starter boost or chain ceiling. */
+  get speedBonus() {
+    return this.version >= 3 ? this.charge * 8 * Math.log2(1 + this.chain / 8) : this.charge * 9;
+  }
 
   cue(nearRoad: boolean) {
     return {
@@ -22,16 +30,23 @@ export class RollRhythm {
     // Flight pauses the stroke, charge and chain. Inputs in the air earn nothing.
     if (!nearRoad) return false;
     this.quiet += dt;
-    if (this.quiet > 2.2) {
-      this.quiet -= 1.5;
-      this.chain = Math.max(0, this.chain - 1);
-      this.charge = Math.max(0, this.charge - 0.16);
+    const modern = this.version >= 3;
+    if (modern) {
+      // Keep a short correction gap, then lose the charge continuously.
+      if (this.quiet > .65) this.charge = Math.max(0, this.charge - dt * .7);
+      if (this.charge === 0) this.chain = 0;
+    } else {
+      if (this.quiet > 2.2) {
+        this.quiet -= 1.5;
+        this.chain = Math.max(0, this.chain - 1);
+        this.charge = Math.max(0, this.charge - 0.16);
+      }
+      this.charge = Math.max(0, this.charge - dt * 0.025);
     }
-    this.charge = Math.max(0, this.charge - dt * 0.025);
     const direction = Math.abs(input) > 0.1 ? Math.sign(input) : 0;
     if (!direction) {
       this.idle += dt;
-      if (this.idle > 1.1) this.direction = this.duration = this.rollingDistance = 0;
+      if (this.idle > (modern ? .6 : 1.1)) this.direction = this.duration = this.rollingDistance = 0;
       return false;
     }
     this.idle = 0;
@@ -39,10 +54,10 @@ export class RollRhythm {
     if (direction !== this.direction) {
       // A small real sideways movement is enough, including braking a drift.
       // There is no deadline, spin requirement or penalty for correcting early.
-      if (this.direction && this.duration >= 0.16 && this.rollingDistance >= 0.06 && forwardSpeed > 3) {
+      if (this.direction && this.duration >= (modern ? .12 : .16) && this.rollingDistance >= (modern ? .04 : .06) && forwardSpeed > 3) {
         this.chain++;
         this.strokes++;
-        this.charge = Math.min(1, this.charge + 0.25);
+        this.charge = Math.min(1, this.charge + (modern ? .18 : .25));
         this.quiet = 0;
         earned = true;
       }

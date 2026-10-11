@@ -39,8 +39,8 @@ export default function WorldNewsList({ news, lang }: WorldNewsListProps) {
     return (
       <p style={{ textAlign: "center", opacity: 0.6 }}>
         {lang === "ru"
-          ? "Новости не найдены или API ключ не настроен. Добавьте NEWS_API_KEY в .env для интеграции с NewsData.io."
-          : "No news found or API key not set. Add NEWS_API_KEY to .env for NewsData.io integration."}
+          ? "Свежие новости пока недоступны. Загляните позже — а пока можно почитать наши статьи."
+          : "Fresh news is currently unavailable. Check back later, or explore our articles in the meantime."}
       </p>
     );
   }

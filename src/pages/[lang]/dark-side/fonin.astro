@@ -16,8 +16,8 @@ const lang = getLangFromUrl(Astro.url);
 ---
 
 <Layout
-  title="Три дара Дмитрия Фонина | The Dark Side of the Egg"
-  description="Закрытая чайная кладка Яичной Культуры"
+  title={lang === "ru" ? "Три дара Дмитрия Фонина | The Dark Side of the Egg" : "Dmitry Fonin's Three Gifts | The Dark Side of the Egg"}
+  description={lang === "ru" ? "Закрытая чайная кладка Яичной Культуры" : "The sealed tea clutch of Egg Culture"}
   lang={lang}
   noindex
 >
@@ -34,20 +34,23 @@ const lang = getLangFromUrl(Astro.url);
 </Layout>
 
 <script>
+  import { runInitiationGate } from "../../../features/Portal/adept.ts";
   if (typeof window !== "undefined") {
-    const isAdept = localStorage.getItem("egg_adept");
-    if (isAdept !== "true") {
-      localStorage.setItem("egg_after_quiz", window.location.pathname);
+    runInitiationGate(isAdept => {
+    if (!isAdept) {
+      try { localStorage.setItem("egg_after_quiz", window.location.pathname); } catch { /* The quiz still opens. */ }
       window.location.href = window.location.pathname.replace(
         "/dark-side/fonin",
         "/quiz",
       );
     }
+    });
   }
 </script>
 
-<script type="module">
-  const canvas = document.getElementById("gift-canvas");
+<script>
+  import { animateDecoration } from '@shared/utils/decorativeAnimation';
+  const canvas = document.getElementById("gift-canvas") as HTMLCanvasElement | null;
   const context = canvas?.getContext("2d");
 
   if (canvas && context) {
@@ -60,25 +63,26 @@ const lang = getLangFromUrl(Astro.url);
     }));
 
     const resize = () => {
-      canvas.width = window.innerWidth * window.devicePixelRatio;
-      canvas.height = window.innerHeight * window.devicePixelRatio;
+      const ratio = Math.min(window.devicePixelRatio, 2);
+      canvas.width = window.innerWidth * ratio;
+      canvas.height = window.innerHeight * ratio;
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
       context.setTransform(
-        window.devicePixelRatio,
+        ratio,
         0,
         0,
-        window.devicePixelRatio,
+        ratio,
         0,
         0,
       );
     };
 
-    const draw = () => {
+    const draw = (delta = 0) => {
       context.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
       particles.forEach((particle) => {
-        particle.y -= particle.speed;
+        particle.y -= particle.speed * delta * 60;
         if (particle.y < -0.04) {
           particle.y = 1.04;
           particle.x = Math.random();
@@ -108,12 +112,13 @@ const lang = getLangFromUrl(Astro.url);
         context.fill();
       });
 
-      requestAnimationFrame(draw);
     };
 
     resize();
-    draw();
-    window.addEventListener("resize", resize);
+    const stop = animateDecoration(canvas, (_seconds, delta) => draw(delta));
+    const resizeAndDraw = () => { resize(); draw(); };
+    window.addEventListener("resize", resizeAndDraw);
+    document.addEventListener('astro:before-swap', () => { stop(); window.removeEventListener("resize", resizeAndDraw); }, { once: true });
   }
 </script>
 

@@ -1,0 +1,27 @@
+name: Validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: python3 -m unittest discover -s tests -p test_backup.py -v
+      - run: for script in backup/job.sh scripts/backup.sh scripts/restore.sh scripts/restic-maintenance.sh scripts/check-backup.sh tests/backup-smoke.sh; do bash -n "$script" || exit; done
+      - run: npm run check
+      - run: npm run check:games
+      - run: node --experimental-strip-types --test --test-concurrency=2 tests/*.test.mjs
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high

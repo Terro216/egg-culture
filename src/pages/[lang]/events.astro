@@ -2,6 +2,7 @@
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from '@app/layouts/Layout.astro';
 import { eventItems } from "../../data/content";
+import EventSubscription from "@features/EventSubscription/EventSubscription.astro";
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
@@ -29,7 +30,7 @@ const t = useTranslations(lang as Lang);
         eventItems.map((event) => (
           <div class="event-card">
             <div class="event-card-content">
-              <span class="event-date">{event.date}</span>
+              <span class="event-date">{event.date ?? (lang === "ru" ? "Дата будет объявлена" : "Date to be announced")}</span>
               <h2 class="event-title">{event.title[lang as "ru" | "en"]}</h2>
               <p class="event-location">
                 📍 {event.location[lang as "ru" | "en"]}
@@ -46,6 +47,8 @@ const t = useTranslations(lang as Lang);
       }
     </div>
 
+    <EventSubscription lang={lang as Lang} />
+
     <p class="text-center">
       <a href={`/${lang}/tasting-sheet`} class="btn-sm">
         {lang === "ru"
@@ -59,14 +62,14 @@ const t = useTranslations(lang as Lang);
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     padding-bottom: 2rem;
     margin: 0;
   }
 
   .events-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
     gap: 2rem;
   }
 
@@ -98,7 +101,7 @@ const t = useTranslations(lang as Lang);
     font-family: var(--font-sans-ui);
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding-bottom: 1rem;
@@ -141,6 +144,6 @@ const t = useTranslations(lang as Lang);
 
   .btn-sm:hover {
     background-color: var(--color-yolk);
-    color: var(--color-shell);
+    color: var(--color-text);
   }
 </style>

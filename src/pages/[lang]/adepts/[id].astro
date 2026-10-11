@@ -1,0 +1,21 @@
+---
+import Layout from "@app/layouts/Layout.astro";
+import ProfileCard from "@features/Portal/ProfileCard";
+import { roadRecordStore } from "../../../server/roadRecords.ts";
+export const prerender = false;
+const lang = Astro.params.lang === "en" ? "en" : "ru";
+let profile = null, unavailable = false;
+try { if (["ru", "en"].includes(Astro.params.lang ?? "")) profile = roadRecordStore().publicProfile(Astro.params.id ?? ""); }
+catch { unavailable = true; }
+if (!profile) Astro.response.status = unavailable ? 503 : 404;
+Astro.response.headers.set("Cache-Control", "no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+const title = profile?.name ?? (unavailable ? lang === "ru" ? "Профиль временно недоступен" : "Profile temporarily unavailable" : lang === "ru" ? "Профиль не найден" : "Profile not found");
+---
+<Layout title={`${title} | Egg Culture`} lang={lang} noindex>
+  <section class="container portal-public-page">
+    {profile ? <ProfileCard profile={profile} lang={lang} /> : <><h1>{title}</h1><p>{lang === "ru" ? "Профиль может быть закрыт владельцем. Личные данные недоступны." : "The owner may have made this profile private. Personal data is unavailable."}</p></>}
+    <a href={`/${lang}/profile/`}>{lang === "ru" ? "Мой профиль →" : "My profile →"}</a>
+  </section>
+</Layout>
+<style>.portal-public-page { max-width: 900px; padding-block: 36px 60px; }</style>

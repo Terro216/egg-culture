@@ -53,16 +53,16 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
       <h1 class="page-title">{t("blog.title")}</h1>
     </div>
 
-    <div class="tabs-container">
-      <button class="tab-btn active" data-target="local-news"
+    <div class="tabs-container" role="tablist" aria-label={lang === "ru" ? "Разделы блога" : "Blog sections"}>
+      <button class="tab-btn active" id="local-news-tab" role="tab" aria-selected="true" aria-controls="local-news" data-target="local-news"
         >{lang === "ru" ? "Локальные статьи" : "Local Articles"}</button
       >
-      <button class="tab-btn" data-target="world-news"
+      <button class="tab-btn" id="world-news-tab" role="tab" aria-selected="false" aria-controls="world-news" tabindex="-1" data-target="world-news"
         >{lang === "ru" ? "Мировые новости" : "World News"}</button
       >
     </div>
 
-    <div id="local-news" class="blog-section tab-content">
+    <div id="local-news" class="blog-section tab-content" role="tabpanel" aria-labelledby="local-news-tab" tabindex="0">
       <div class="blog-list flex-col gap-xl">
         {
           posts.map((post) => {
@@ -94,7 +94,10 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
     <div
       id="world-news"
       class="blog-section tab-content"
-      style="display: none;"
+      role="tabpanel"
+      aria-labelledby="world-news-tab"
+      tabindex="0"
+      hidden
     >
       <WorldNewsList client:load news={worldNews} lang={lang as "ru" | "en"} />
     </div>
@@ -104,7 +107,7 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
 <style is:global>
   .page-title {
     font-size: 3.5rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     padding-bottom: 2rem;
     margin: 0;
   }
@@ -141,7 +144,7 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
 
   .tab-btn.active {
     opacity: 1;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     border-bottom: 2px solid var(--color-yolk);
   }
 
@@ -172,7 +175,7 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
   }
 
   .blog-post-row:hover .post-title {
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
   }
 
   .post-image-wrapper {
@@ -235,7 +238,7 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     padding-top: 0.5rem;
   }
 
@@ -260,6 +263,10 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
   }
 
   @media (max-width: 768px) {
+    .tabs-container { gap: .5rem; margin-bottom: 2rem; }
+    .tab-btn { flex: 1; min-width: 0; font-size: clamp(1rem, 4.5vw, 1.4rem); padding: .75rem .3rem; overflow-wrap: anywhere; }
+    .post-content-wrapper { min-width: 0; }
+    .post-title { overflow-wrap: anywhere; }
     .blog-post-row {
       flex-direction: column;
       gap: 1.5rem;
@@ -281,26 +288,17 @@ const posts = (lang === "ru" ? ruPosts : (enPosts as any[])).sort(
 </style>
 
 <script>
-  const tabBtns = document.querySelectorAll(".tab-btn");
-  const tabContents = document.querySelectorAll(".tab-content");
-
-  tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      // Remove active classes
-      tabBtns.forEach((b) => b.classList.remove("active"));
-      tabContents.forEach((c) => ((c as HTMLElement).style.display = "none"));
-
-      // Add active class to clicked button
-      btn.classList.add("active");
-
-      // Show corresponding content
-      const targetId = btn.getAttribute("data-target");
-      if (targetId) {
-        const targetContent = document.getElementById(targetId);
-        if (targetContent) {
-          targetContent.style.display = "block";
-        }
-      }
+  const tabBtns = [...document.querySelectorAll<HTMLButtonElement>(".tab-btn")];
+  const tabContents = document.querySelectorAll<HTMLElement>(".tab-content");
+  const selectTab = (button: HTMLButtonElement) => {
+    for (const tab of tabBtns) { const selected = tab === button; tab.classList.toggle("active", selected); tab.setAttribute("aria-selected", String(selected)); tab.tabIndex = selected ? 0 : -1; }
+    for (const panel of tabContents) panel.hidden = panel.id !== button.dataset.target;
+  };
+  tabBtns.forEach((button, index) => {
+    button.addEventListener("click", () => selectTab(button));
+    button.addEventListener("keydown", event => {
+      const next = event.key === "Home" ? 0 : event.key === "End" ? tabBtns.length - 1 : event.key === "ArrowRight" ? (index + 1) % tabBtns.length : event.key === "ArrowLeft" ? (index + tabBtns.length - 1) % tabBtns.length : -1;
+      if (next >= 0) { event.preventDefault(); selectTab(tabBtns[next]); tabBtns[next].focus(); }
     });
   });
 </script>

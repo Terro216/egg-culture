@@ -32,6 +32,8 @@ const t = useTranslations(lang as Lang);
               <img
                 src={item.image}
                 alt={item.title[lang as "ru" | "en"]}
+                width="1024"
+                height="1024"
                 loading="lazy"
               />
             </div>
@@ -51,20 +53,22 @@ const t = useTranslations(lang as Lang);
 <style>
   .page-title {
     font-size: 3.5rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     padding-bottom: 2rem;
     margin: 0;
   }
 
   .shop-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     gap: 3rem;
   }
 
   .shop-card {
     display: flex;
     flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
     text-decoration: none;
     color: inherit;
     transition:
@@ -73,32 +77,33 @@ const t = useTranslations(lang as Lang);
   }
 
   .shop-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-4px);
     opacity: 0.9;
+  }
+
+  .shop-card:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 6px;
   }
 
   .shop-image-wrapper {
     width: 100%;
-    height: 400px; /* Adjust height as needed */
-    overflow: hidden;
-    padding-bottom: 1.5rem;
+    aspect-ratio: 1;
     border: 1px solid rgba(43, 43, 43, 0.1);
     background-color: rgba(0, 0, 0, 0.05);
   }
 
   .shop-image-wrapper img {
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     filter: grayscale(0.1) brightness(0.9);
-    transition:
-      filter 0.5s ease,
-      transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: filter 0.5s ease;
   }
 
   .shop-card:hover .shop-image-wrapper img {
     filter: grayscale(0) brightness(1);
-    transform: scale(1.03);
   }
 
   .shop-info {
@@ -108,9 +113,10 @@ const t = useTranslations(lang as Lang);
   .shop-title {
     font-family: var(--font-serif-headers);
     font-size: 2.2rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
     margin: 0;
     line-height: 1.2;
+    overflow-wrap: anywhere;
   }
 
   .shop-subtitle {
@@ -121,14 +127,20 @@ const t = useTranslations(lang as Lang);
 
   @media (max-width: 768px) {
     .shop-gallery {
-      grid-template-columns: 1fr;
       gap: 2rem;
-    }
-    .shop-image-wrapper {
-      height: 300px;
     }
     .shop-title {
       font-size: 1.8rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shop-card,
+    .shop-image-wrapper img {
+      transition: none;
+    }
+    .shop-card:hover {
+      transform: none;
     }
   }
 </style>

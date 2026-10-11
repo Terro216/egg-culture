@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { createFoninGiftToken } from "@shared/utils/foninGiftToken";
+import { allowRequestAttempt, readJsonObject, RequestBodyError } from "../../server/requestBody.ts";
+import { createFoninGiftToken } from "../../shared/utils/foninGiftToken.ts";
 
 export const prerender = false;
 
@@ -14,11 +15,11 @@ type GiftSecret = {
 // а .env в Docker-образ не попадает (секреты приходят через env_file в рантайме).
 const accessWord =
   process.env.FONIN_ACCESS_WORD ??
-  import.meta.env.FONIN_ACCESS_WORD ??
+  import.meta.env?.FONIN_ACCESS_WORD ??
   "Яй Ци";
 const tokenSecret =
   process.env.FONIN_GIFT_TOKEN_SECRET ??
-  import.meta.env.FONIN_GIFT_TOKEN_SECRET ??
+  import.meta.env?.FONIN_GIFT_TOKEN_SECRET ??
   accessWord;
 
 const giftSecrets: Record<string, GiftSecret> = {
@@ -57,7 +58,9 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || clientAddress;
+  if (!allowRequestAttempt(`fonin:${ip}`, 30, 15 * 60000)) return json({ error: "rate_limit", message: "Подождите перед следующей попыткой." }, 429);
   let body: {
     giftId?: unknown;
     accessWord?: unknown;
@@ -65,9 +68,9 @@ export const POST: APIRoute = async ({ request }) => {
   };
 
   try {
-    body = await request.json();
-  } catch {
-    return json({ message: "Хранилище не распознало запрос." }, 400);
+    body = await readJsonObject(request);
+  } catch (error) {
+    return json({ error: error instanceof RequestBodyError ? error.code : "invalid_body", message: "Хранилище не распознало запрос." }, error instanceof RequestBodyError ? error.status : 400);
   }
 
   if (typeof body.giftId !== "string" || typeof body.accessWord !== "string") {
@@ -78,7 +81,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ message: "Код Основателя не принят." }, 403);
   }
 
-  const gift = giftSecrets[body.giftId];
+  const gift = Object.hasOwn(giftSecrets, body.giftId) ? giftSecrets[body.giftId] : null;
 
   if (!gift) {
     return json({ message: "Такого дара нет в кладке." }, 404);
@@ -88,7 +91,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ message: "Печати нужно раскрывать по порядку." }, 409);
   }
 
-  if (typeof body.ritual.score !== "number" || body.ritual.score < 75) {
+  if (typeof body.ritual.score !== "number" || !Number.isFinite(body.ritual.score) || body.ritual.score < 75 || body.ritual.score > 100) {
     return json({ message: "Пролив получился недостаточно собранным." }, 422);
   }
 

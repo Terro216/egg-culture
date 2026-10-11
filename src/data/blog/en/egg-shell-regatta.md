@@ -20,11 +20,11 @@ The shell is formed as firmly as a participant’s frontal cortex. Both are expe
 
 ![Shell boats before the regatta](/egg-shell-workshop.png)
 
-## Inside the Dome
+## Inside the Shell
 
-At the table, the [Dome](/en/guide#dome) separates the egg’s contents from the outside world. On water, its function changes direction: the environment remains outside, while the person is held within.
+At the table, the shell separates the egg’s contents from the outside world. On water, it retains its post: the environment remains outside, while the person is held within.
 
-The shell’s cavity should not be mistaken for the [Void](/en/guide#void). The Void begins where a form can no longer hold anything. A shell boat holds a participant, a paddle, and a chosen course.
+A shell boat holds a participant, a paddle, and a chosen course.
 
 That is already a sufficiently dense content.
 

@@ -1,0 +1,58 @@
+.portal-profile, .portal-card { max-width: 840px; margin-inline: auto; }
+.portal-profile { font: 15px/1.7 var(--font-sans-ui, system-ui, sans-serif); }
+.portal-profile .egg-road-account, .portal-settings, .portal-card { margin-block: 24px; padding: clamp(18px, 4vw, 30px); border: 1px solid #ad8a5045; border-radius: 20px; background: #d8bd7510; }
+.portal-profile summary { cursor: pointer; font-weight: 700; }
+.portal-profile .egg-road-account-form { display: grid; gap: 10px; max-width: 450px; margin-top: 18px; }
+.portal-profile input:not([type="checkbox"]) { display: block; width: 100%; min-height: 44px; padding: 10px; color: inherit; background: #b79c4f0d; border: 1px solid #9d86565e; border-radius: 8px; font: inherit; }
+.portal-profile button { min-height: 40px; border: 1px solid #b39a6460; border-radius: 8px; background: #b7a1731c; color: inherit; padding: 8px 14px; font: inherit; cursor: pointer; }
+.portal-profile button:disabled { opacity: .55; cursor: wait; }
+.portal-profile button[aria-pressed="true"], .portal-profile .portal-button, .portal-profile .egg-road-account-submit { background: #e7bd65; color: #302515; }
+.portal-profile .egg-road-account-actions, .portal-avatars, .portal-share, .portal-links { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.portal-profile h2 { font: 600 clamp(23px, 5vw, 34px)/1.2 var(--font-serif-headers, Georgia, serif); }
+.portal-settings fieldset { border: 0; padding: 0; margin: 18px 0; }
+.portal-settings legend { margin-bottom: 8px; }
+.portal-avatars button { font-size: 25px; width: 48px; padding: 6px; }
+.portal-public-toggle { display: flex; gap: 12px; align-items: center; margin: 24px 0 16px; cursor: pointer; }
+.portal-public-toggle input { width: 20px; height: 20px; }
+.portal-note { font: 13px/1.7 var(--font-sans-ui, system-ui, sans-serif); opacity: .75; }
+.portal-guest-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.portal-guest-grid article { min-width: 0; }
+.portal-guest-grid h3 { font-size: 18px; margin: 12px 0; }
+.portal-guest-grid a, .portal-guest-grid button { display: inline-block; overflow-wrap: anywhere; }
+.portal-guest-stats { font-weight: 600; }
+.portal-identity { display: flex; align-items: center; gap: 22px; }
+.portal-identity > span { width: 80px; height: 92px; display: grid; place-items: center; flex-shrink: 0; font-size: 44px; border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%; background: #dbc2822c; border: 1px solid #ae8a5044; }
+.portal-identity p { margin: 0 0 5px; font: 11px/1.4 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .12em; opacity: .65; }
+.portal-identity h2 { margin: 0; overflow-wrap: anywhere; }
+.portal-game-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 30px 0; }
+.portal-game-stats article { border: 1px solid #b79f6744; padding: 15px; border-radius: 12px; }
+.portal-game-stats article:last-child:nth-child(5) { grid-column: 1 / -1; }
+.portal-game-stats h3 { font: 12px/1.5 system-ui, sans-serif; min-height: 36px; margin: 0 0 14px; }
+.portal-game-stats strong { display: block; font: 700 clamp(23px, 5vw, 34px)/1.2 system-ui, sans-serif; overflow-wrap: anywhere; }
+.portal-game-stats small { display: block; margin-top: 5px; font: 11px/1.4 system-ui, sans-serif; opacity: .7; }
+.portal-achievement-heading { font-size: 20px; }
+.portal-achievement-heading > span { margin-left: 12px; font: 12px/1.4 system-ui, sans-serif; opacity: .6; }
+.portal-badges { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.portal-badges article { display: flex; align-items: center; gap: 12px; border: 1px solid #c3a96e44; padding: 13px; border-radius: 10px; }
+.portal-badges article > span { flex: 0 0 40px; font-size: 22px; text-align: center; }
+.portal-badges strong { font: 600 13px/1.4 system-ui, sans-serif; }
+.portal-badges p { margin: 5px 0; font: 11px/1.5 system-ui, sans-serif; }
+.portal-badges small { font: 10px/1.4 system-ui, sans-serif; opacity: .7; }
+.portal-badges .is-earned { border-color: #bc8e3a88; background: #dec28116; }
+.portal-badges .is-locked { opacity: .5; }
+.portal-links { justify-content: center; margin: 30px 0; gap: 20px; }
+.portal-share { margin-top: 20px; }
+.portal-slug { margin-top: 24px; display: grid; gap: 8px; }
+.portal-slug-entry { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.portal-slug-entry input { flex: 1 1 130px; max-width: 240px; }
+.portal-slug-entry span { overflow-wrap: anywhere; }
+.portal-tabs { display: flex; gap: 8px; border-bottom: 1px solid #ad8a5045; margin-top: 24px; }
+.portal-profile .portal-tabs button { border-radius: 10px 10px 0 0; border-bottom: 0; }
+.portal-tabs button[aria-current="page"] { background: #e7bd65; color: #302515; }
+.portal-certificate { margin-block: 24px; text-align: center; }
+.portal-certificate:has(.adept-cert) { --color-yolk-text: var(--color-yolk); padding: clamp(20px, 4vw, 40px); border-radius: 18px; background: #1d1112; color: #e0d5d5; }
+.portal-certificate-empty { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; aspect-ratio: 1.42; min-height: 270px; padding: 24px; border: 2px dashed #888; border-radius: 12px; background: #aaa3; color: inherit; text-decoration: none; }
+.portal-certificate-empty span { font: 600 clamp(24px, 5vw, 42px)/1.2 var(--font-serif-headers, Georgia, serif); }
+.portal-certificate-empty small { font-size: 14px; opacity: .75; }
+.portal-certificate-empty:hover, .portal-certificate-empty:focus-visible { border-color: #b18e4f; background: #ad8a5030; }
+@media (max-width: 650px) { .portal-game-stats { grid-template-columns: 1fr 1fr; } .portal-badges, .portal-guest-grid { grid-template-columns: 1fr; } }

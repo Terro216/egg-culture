@@ -78,6 +78,25 @@ test('no landing promise appears for empty space, road undersides or an exhauste
   } finally {sim.dispose();}
 });
 
+test('the landing estimate remains bounded with realistic egg spin', () => {
+  for (const spin of [8, 18, 30]) {
+    const sim = new RoadSimulation(straightRoad());
+    try {
+      sim.start(); advance(sim, .3);
+      sim.body.setTranslation({ x: 0, y: 9, z: -60 }, true);
+      sim.body.setLinvel({ x: .5, y: -10, z: -5 }, true);
+      sim.body.setAngvel({ x: spin, y: spin * .1, z: 0 }, true); sim.step(0);
+      const predicted = predictLanding(sim); assert.ok(predicted);
+      const start = sim.seconds;
+      while (sim.phase === 'running' && !sim.grounded && sim.seconds - start < 2) sim.step(0);
+      assert.ok(sim.grounded);
+      assert.ok(Math.abs(sim.seconds - start - predicted.seconds) < .16);
+      assert.ok(Math.hypot(sim.position.x - predicted.position.x, sim.position.z - predicted.position.z) < 1.8);
+      assert.ok(predicted.uncertainty >= .25 && predicted.uncertainty <= 1.8);
+    } finally { sim.dispose(); }
+  }
+});
+
 test('the optional guide excludes ordinary hops and only appears on a sustained high descent', () => {
   for (const height of [5, 7.5, 16]) {
     const sim=new RoadSimulation(straightRoad());

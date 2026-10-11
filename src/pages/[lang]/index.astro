@@ -29,7 +29,9 @@ const t = useTranslations(lang as Lang);
           <span aria-hidden="true">·</span>
           <a href={`/${lang}/tools#oracle`}>{t("home.askOracle")} →</a>
         </div>
-        <a href={`/${lang}/play/`} class="hero-play">{t("home.playRoad")} →</a>
+        <div class="hero-games">
+          <a href={`/${lang}/games/`} class="hero-play">{t("home.playGames")} →</a>
+        </div>
       </div>
     </div>
   </div>
@@ -52,7 +54,7 @@ const t = useTranslations(lang as Lang);
 
   h1 {
     font-size: 4rem;
-    color: var(--color-yolk);
+    color: var(--color-yolk-text);
   }
 
   p {
@@ -86,8 +88,9 @@ const t = useTranslations(lang as Lang);
     opacity: 0.45;
   }
 
+  .hero-games { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .75rem; margin-top: .25rem; }
+
   .hero-play {
-    margin-top: .25rem;
     padding: .8rem 1.3rem;
     border: 1px solid var(--color-yolk);
     border-radius: 3px 16px 3px 16px;

@@ -1,6 +1,9 @@
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        DOMAIN: ${DOMAIN:-ilyamedve.dev}
     restart: unless-stopped
     env_file: .env
     volumes:
@@ -25,6 +28,43 @@ services:
       retries: 3
       start_period: 60s
     stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backup:
+    profiles: ["backup"]
+    build:
+      context: ./backup
+    image: egg-culture-backup:restic-0.19.1-rclone-1.74.4
+    env_file:
+      - path: .env.backup
+        required: false
+        format: raw
+    volumes:
+      - kladka_data:/sources/kladka:ro
+      - type: bind
+        source: /srv/egg-culture-backup
+        target: /backup
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /etc/egg-culture/rclone
+        target: /config/rclone
+        bind:
+          create_host_path: false
+    network_mode: bridge
+    read_only: true
+    tmpfs:
+      - /tmp:mode=0700,size=128m
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 384M
+    cpus: 1.0
+    pids_limit: 128
     logging:
       driver: json-file
       options:

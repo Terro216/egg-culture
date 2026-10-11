@@ -1,4 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { usePortal } from "../Portal/PortalPresence.tsx";
+import { portalState, portalIdentityReady, refreshPortal } from "../Portal/client.ts";
+import { advanceIncubator, incubatorDay as dayKey, incubatorMode, daysBetween } from "./rules.ts";
+import type { IncubatorState } from "./rules.ts";
+import { readGuestIncubator, saveGuestIncubator, clearGuestIncubator } from "./guest.ts";
+import { announceAchievements } from "../Portal/local.ts";
+import { isAchievement } from "../Portal/model.ts";
 
 // Инкубатор: тамагочи Яичной Культуры. Яйцо не вылупляется — оно созревает.
 // Ежедневный ритуал прогрева (удержание ладони), стрики, ранги,
@@ -8,51 +15,7 @@ interface IncubatorProps {
   lang: "ru" | "en";
 }
 
-interface IncubatorState {
-  startedAt: string; // день закладки, YYYY-MM-DD (локально)
-  lastWarm: string; // последний день прогрева
-  streak: number;
-  qi: number; // накопленное Яй Ци текущего яйца
-  burns: number; // перенесенные холодильные ожоги
-  totalWarmed: number; // прогревов за всё время, включая прошлые яйца
-}
-
-const STORAGE_KEY = "egg_incubator_v1";
 const HOLD_MS = 2600;
-const VOID_AFTER_DAYS = 7; // столько дней забвения поглощают яйцо
-
-function dayKey(d = new Date()) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dd}`;
-}
-
-// Обе даты — локальные YYYY-MM-DD; Date.parse трактует их как UTC-полночь,
-// поэтому разница всегда кратна целым суткам.
-function daysBetween(a: string, b: string) {
-  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
-}
-
-function loadState(): IncubatorState | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (typeof parsed?.startedAt !== "string") return null;
-    return parsed as IncubatorState;
-  } catch {
-    return null;
-  }
-}
-
-function saveState(state: IncubatorState) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // приватный режим — яйцо живет одну сессию
-  }
-}
 
 const RANKS = [
   { minStreak: 30, ru: "Иерофант Яй Ци", en: "Hierophant of Egg Qi" },
@@ -167,85 +130,113 @@ function speckle(i: number) {
 }
 
 type Mode = "loading" | "lay" | "ready" | "warmedToday" | "burned" | "void";
+type ServerResult = { state: IncubatorState | null; today: string; mode: Mode; missedDays: number; unlocked?: string[] };
+
+async function incubatorRequest(owner: string, signal: AbortSignal, action?: "lay" | "warm" | "import", state?: IncubatorState): Promise<ServerResult> {
+  const response = await fetch(`/api/incubator?expectedName=${encodeURIComponent(owner)}`, action
+    ? { method: "POST", signal, credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, state, expectedName: owner }) }
+    : { signal, credentials: "same-origin", cache: "no-store" });
+  if (!response.ok) throw new Error(response.status === 409 ? "account_changed" : "incubator_unavailable");
+  return response.json();
+}
 
 export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
   const s = STRINGS[lang];
+  const portal = usePortal();
   const [state, setState] = useState<IncubatorState | null>(null);
   const [mode, setMode] = useState<Mode>("loading");
+  const [today, setToday] = useState(dayKey());
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
   const [missedDays, setMissedDays] = useState(0);
   const [holdProgress, setHoldProgress] = useState(0);
   const [justWarmed, setJustWarmed] = useState(false);
   const holdRaf = useRef<number | null>(null);
   const holdStart = useRef(0);
+  const revision = useRef(0);
+  const displayedOwner = useRef<string | null | undefined>(undefined);
+  const inFlight = useRef(false);
+  const [refresh, setRefresh] = useState(0);
+  const owner = portal.account?.registered ? portal.account.name : null;
+  const currentOwner = () => !portalIdentityReady() ? undefined : portalState().account?.registered ? portalState().account!.name : null;
 
   useEffect(() => {
-    const st = loadState();
-    if (!st) {
-      setMode("lay");
-      return;
-    }
-    setState(st);
-    const today = dayKey();
-    if (st.lastWarm === today) {
-      setMode("warmedToday");
-      return;
-    }
-    const missed = daysBetween(st.lastWarm, today) - 1;
-    if (missed >= VOID_AFTER_DAYS) {
-      setMode("void");
-      setMissedDays(missed);
-    } else if (missed >= 1) {
-      setMode("burned");
-      setMissedDays(missed);
+    const update = () => { if (!document.hidden && !inFlight.current && holdRaf.current === null) setRefresh(value => value + 1); };
+    const timer = window.setInterval(update, 60000);
+    // Calendar boundaries are shared by every device, irrespective of its timezone.
+    const midnight = window.setTimeout(update, 86400000 - (Date.now() + 3 * 3600000) % 86400000 + 50);
+    window.addEventListener("focus", update);
+    window.addEventListener("online", update);
+    document.addEventListener("visibilitychange", update);
+    return () => { clearInterval(timer); clearTimeout(midnight); window.removeEventListener("focus", update); window.removeEventListener("online", update); document.removeEventListener("visibilitychange", update); };
+  }, [today]);
+
+  useEffect(() => {
+    if (!portal.account && !portal.failed) return;
+    const version = ++revision.current;
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), 10000);
+    const valid = () => version === revision.current && !abort.signal.aborted && currentOwner() === owner;
+    cancelHold(); setPending(false); inFlight.current = false; setJustWarmed(false);
+    setError("");
+    if (owner) {
+      if (displayedOwner.current !== owner) { setMode("loading"); setState(null); }
+      setPending(true); inFlight.current = true;
+      void (async () => {
+        try {
+          let result = await incubatorRequest(owner, abort.signal);
+          if (!valid()) return;
+          const legacy = readGuestIncubator().state;
+          const importing = !result.state && Boolean(legacy);
+          if (importing) result = await incubatorRequest(owner, abort.signal, "import", legacy!);
+          if (!valid()) return;
+          applyServer(result, owner, false);
+          if (importing && result.state) clearGuestIncubator();
+        } catch { if (version === revision.current && currentOwner() === owner) setError(lang === "ru" ? "Не удалось загрузить Инкубатор. Повторите синхронизацию." : "Could not load the Incubator. Retry sync."); }
+        finally { clearTimeout(timer); if (version === revision.current) { setPending(false); inFlight.current = false; } }
+      })();
+    } else if (portal.failed) {
+      setMode("loading"); setState(null);
+      setError(lang === "ru" ? "Не удалось проверить профиль. Повторите синхронизацию." : "Could not check your account. Retry sync.");
     } else {
-      setMode("ready");
+      displayedOwner.current = null;
+      const day = dayKey(), st = readGuestIncubator(day).state, status = incubatorMode(st, day);
+      setState(st); setToday(day); setMode(status.mode); setMissedDays(status.missedDays);
     }
-  }, []);
+    return () => { ++revision.current; abort.abort(); clearTimeout(timer); cancelHold(); };
+  }, [owner, portal.account?.registered, portal.failed, lang, refresh]);
+
+  const applyServer = (result: ServerResult, account: string, warmed: boolean) => {
+    displayedOwner.current = account;
+    setState(result.state); setMode(result.mode); setMissedDays(result.missedDays); setToday(result.today); setError(""); setJustWarmed(warmed);
+    if (result.unlocked?.length) { announceAchievements(result.unlocked.filter(isAchievement), account.normalize("NFKC").toLowerCase()); void refreshPortal(); }
+  };
+  const perform = async (action: "lay" | "warm") => {
+    if (inFlight.current || currentOwner() !== owner || !portal.account || portal.failed) return;
+    cancelHold();
+    if (owner) {
+      const version = revision.current;
+      inFlight.current = true; setPending(true); setError("");
+      const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 10000);
+      try {
+        const result = await incubatorRequest(owner, abort.signal, action);
+        if (version === revision.current && currentOwner() === owner) applyServer(result, owner, true);
+      } catch { if (version === revision.current && currentOwner() === owner) setError(lang === "ru" ? "Тепло не записалось. Попробуйте ещё раз." : "Warmth was not saved. Please try again."); }
+      finally { clearTimeout(timer); if (version === revision.current) { inFlight.current = false; setPending(false); } }
+    } else {
+      const day = dayKey(), next = advanceIncubator(state, action, day);
+      if (!next) return;
+      saveGuestIncubator(next); setState(next); setToday(day); setMode("warmedToday"); setJustWarmed(true);
+    }
+  };
 
   const meditation = useMemo(() => {
-    const idx = daysBetween("2026-01-01", dayKey()) % MEDITATIONS[lang].length;
+    const idx = daysBetween("2026-01-01", today) % MEDITATIONS[lang].length;
     return MEDITATIONS[lang][(idx + MEDITATIONS[lang].length) % MEDITATIONS[lang].length];
-  }, [lang]);
+  }, [lang, today]);
 
-  const layEgg = () => {
-    const today = dayKey();
-    const fresh: IncubatorState = {
-      startedAt: today,
-      lastWarm: today,
-      streak: 1,
-      qi: 1,
-      burns: 0,
-      totalWarmed: (state?.totalWarmed ?? 0) + 1,
-    };
-    saveState(fresh);
-    setState(fresh);
-    setMode("warmedToday");
-    setJustWarmed(true);
-    (window as any).plausible?.("Incubator Lay");
-  };
-
-  const completeWarm = () => {
-    if (!state) return;
-    const today = dayKey();
-    const isBurn = mode === "burned";
-    const next: IncubatorState = {
-      ...state,
-      lastWarm: today,
-      // Ожог: серия начинается заново, холод съедает по 2 Ци за день пропуска.
-      streak: isBurn ? 1 : state.streak + 1,
-      qi: Math.max(1, (isBurn ? state.qi - missedDays * 2 : state.qi) + 1),
-      burns: state.burns + (isBurn ? 1 : 0),
-      totalWarmed: state.totalWarmed + 1,
-    };
-    saveState(next);
-    setState(next);
-    setMode("warmedToday");
-    setJustWarmed(true);
-    if (typeof navigator !== "undefined") navigator.vibrate?.(120);
-    (window as any).plausible?.("Incubator Warm", {
-      props: { streak: String(next.streak) },
-    });
-  };
+  const layEgg = () => { void perform("lay"); };
+  const completeWarm = () => { if (state) void perform("warm"); };
 
   const cancelHold = () => {
     if (holdRaf.current) {
@@ -256,6 +247,7 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
   };
 
   const beginHold = () => {
+    if (inFlight.current || holdRaf.current !== null || currentOwner() !== owner) return;
     holdStart.current = performance.now();
     const tick = (now: number) => {
       const p = Math.min(1, (now - holdStart.current) / HOLD_MS);
@@ -271,10 +263,14 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
     holdRaf.current = requestAnimationFrame(tick);
   };
 
-  useEffect(() => cancelHold, []);
+  useEffect(() => {
+    const hidden = () => { if (document.hidden) cancelHold(); };
+    document.addEventListener("visibilitychange", hidden);
+    return () => { document.removeEventListener("visibilitychange", hidden); cancelHold(); };
+  }, []);
 
   const qi = state?.qi ?? 0;
-  const agingDays = state ? daysBetween(state.startedAt, dayKey()) + 1 : 0;
+  const agingDays = state ? daysBetween(state.startedAt, today) + 1 : 0;
   const glow = Math.min(1, qi / 30);
   const speckleCount = qi >= 3 ? Math.min(24, qi) : 0;
   const showAura = (state?.streak ?? 0) >= 14 || qi >= 21;
@@ -336,7 +332,7 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
           font-family: var(--font-serif-headers, serif);
           font-size: 1.5rem;
           font-weight: 600;
-          color: var(--color-yolk, #d4af37);
+          color: var(--color-yolk-text, #80600f);
           letter-spacing: normal;
           text-transform: none;
         }
@@ -376,7 +372,10 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
         }
       `}</style>
 
-      {mode === "lay" || mode === "void" ? (
+      <p className="incubator-note">{owner ? (lang === "ru" ? `Яйцо связано с профилем ${owner} и доступно на всех ваших устройствах. Новый день начинается в 00:00 по Москве.` : `Your egg belongs to ${owner} and is available on all your devices. A new day starts at 00:00 Moscow time.`) : (lang === "ru" ? "Гостевое яйцо хранится в этом браузере. Войдите в профиль, чтобы перенести его в облако." : "Your guest egg is stored in this browser. Sign in to move it to the cloud.")}</p>
+      <a href={`/${lang}/profile/`}>{lang === "ru" ? (owner ? "Открыть профиль" : "Войти в профиль") : (owner ? "Open profile" : "Sign in")}</a>
+      {error && <p role="alert" className="incubator-note">{error} <button type="button" onClick={() => { void refreshPortal(); setRefresh(n => n + 1); }}>{lang === "ru" ? "Повторить" : "Retry"}</button></p>}
+      {mode === "loading" ? <p role="status">{lang === "ru" ? "Открываем Инкубатор…" : "Opening the Incubator…"}</p> : mode === "lay" || mode === "void" ? (
         <>
           {isVoid && (
             <div className="incubator-void">
@@ -391,7 +390,7 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
             </div>
           )}
           <EggSvg qi={0} glow={0} speckleCount={0} aura={false} frosted={isVoid} empty />
-          <button className="btn" onClick={layEgg}>
+          <button className="btn" onClick={layEgg} disabled={pending}>
             {s.layBtn}
           </button>
         </>
@@ -419,11 +418,16 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
           {canHold && (
             <button
               className="btn incubator-hold-btn"
+              disabled={pending}
               onPointerDown={(e) => {
                 e.preventDefault();
-                (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+                e.currentTarget.setPointerCapture?.(e.pointerId);
                 beginHold();
               }}
+              onKeyDown={e => { if ((e.code === "Space" || e.code === "Enter") && !e.repeat) { e.preventDefault(); beginHold(); } }}
+              onKeyUp={e => { if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); cancelHold(); } }}
+              onBlur={cancelHold}
+              aria-label={`${mode === "burned" ? s.rewarmBtn : s.warmBtn}. ${lang === "ru" ? "Удерживайте кнопку или пробел 3 секунды" : "Hold the button or Space for 3 seconds"}`}
               onPointerUp={cancelHold}
               onPointerCancel={cancelHold}
               onPointerLeave={cancelHold}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Egg Culture offsite backup
+
+[Timer]
+OnCalendar=*-*-* 06:35:00 Europe/Moscow
+RandomizedDelaySec=10min
+Persistent=true
+Unit=egg-culture-backup.service
+
+[Install]
+WantedBy=timers.target

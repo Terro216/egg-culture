@@ -9,18 +9,8 @@ export type ShopItem = {
   title: TranslationString;
   shortDescription: TranslationString;
   description: TranslationString;
+  specifications: { label: TranslationString; value: TranslationString }[];
   price: string;
-  image: string;
-  detailedImage?: string;
-};
-
-export type BlogPost = {
-  id: string;
-  slug: string;
-  title: TranslationString;
-  excerpt: TranslationString;
-  content: TranslationString;
-  date: string;
   image: string;
   detailedImage?: string;
 };
@@ -29,7 +19,7 @@ export type EventItem = {
   id: string;
   slug: string;
   title: TranslationString;
-  date: string;
+  date: string | null;
   location: TranslationString;
   shortDescription: TranslationString;
   description: TranslationString;
@@ -46,13 +36,18 @@ export const shopItems: ShopItem[] = [
       en: "Silence",
     },
     shortDescription: {
-      ru: "Подставка из темного шамота",
-      en: "Dark chamotte egg cup",
+      ru: "Тёмный шамот. У яйца приём.",
+      en: "Dark chamotte. The egg will see you now.",
     },
     description: {
-      ru: "Объект, созданный в соавторстве с тишиной. Темная, грубая текстура глины подчеркивает хрупкое совершенство белой скорлупы. Каждый экземпляр уникален.",
-      en: "An object co-authored with silence. The dark, coarse texture of the clay emphasizes the fragile perfection of the white shell. Each piece is unique.",
+      ru: "Подставка из тёмного шамота для яйца, которому есть что не сказать. Шероховатая глина подчёркивает гладкость скорлупы; каждый экземпляр уникален. Положите телефон экраном вниз. У яйца приём.",
+      en: "A dark chamotte egg cup for an egg with something to leave unsaid. Rough clay sets off the smooth shell; each piece is unique. Place your phone face down. The egg will see you now.",
     },
+    specifications: [
+      { label: { ru: "Материал", en: "Material" }, value: { ru: "Тёмный шамот", en: "Dark chamotte" } },
+      { label: { ru: "Вместимость", en: "Capacity" }, value: { ru: "Одно яйцо, без сопровождающих", en: "One egg, unaccompanied" } },
+      { label: { ru: "Режим приёма", en: "Consultation mode" }, value: { ru: "В тишине", en: "In silence" } },
+    ],
     price: "4 500 ₽",
     // PROMPT: Minimalist product photography of a dark grey chamotte clay egg cup on a smooth dark background, soft side lighting, wabi-sabi aesthetic
     image: "/egg-cup-silence.webp",
@@ -65,13 +60,18 @@ export const shopItems: ShopItem[] = [
       en: "L'Essence",
     },
     shortDescription: {
-      ru: "Перламутровая лопатка",
-      en: "Mother-of-pearl spoon",
+      ru: "Перламутр для переговоров с желтком.",
+      en: "Mother-of-pearl for delicate yolk negotiations.",
     },
     description: {
-      ru: "Инструмент для чистой встречи. Натуральный перламутр химически инертен: он не вступает в реакцию с серой желтка, сохраняя органолептический профиль нетронутым.",
-      en: "A tool for a pure encounter. Natural mother-of-pearl is chemically inert: it does not react with the yolk's sulfur, keeping the organoleptic profile intact.",
+      ru: "Лопатка из натурального перламутра для первого контакта с желтком. Подводится плавно, без суеты и разговоров о калориях. Обычная чайная ложка к переговорам не допущена: на прошлом заседании она звенела.",
+      en: "A natural mother-of-pearl spoon for first contact with the yolk. Approach slowly, without fuss or discussion of calories. The ordinary teaspoon has been excluded from negotiations: it clinked at the last meeting.",
     },
+    specifications: [
+      { label: { ru: "Материал", en: "Material" }, value: { ru: "Натуральный перламутр", en: "Natural mother-of-pearl" } },
+      { label: { ru: "Назначение", en: "Purpose" }, value: { ru: "Первый контакт с желтком", en: "First contact with the yolk" } },
+      { label: { ru: "Обсуждение калорий", en: "Calorie discussion" }, value: { ru: "В повестку не включено", en: "Not on the agenda" } },
+    ],
     price: "5 200 ₽",
     // PROMPT: Macro shot of an elegant mother-of-pearl spoon resting on a pristine white marble surface, high-end jewelry lighting
     image: "/adept-spoon.webp",
@@ -84,13 +84,18 @@ export const shopItems: ShopItem[] = [
       en: "Chronos",
     },
     shortDescription: {
-      ru: "Латунный таймер экспозиции",
-      en: "Brass exposure timer",
+      ru: "Латунный таймер. «Ещё минуточку» отклонено.",
+      en: "Brass timer. Request for one more minute denied.",
     },
     description: {
-      ru: "Тяжелая полированная латунь. Механический отсчет секунд — это ритуал подготовки ума к моменту раскрытия формы. Точность, ставшая весом.",
-      en: "Heavy polished brass. The mechanical countdown of seconds is a ritual of preparing the mind for the moment the form unfolds. Precision manifested as weight.",
+      ru: "Тяжёлая полированная латунь и механический отсчёт. Пока вы подбираете слово «пастозность», Chronos продолжает считать. Просьбы остановить время, вернуть вчерашний желток или дать ещё минуточку принимаются. На отсчёт они не влияют.",
+      en: "Heavy polished brass and a mechanical countdown. While you search for the word 'unctuous', Chronos keeps counting. Requests to stop time, recover yesterday's yolk or grant one more minute may be submitted. They do not affect the countdown.",
     },
+    specifications: [
+      { label: { ru: "Материал", en: "Material" }, value: { ru: "Полированная латунь", en: "Polished brass" } },
+      { label: { ru: "Отсчёт", en: "Countdown" }, value: { ru: "Механический", en: "Mechanical" } },
+      { label: { ru: "Продление экспозиции", en: "Exposure extension" }, value: { ru: "По просьбе не предоставляется", en: "Not granted upon request" } },
+    ],
     price: "8 800 ₽",
     // PROMPT: Sleek polished brass mechanical timer, brutalist minimalist design, dramatic studio lighting against a black background
     image: "/precision-timer.webp",
@@ -103,13 +108,18 @@ export const shopItems: ShopItem[] = [
       en: "The Dome Plate",
     },
     shortDescription: {
-      ru: "Блюдо для Купола",
-      en: "Dome Plate",
+      ru: "Фарфоровая сцена. В главной роли — яйцо.",
+      en: "A porcelain stage. Starring the egg.",
     },
     description: {
-      ru: "Плоское блюдо из матового белого фарфора с едва заметным углублением. Создано для бережной фиксации очищенного яйца, позволяя оценить архитектуру 'Купола' до начала дегустации.",
-      en: "A flat plate made of matte white porcelain with a barely noticeable depression. Created to hold the peeled egg gently in place, allowing you to appreciate the architecture of the 'Dome' before tasting.",
+      ru: "Матовый белый фарфор, едва заметное углубление и одно очищенное яйцо в центре внимания. Достаточно свободного места, чтобы оценить форму и выдержать положенную паузу. Ветка укропа считается несанкционированной застройкой.",
+      en: "Matte white porcelain, a subtle hollow and one peeled egg at the centre of attention. Enough open space to study the form and observe the prescribed pause. A sprig of dill constitutes unauthorised development.",
     },
+    specifications: [
+      { label: { ru: "Материал", en: "Material" }, value: { ru: "Матовый белый фарфор", en: "Matte white porcelain" } },
+      { label: { ru: "Композиция", en: "Composition" }, value: { ru: "Одно яйцо в центре", en: "One egg at the centre" } },
+      { label: { ru: "Допуск гарнира", en: "Garnish clearance" }, value: { ru: "Не выдан", en: "Not granted" } },
+    ],
     price: "6 100 ₽",
     // PROMPT: Top-down view of a perfectly minimalist matte white porcelain plate with a very shallow smooth dimple in the center, resting on a white concrete table, soft daylight, ultra-clean aesthetic
     image: "/dome-plate.webp",
@@ -122,13 +132,18 @@ export const shopItems: ShopItem[] = [
       en: "Purity",
     },
     shortDescription: {
-      ru: "Пинцет для Халазы",
-      en: "Chalaza Tweezers",
+      ru: "Пинцет для халазы. Владейте собой.",
+      en: "Chalaza tweezers. Exercise restraint.",
     },
     description: {
-      ru: "Хирургическая сталь с титановым покрытием. Инструмент абсолютного контроля. Позволяет элегантно удалить халазу, не нарушая гармонию 'Альбуминового Облака' при сырой подаче.",
-      en: "Surgical steel with titanium coating. An instrument of absolute control. Allows you to elegantly remove the chalaza without disturbing the harmony of the 'Albumin Cloud' during raw serving.",
+      ru: "Пинцет из хирургической стали с титановым покрытием для точной работы при подготовке яйца. Халаза удерживает желток и в исправлениях не нуждается. Высшая степень владения инструментом — вовремя положить его обратно.",
+      en: "Surgical steel tweezers with a titanium coating for precise work when preparing an egg. The chalaza holds the yolk in place and requires no correction. The highest form of mastery is knowing when to put the instrument back.",
     },
+    specifications: [
+      { label: { ru: "Материал", en: "Material" }, value: { ru: "Хирургическая сталь, титановое покрытие", en: "Surgical steel, titanium coating" } },
+      { label: { ru: "Объект внимания", en: "Object of attention" }, value: { ru: "Халаза", en: "The chalaza" } },
+      { label: { ru: "Высшая степень владения", en: "Highest level of mastery" }, value: { ru: "Воздержаться от вмешательства", en: "Refraining from intervention" } },
+    ],
     price: "3 900 ₽",
     // PROMPT: Macro studio shot of surgical precision tweezers with a matte dark titanium finish, resting on a sleek grey slate board, sharp focus, luxury tool photography
     image: "/chalaza-tweezers.webp",
@@ -141,13 +156,18 @@ export const shopItems: ShopItem[] = [
       en: "Point Blanc",
     },
     shortDescription: {
-      ru: "Стилет-перфоратор",
-      en: "Stiletto Piercer",
+      ru: "Прокол скорлупы по предварительной записи.",
+      en: "Shell piercing by appointment only.",
     },
     description: {
-      ru: "Монолитный алюминиевый цилиндр со скрытой иглой. Микроскопический прокол на тупом конце скорлупы стравливает давление, гарантируя идеальное отделение мембраны и сохраняя форму 'Светлого Стиля (Blanc)'.",
-      en: "Monolithic aluminum cylinder with a hidden needle. A microscopic puncture at the blunt end of the shell releases pressure, ensuring perfect membrane separation and preserving the 'Blanc Style' form.",
+      ru: "Монолитный алюминиевый цилиндр со скрытой иглой для маленького прокола на тупом конце скорлупы. Вмешательство минимальное, выражение лица — предельно серьёзное. После процедуры яйцо направляется в кастрюлю, а инструмент возвращается к молчанию.",
+      en: "A solid aluminium cylinder with a concealed needle for a small puncture at the blunt end of the shell. Minimal intervention; an exceptionally serious expression. After the procedure, the egg proceeds to the saucepan and the instrument resumes its silence.",
     },
+    specifications: [
+      { label: { ru: "Корпус", en: "Body" }, value: { ru: "Монолитный алюминий", en: "Solid aluminium" } },
+      { label: { ru: "Рабочий элемент", en: "Working element" }, value: { ru: "Скрытая игла", en: "Concealed needle" } },
+      { label: { ru: "Точка входа", en: "Point of entry" }, value: { ru: "Тупой конец скорлупы. Другие входы закрыты.", en: "The blunt end of the shell. All other entrances are closed." } },
+    ],
     price: "4 300 ₽",
     // PROMPT: Close up of a minimalist brushed aluminum cylinder, subtle premium design, standing upright on a perfectly smooth white surface, sleek futuristic kitchenware, cinematic lighting
     image: "/blanc-piercer.webp",
@@ -160,73 +180,25 @@ export const shopItems: ShopItem[] = [
       en: "Aura",
     },
     shortDescription: {
-      ru: "Сенсорный камертон",
-      en: "Sensory Tuning Fork",
+      ru: "Благовония. Завтрак получил атмосферу.",
+      en: "Incense. Breakfast has acquired an atmosphere.",
     },
     description: {
-      ru: "Набор благовоний с тонким ароматом сухого сена и минералов. Создает 'Вертикаль' перед началом ритуала, очищая рецепторы и подготавливая ум к восприятию тончайших нюансов Яй Ци.",
-      en: "A set of incense with a delicate aroma of dry hay and minerals. Creates 'Verticality' before the start of the ritual, clearing receptors and preparing the mind to perceive the subtlest nuances of Egg Qi.",
+      ru: "Благовония с ароматом сухого сена и минералов для подготовки пространства к дегустации. Дым поднимается, разговоры стихают, обычная кухня временно получает статус зала. Яйцо появляется последним: по протоколу оно не занимается организацией.",
+      en: "Incense with notes of dry hay and minerals to prepare the space for a tasting. Smoke rises, conversation subsides, and an ordinary kitchen is temporarily designated a hall. The egg arrives last: protocol exempts it from organisational duties.",
     },
+    specifications: [
+      { label: { ru: "Аромат", en: "Aroma" }, value: { ru: "Сухое сено и минералы", en: "Dry hay and minerals" } },
+      { label: { ru: "Выход на сцену", en: "Stage entrance" }, value: { ru: "До появления яйца", en: "Before the egg arrives" } },
+      { label: { ru: "Должность", en: "Appointment" }, value: { ru: "Заведующий атмосферой", en: "Head of atmosphere" } },
+    ],
     price: "2 500 ₽",
     // PROMPT: Minimalist zen arrangement of thin premium incense sticks leaning against a raw rough stone, delicate wisp of smoke, soft morning light, muted beige and grey tones
     image: "/qi-incense.webp",
   },
 ];
 
-export const blogPosts: BlogPost[] = [
-  {
-    id: "1",
-    slug: "white-vs-dark-eggs",
-    title: {
-      ru: "Дихотомия цвета: Фарфор против Терракоты",
-      en: "Color Dichotomy: Porcelain vs Terracotta",
-    },
-    date: "15.10.26",
-    image: "/white-vs-dark.webp",
-    excerpt: {
-      ru: "Почему эстетика белого яйца требует большей дисциплины восприятия, чем привычный культ фермерской коричневой скорлупы.",
-      en: "Why the aesthetics of a white egg require more discipline of perception than the usual cult of farm brown shells.",
-    },
-    content: {
-      ru: `
-        <p>Массовый рынок приучил нас искать в коричневом цвете признак 'натуральности'. Это эстетическая ловушка. Цвет — лишь генетический код, 'одежда' курицы. Но для адепта Яичной Культуры выбор белого яйца — это возвращение к чистому листу, к абсолютной форме.</p>
-        <p><strong>Эстетика Молчания</strong></p>
-        <p>Белое яйцо не обещает 'деревенского уюта'. Оно холодно, архитектурно и честно. На фарфоровом фоне белой скорлупы тонкая минеральность и меловой финиш считываются особенно ясно.</p>
-      `,
-      en: `
-        <p>The mass market has trained us to look for signs of 'naturalness' in the color brown. This is an aesthetic trap. Color is merely a genetic code, the 'clothing' of the hen. But for an adept of Egg Culture, choosing a white egg is a return to a clean slate, to the absolute form.</p>
-      `,
-    },
-  },
-  {
-    id: "2",
-    slug: "anatomy-of-yolk",
-    title: {
-      ru: "Текстура как текст: От жидкого к пастообразному",
-      en: "Texture as Text: From Liquid to Pasty",
-    },
-    date: "02.11.26",
-    image: "/anatomy-of-yolk.webp",
-    excerpt: {
-      ru: "Гайд по температурной деконструкции желтка: как поймать момент, когда энергия превращается в пасту.",
-      en: "A guide to the thermal deconstruction of the yolk: how to catch the moment when energy turns into paste.",
-    },
-    content: {
-      ru: "<p>Статья находится в закрытой доработке.</p>",
-      en: "<p>The article is undergoing closed revision.</p>",
-    },
-  },
-];
-
-const getFutureDate = (minDays: number, maxDays: number) => {
-  const days = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
-  const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yy = String(date.getFullYear()).slice(-2);
-  return `${dd}.${mm}.${yy}`;
-};
-
+// Dates are announced by the organisers; do not invent a schedule at build time.
 export const eventItems: EventItem[] = [
   {
     id: "1",
@@ -235,7 +207,7 @@ export const eventItems: EventItem[] = [
       ru: "Яичная Школа. Поток II",
       en: "Egg School. Flow II",
     },
-    date: getFutureDate(4, 10),
+    date: null,
     image: "/egg-school.webp",
     location: {
       ru: "Секретное пространство, Москва",
@@ -257,7 +229,7 @@ export const eventItems: EventItem[] = [
       ru: "Grand Degustation",
       en: "Grand Degustation",
     },
-    date: getFutureDate(4, 10),
+    date: null,
     image: "/blind-tasting.webp",
     location: {
       ru: "Boutique, Moscow",
@@ -279,7 +251,7 @@ export const eventItems: EventItem[] = [
       ru: "Медитация: Взгляд в Желток",
       en: "Meditation: Gaze into the Yolk",
     },
-    date: getFutureDate(4, 10),
+    date: null,
     // PROMPT: Minimalist macro photography of a perfectly round, vibrant golden egg yolk resting on a matte dark grey clay plate, dramatic soft lighting, zen aesthetic, 8k resolution
     image: "/meditation-yolk.webp",
     location: {
@@ -302,7 +274,7 @@ export const eventItems: EventItem[] = [
       ru: "Светлый Стиль (Blanc): Лекция",
       en: "Blanc Style: A Lecture",
     },
-    date: getFutureDate(4, 10),
+    date: null,
     // PROMPT: A single pure white egg levitating above a raw white marble pedestal, high-end gallery lighting, ultra-minimalism, empty white space, Apple style product photography
     image: "/white-shell.webp",
     location: {
@@ -325,7 +297,7 @@ export const eventItems: EventItem[] = [
       ru: "Текстура как Текст",
       en: "Texture as Text",
     },
-    date: getFutureDate(4, 10),
+    date: null,
     // PROMPT: Close-up abstract shot of softly cooked egg white, showing delicate textures resembling a white cloud or silk, pure white background, soft subtle shadows
     image: "/albumen-texture.webp",
     location: {
@@ -333,8 +305,8 @@ export const eventItems: EventItem[] = [
       en: "Studio 'Albumin Cloud', Moscow",
     },
     shortDescription: {
-      ru: "Воркшоп по оценке упругости 'Купола' и распознаванию 'мелового следа' белка.",
-      en: "Workshop on assessing the elasticity of the 'Dome' and recognizing the 'Chalky Trail' of the white.",
+      ru: "Воркшоп по оценке упругости 'Альбуминового Облака' и распознаванию 'мелового следа' белка.",
+      en: "Workshop on assessing the elasticity of the 'Albumin Cloud' and recognizing the 'Chalky Trail' of the white.",
     },
     description: {
       ru: "<p>Практическая сессия по температурному контролю и деконструкции текстуры белка.</p>",
@@ -348,7 +320,7 @@ export const eventItems: EventItem[] = [
       ru: "Яичный Терруар: Экспедиция",
       en: "Egg Terroir: Expedition",
     },
-    date: getFutureDate(4, 10),
+    date: null,
     // PROMPT: A minimalist landscape of a foggy morning meadow with a single elegant hen standing gracefully, muted desaturated colors, misty atmosphere, cinematic art photography
     image: "/terroir-expedition.webp",
     location: {

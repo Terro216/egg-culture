@@ -1,7 +1,7 @@
 ---
 title: "Texture as Text: From Liquid to Pasty"
 excerpt: "A guide to the thermal deconstruction of the yolk: how to catch the moment when energy turns into paste."
-date: "02.11.26"
+date: "28.05.26"
 image: "/anatomy-of-yolk.webp"
 ---
 
@@ -11,7 +11,7 @@ The yolk is the energetic center of the form, the locus of [Egg Qi](/en/guide#eg
 
 The early stages of exposure leave the yolk in a liquid state. This is pure, unformed energy. In this form, the texture offers no resistance; it envelops and spreads. Fluidity heightens the impression of minerality and tends toward "[Verticality](/en/guide#verticality)".
 
-However, the liquid form is unstable. It requires delicate framing—for instance, an elastic "[Dome](/en/guide#dome)" of albumin, cooked flawlessly and free of the watery rawness of the [Outer Terrace](/en/guide#outer-terrace).
+However, the liquid form is unstable. It requires delicate framing: a resilient [Albumin Cloud](/en/guide#albumin-cloud), cooked flawlessly and free of the watery rawness of the [Outer Terrace](/en/guide#outer-terrace).
 
 ## The Point of Singularity: Pastiness
 
@@ -19,11 +19,11 @@ The most valuable and difficult stage of thermal deconstruction to achieve is th
 
 Pastiness is considered the point of maximum flavor density. It reveals nutty, cereal, and sometimes even floral descriptors, shaped by the Egg Terroir. It is precisely this pastiness that provides that deep "[Grounding](/en/guide#grounding)" for the sake of which we turn to the form amid the bustle of the world.
 
-## Beyond the Edge: Emptiness
+## Beyond the Edge: Overcooking
 
 Passing beyond the point of perfect exposure leads to the destruction of the structure. The yolk becomes crumbly, dry, and pale. Sulfur begins to dominate the delicate aromatic compounds.
 
-In the terminology of Egg Culture, this state is called "[Emptiness](/en/guide#void)". The energy (Egg Qi) has left the form. The texture falls apart in the mouth, leaving only a [Chalky Trail](/en/guide#chalky-trail) and disappointment. Consuming such a product carries no aesthetic value.
+This is overcooking: a technical error that leaves dry crumbs where the pasty body should be. It should not be confused with [the Void](/en/guide#void): a technically flawless egg that leaves no trace in consciousness. Perfect texture alone does not guarantee an encounter with Egg Qi.
 
 ## The Art of Timing
 

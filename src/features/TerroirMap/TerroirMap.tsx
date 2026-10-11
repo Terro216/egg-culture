@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useId, useEffect } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
@@ -43,21 +43,30 @@ const MAP_WIDTH = 1000;
 const MAP_HEIGHT = 500;
 
 export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
-  const [tooltip, setTooltip] = useState<{
-    visible: boolean;
-    x: number;
-    y: number;
-    regionId: string | null;
-    countryName: string;
-  }>({
-    visible: false,
-    x: 0,
-    y: 0,
-    regionId: null,
-    countryName: "",
-  });
-
+  const infoId = useId();
+  const [hoveredRegion, setHoveredRegion] = useState<{
+    regionId: string;
+    point?: { x: number; y: number };
+  } | null>(null);
+  const [focusedRegion, setFocusedRegion] = useState<string | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Карта, кнопки и карточка всегда показывают один и тот же регион.
+  // Наведение — только предпросмотр, пока пользователь ничего не выбрал.
+  const activeRegion = selectedRegion ?? hoveredRegion?.regionId ?? focusedRegion;
+
+  // Явный выбор остаётся для чтения на touch-экране; обычное наведение — нет.
+  useEffect(() => {
+    if (!selectedRegion && !focusedRegion) return;
+    const dismissOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !containerRef.current?.contains(event.target)) {
+        setSelectedRegion(null);
+        setFocusedRegion(null);
+      }
+    };
+    document.addEventListener("pointerdown", dismissOutside);
+    return () => document.removeEventListener("pointerdown", dismissOutside);
+  }, [selectedRegion, focusedRegion]);
 
   // Распаковываем TopoJSON и считаем SVG-пути один раз: геометрия статична,
   // а pathGenerator по всем странам — слишком дорог для каждого рендера.
@@ -89,36 +98,35 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
     });
   }, []);
 
-  const handleMouseMove = (
-    e: React.MouseEvent,
-    regionId: string | null,
-    countryName: string,
-  ) => {
-    // Позиционируем относительно .map-container — он position: relative,
-    // поэтому тултип не зависит от positioned-предков выше по дереву.
-    const rect = containerRef.current?.getBoundingClientRect();
-    setTooltip({
-      visible: true,
-      x: e.clientX - (rect?.left ?? 0),
-      y: e.clientY - (rect?.top ?? 0),
+  const hoverRegion = (event: React.PointerEvent, regionId: string, onMap = false) => {
+    // Touch генерирует pointerenter перед click, но это не наведение.
+    if (event.pointerType === "touch" || selectedRegion) return;
+    const rect = onMap ? containerRef.current?.getBoundingClientRect() : null;
+    setHoveredRegion({
       regionId,
-      countryName,
+      point: rect ? { x: event.clientX - rect.left, y: event.clientY - rect.top } : undefined,
     });
   };
 
-  const handleMouseLeave = () => {
-    setTooltip((prev) => ({ ...prev, visible: false }));
+  const focusRegion = (event: React.FocusEvent, regionId: string) => {
+    // Фокус от мыши не должен закреплять временное наведение после mouseleave.
+    if (event.currentTarget.matches(":focus-visible")) setFocusedRegion(regionId);
   };
 
-  // На тач-устройствах mouseleave не приходит: скрываем тултип тапом
-  // по пустому месту (страны обрабатываются эмулированными mouse-событиями).
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!(e.target as Element).closest("path")) {
-      handleMouseLeave();
-    }
+  const selectRegion = (regionId: string) => {
+    setHoveredRegion(null);
+    setFocusedRegion(null);
+    setSelectedRegion(previous => previous === regionId ? null : regionId);
   };
 
-  const tooltipData = tooltip.regionId ? dict.regions[tooltip.regionId] : null;
+  const clearRegions = () => {
+    setHoveredRegion(null);
+    setFocusedRegion(null);
+    setSelectedRegion(null);
+  };
+
+  const tooltipData = activeRegion ? dict.regions[activeRegion] : null;
+  const tooltipPoint = selectedRegion ? undefined : hoveredRegion?.point;
 
   return (
     <section className="terroir-section flex-col gap-lg">
@@ -136,7 +144,7 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
         .terroir-header h2 {
           font-family: var(--font-serif-headers, serif);
           font-size: 2.5rem;
-          color: var(--color-yolk, #d4af37);
+          color: var(--color-yolk-text, #80600f);
           margin-bottom: 0.5rem;
         }
         .terroir-header p {
@@ -165,12 +173,18 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
           fill: rgba(212, 175, 55, 0.2);
           stroke: var(--color-yolk, #d4af37);
           stroke-width: 1; /* Единая жирность */
+          cursor: pointer;
         }
-        .map-path:hover {
+        .terroir-region-list { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-top:1rem; }
+        .terroir-region-list button { min-height:44px; padding:.5rem .8rem; border:1px solid #9f823c; border-radius:6px; }
+        .terroir-region-list [data-active="true"] { background:#fff2b5; }
+        .terroir-region-list button:focus-visible { outline:2px solid #2b2b2b; outline-offset:3px; }
+        .map-path.is-terroir[data-active="true"] {
           fill: rgba(212, 175, 55, 0.5);
           stroke: var(--color-yolk, #d4af37);
           stroke-width: 1; /* Единая жирность */
         }
+        .map-path.is-terroir:focus-visible { outline: none; fill: #d4af37; stroke: #2b2b2b; stroke-width: 3; }
         .terroir-tooltip {
           position: absolute;
           z-index: 100;
@@ -178,22 +192,25 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
           color: var(--color-text, #2b2b2b);
           padding: 1.5rem;
           border: 1px solid var(--color-yolk, #d4af37);
-          pointer-events: none;
-          max-width: 300px;
+          width: min(300px, 100%);
+          max-width: 100%;
+          overflow-wrap: anywhere;
           font-family: var(--font-serif-body, serif);
           box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-          transform: translate(-50%, -120%);
+          margin-top: 12px;
         }
         .tooltip-title {
           font-family: var(--font-sans-ui, sans-serif);
           font-size: 1rem;
           margin-bottom: 1rem;
-          color: var(--color-yolk, #d4af37);
+          color: var(--color-yolk-text, #80600f);
           text-transform: uppercase;
           letter-spacing: 0.1em;
           border-bottom: 1px solid rgba(212, 175, 55, 0.3);
           padding-bottom: 0.5rem;
         }
+        .terroir-tooltip[data-pinned="true"] { position: static; width: 100%; }
+        .terroir-tooltip[data-pinned="false"] { pointer-events: none; }
         .tooltip-line {
           margin-bottom: 0.5rem;
           font-size: 0.95rem;
@@ -220,9 +237,10 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
             font-size: 1rem;
           }
           .terroir-tooltip {
-            max-width: 90vw;
+            position: static;
+            width: 100%;
+            max-width: 100%;
             padding: 1rem;
-            transform: translate(-50%, -100%);
           }
         }
       `}</style>
@@ -235,62 +253,98 @@ export const TerroirMap: React.FC<TerroirMapProps> = ({ lang, dict }) => {
       <div
         className="map-container"
         ref={containerRef}
-        onTouchStart={handleTouchStart}
-        onMouseLeave={handleMouseLeave}
+        onPointerLeave={() => setHoveredRegion(null)}
+        onPointerDown={event => {
+          if (event.pointerType === "touch") {
+            setHoveredRegion(null);
+            setFocusedRegion(null);
+          }
+          if (!(event.target as Element).closest("[data-terroir-region], .terroir-tooltip")) clearRegions();
+        }}
+        onKeyDown={event => { if (event.key === "Escape") clearRegions(); }}
       >
         <svg
           viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="terroir-svg"
+          aria-label={dict.title}
         >
           {countryPaths.map((country, i) => (
             <path
               key={i}
               d={country.d}
               className={`map-path ${country.regionKey ? "is-terroir" : ""}`}
-              onMouseMove={(e) =>
-                handleMouseMove(e, country.regionKey, country.countryName)
-              }
-              onMouseLeave={handleMouseLeave}
+              role={country.regionKey ? "button" : undefined}
+              tabIndex={country.regionKey ? 0 : undefined}
+              aria-label={country.regionKey ? dict.regions[country.regionKey]?.name : undefined}
+              aria-pressed={country.regionKey ? selectedRegion === country.regionKey : undefined}
+              aria-expanded={country.regionKey ? activeRegion === country.regionKey : undefined}
+              aria-controls={country.regionKey ? infoId : undefined}
+              data-terroir-region={country.regionKey ?? undefined}
+              data-active={!!country.regionKey && activeRegion === country.regionKey}
+              onClick={() => { if (country.regionKey) selectRegion(country.regionKey); }}
+              onKeyDown={event => {
+                if (country.regionKey && (event.key === "Enter" || event.key === " ")) {
+                  event.preventDefault();
+                  selectRegion(country.regionKey);
+                }
+              }}
+              onPointerEnter={event => { if (country.regionKey) hoverRegion(event, country.regionKey, true); }}
+              onPointerMove={event => {
+                if (country.regionKey && hoveredRegion?.regionId === country.regionKey) {
+                  hoverRegion(event, country.regionKey, true);
+                }
+              }}
+              onPointerLeave={() => setHoveredRegion(null)}
+              onFocus={event => { if (country.regionKey) focusRegion(event, country.regionKey); }}
+              onBlur={() => setFocusedRegion(null)}
             />
           ))}
         </svg>
 
-        {tooltip.visible && (
+        <div className="terroir-region-list" role="group" aria-label={lang === "ru" ? "Выберите терруар" : "Choose a terroir"}>
+          {Object.entries(dict.regions).map(([regionId, region]) => (
+            <button
+              key={regionId}
+              type="button"
+              aria-controls={infoId}
+              aria-pressed={selectedRegion === regionId}
+              aria-expanded={activeRegion === regionId}
+              data-terroir-region={regionId}
+              data-active={activeRegion === regionId}
+              onPointerEnter={event => hoverRegion(event, regionId)}
+              onPointerLeave={() => setHoveredRegion(null)}
+              onFocus={event => focusRegion(event, regionId)}
+              onBlur={() => setFocusedRegion(null)}
+              onClick={() => selectRegion(regionId)}
+            >
+              {region.name}
+            </button>
+          ))}
+        </div>
+
+        {tooltipData && (
           <div
             className="terroir-tooltip"
-            style={{ left: tooltip.x, top: tooltip.y }}
+            data-pinned={!tooltipPoint}
+            id={infoId}
+            role="region"
+            aria-live="polite"
+            aria-label={tooltipData.name}
+            style={tooltipPoint ? { left: `clamp(0px, ${tooltipPoint.x - 150}px, max(0px, calc(100% - 300px)))`, top: tooltipPoint.y } : undefined}
           >
-            {tooltipData ? (
-              <>
-                <div className="tooltip-title">{tooltipData.name}</div>
-                <div className="tooltip-line">
-                  <strong>{dict.labels.breed}</strong>
-                  {tooltipData.breed}
-                </div>
-                <div className="tooltip-line">
-                  <strong>{dict.labels.diet}</strong>
-                  {tooltipData.diet}
-                </div>
-                <div className="tooltip-line">
-                  <strong>{dict.labels.profile}</strong>
-                  {tooltipData.profile}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="tooltip-title">
-                  {tooltip.countryName || "Unknown Region"}
-                </div>
-                <div
-                  className="tooltip-line"
-                  style={{ opacity: 0.7, fontStyle: "italic" }}
-                >
-                  {lang === "ru"
-                    ? "Яичная культура в этом регионе еще не развита. Терруар спит."
-                    : "Egg culture is not yet developed in this region. The terroir is dormant."}
-                </div>
-              </>
-            )}
+            <div className="tooltip-title">{tooltipData.name}</div>
+            <div className="tooltip-line">
+              <strong>{dict.labels.breed}</strong>
+              {tooltipData.breed}
+            </div>
+            <div className="tooltip-line">
+              <strong>{dict.labels.diet}</strong>
+              {tooltipData.diet}
+            </div>
+            <div className="tooltip-line">
+              <strong>{dict.labels.profile}</strong>
+              {tooltipData.profile}
+            </div>
           </div>
         )}
       </div>

@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import * as THREE from "three";
+import { motionCopy, oraclePredictions } from "./copy.ts";
+import { ChalazaSimulation, CHALAZA_FRAME_LIMIT, CHALAZA_HOLD_MS } from "./chalaza.ts";
+import type { TrialVector } from "./chalaza.ts";
+import { chalazaTilt, emptyOrientation, oracleSensorScore, trialOrientation } from "./sensors.ts";
+import type { TrialOrientation } from "./sensors.ts";
+import { acceptsGameKey } from "../../shared/game/keyboard.ts";
+import { useGameModal } from "../../shared/game/useGameModal.ts";
 import "./MotionTrial.css";
 
 export type MotionTrialKind = "chalaza" | "oracle";
@@ -22,29 +29,16 @@ type MotionTrialProps = {
 };
 
 type TrialMode = "ready" | "calibrating" | "playing" | "complete";
-type Orientation = { alpha: number; beta: number; gamma: number };
-type Vector2 = { x: number; y: number };
+type Orientation = TrialOrientation;
+type Vector2 = TrialVector;
 
-const emptyOrientation: Orientation = { alpha: 0, beta: 0, gamma: 0 };
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
-const distanceFromCenter = (point: Vector2) => Math.hypot(point.x, point.y);
 
-const CHALAZA_CENTER_RADIUS = 0.32;
-const CHALAZA_FRAME_LIMIT = 1.08;
-const CHALAZA_HOLD_MS = 5200;
 const CHALAZA_VISUAL_EGG_WIDTH_RATIO = 0.46;
 const CHALAZA_VISUAL_EGG_HEIGHT_RATIO = 0.68;
-const CHALAZA_CONTROL_DIVISOR = 40;
-const CHALAZA_CONTROL_FORCE = 0.56;
-const CHALAZA_DAMPING = 0.91;
-const CHALAZA_POSITION_STEP_MS = 20.6;
-const CHALAZA_MANUAL_SPEED = 0.04;
-const CHALAZA_MANUAL_DRIFT = 0.04;
-const CHALAZA_MANUAL_RESPONSE = 0.32;
 const ORACLE_SHAKE_ACTIVE_MAGNITUDE = 13;
 const ORACLE_SHAKE_START_MAGNITUDE = 16;
-const ORACLE_SUCCESS_MIN_MAGNITUDE = 24;
 const ORACLE_SUCCESS_MAX_MAGNITUDE = 30;
 const ORACLE_SHAKE_RELEASE_MS = 180;
 const ORACLE_REQUIRED_SHAKES = 3;
@@ -67,167 +61,6 @@ const vibrate = (pattern: VibrationPattern) => {
     | ((pattern: VibrationPattern) => boolean)
     | undefined;
   return vibration?.call(vibratingNavigator, pattern) ?? false;
-};
-
-const copy = {
-  ru: {
-    chalaza: {
-      kicker: "Испытание формы",
-      title: "Халаза-тест",
-      intro:
-        "Удержите яйцо в центре. Даже идеальная неподвижность не спасает: форму придётся ловить наклоном.",
-      calibrate: "Положить на стол",
-      calibrating: "Считываю стол…",
-      calibrationStatus: "Положите телефон на стол и не двигайте 3 секунды.",
-      calibrated: "Нулевое положение считано. Можно начинать испытание.",
-      start: "Начать испытание",
-      playing: "Яйцо начинает уходить. Ловите центр наклоном телефона.",
-      centered: "Центр пойман. Удерживайте.",
-      drifting: "Яйцо уходит. Ловите наклоном телефона.",
-      rolledAway: "Яйцо укатилось за край блюда.",
-      retryAfterRoll: "Попробуйте снова. У нас ещё много больших яиц.",
-      success: "Халаза удержала форму. Испытание пройдено.",
-      foninSuccess: "Халаза удержала форму. Вторая печать поддалась.",
-      close: "Закрыть испытание",
-      reset: "Начать заново",
-      manual: "Играть без датчиков",
-      manualStatus:
-        "Управляйте формой стрелками, клавишами или касанием арены.",
-      sensorUnavailable:
-        "Датчики движения не отдают данные. Проверьте HTTPS и доступ к датчикам или выберите управление без датчиков.",
-    },
-    oracle: {
-      kicker: "Испытание восприятия",
-      title: "Оракул желтка",
-      intro:
-        "Сформулируйте вопрос. Оракул отвечает после трёх точных встряхиваний.",
-      ask: "Спросить оракула",
-      playing:
-        "Три точных встряхивания. Слабый импульс не будет прочитан, чрезмерный разрушит Купол.",
-      firstShake: "Первый импульс принят. Осталось два встряхивания.",
-      secondShake: "Второй импульс принят. Осталось одно встряхивание.",
-      silent: "Вопрос не достиг желтка.",
-      tooQuiet: "Импульс слишком слабый. Повторите вопрос точнее.",
-      broken: "Слишком быстрый импульс разрушил Купол.",
-      tooStrong: "Купол треснул. Сбавьте темп и повторите вопрос.",
-      success: "Ответ Оракула сформирован.",
-      foninSuccess: "Ответ Оракула сформирован. Третья печать поддалась.",
-      idle: "Оракул ожидает вопрос.",
-      result: "Ответ Оракула",
-      reset: "Спросить ещё раз",
-      manual: "Спросить без датчиков",
-      manualStatus:
-        "Трижды коснитесь желтка: не торопясь, но без долгой паузы.",
-      sensorUnavailable:
-        "Датчики движения недоступны. Разрешите доступ браузеру или выберите испытание без датчиков.",
-    },
-    common: {
-      completionError: "Испытание пройдено, но результат не удалось сохранить.",
-      permissionDenied:
-        "Браузер не дал доступ к датчикам. Можно пройти испытание без них.",
-      sensorLabel: "Показания датчиков",
-      manualLabel: "Ручное управление",
-    },
-  },
-  en: {
-    chalaza: {
-      kicker: "Trial of form",
-      title: "The Chalaza Test",
-      intro:
-        "Keep the egg at the centre. Perfect stillness will not save it: catch the form by tilting your phone.",
-      calibrate: "Place on the table",
-      calibrating: "Reading the table…",
-      calibrationStatus: "Place the phone on a table and keep it still for 3 seconds.",
-      calibrated: "The neutral position is set. The trial may begin.",
-      start: "Begin the trial",
-      playing: "The egg is drifting. Catch the centre by tilting your phone.",
-      centered: "The centre is held. Keep it there.",
-      drifting: "The egg is drifting. Catch it with the tilt of your phone.",
-      rolledAway: "The egg rolled beyond the edge of the dish.",
-      retryAfterRoll: "Try again. We still have plenty of large eggs.",
-      success: "The chalaza held the form. The trial is complete.",
-      foninSuccess: "The chalaza held the form. The second seal yielded.",
-      close: "Close the trial",
-      reset: "Begin again",
-      manual: "Play without sensors",
-      manualStatus:
-        "Guide the form with the arrows, keyboard, or by touching the arena.",
-      sensorUnavailable:
-        "The motion sensors returned no data. Check HTTPS and sensor access, or use the sensor-free controls.",
-    },
-    oracle: {
-      kicker: "Trial of perception",
-      title: "Oracle of the Yolk",
-      intro:
-        "Formulate a question. The Oracle answers after three precise shakes.",
-      ask: "Ask the oracle",
-      playing:
-        "Three precise shakes. A weak impulse will not be read; an excessive one will break the Dome.",
-      firstShake: "The first impulse is received. Two shakes remain.",
-      secondShake: "The second impulse is received. One shake remains.",
-      silent: "The question did not reach the yolk.",
-      tooQuiet: "The impulse was too weak. Ask the question more precisely.",
-      broken: "An overly rapid impulse broke the Dome.",
-      tooStrong: "The Dome cracked. Slow down and ask again.",
-      success: "The Oracle's answer is formed.",
-      foninSuccess: "The Oracle's answer is formed. The third seal yielded.",
-      idle: "The Oracle awaits a question.",
-      result: "The Oracle's answer",
-      reset: "Ask again",
-      manual: "Ask without sensors",
-      manualStatus:
-        "Touch the yolk three times: without haste, but without a long pause.",
-      sensorUnavailable:
-        "Motion sensors are unavailable. Allow browser access or use the sensor-free trial.",
-    },
-    common: {
-      completionError: "The trial is complete, but its result could not be saved.",
-      permissionDenied:
-        "The browser denied sensor access. You can complete the trial without sensors.",
-      sensorLabel: "Sensor readings",
-      manualLabel: "Manual controls",
-    },
-  },
-} as const;
-
-// Every capitalised term here is defined in the Adept's Guide.
-const oraclePredictions: Record<MotionTrialLang, string[]> = {
-  ru: [
-    "Ответ собранный. Сохраняйте выбранный курс.",
-    "Сейчас говорит Пустота. Не принимайте отсутствие сопротивления за согласие.",
-    "Нужна Температурная Пауза. Вернитесь к вопросу, когда он достигнет комнатной температуры.",
-    "Первая Атака резкая, но Развитие обещает мягкий Финиш.",
-    "Вертикаль ясна. Выбирайте решение, после которого выпрямляется осанка.",
-    "Заземление сильнее импульса. Сегодня лучше остаться.",
-    "Меловой след чистый. Источник заслуживает доверия.",
-    "Халаза натянута: центр удержится, если не ускорять движение.",
-    "Купол высокий и упругий. Решение выдержит вскрытие.",
-    "Индустриальный Стрим предлагает предсказуемость. Если нужна глубина, ищите другой терруар.",
-    "Дворовый Дикий: исход непредсказуем, но Яй Ци живое.",
-    "Архивный Стиль: решение созрело; дальнейшая выдержка даст только сернистость.",
-    "Светлый Стиль: уберите лишнее. Ответ останется.",
-    "Бульонный Стиль: решение тяжёлое, но даёт Заземление.",
-    "Пасторальный Стиль: мягкость здесь не равна Пустоте.",
-    "Это нервная партия. Не фиксируйте вывод по одной Атаке.",
-  ],
-  en: [
-    "The answer is Composed. Hold your chosen course.",
-    "The Void is speaking. Do not mistake the absence of resistance for consent.",
-    "A Temperature Pause is required. Return when the question reaches room temperature.",
-    "The first Attack is sharp, but Development promises a gentle Finish.",
-    "Verticality is clear. Choose the decision that straightens your posture.",
-    "Grounding outweighs impulse. Today, remain where you are.",
-    "The Chalky Trail is clean. The source deserves trust.",
-    "The chalaza is taut: the centre will hold if you do not accelerate.",
-    "The Dome is high and resilient. The decision will survive opening.",
-    "The Industrial Stream offers predictability. If you need depth, seek another terroir.",
-    "Yard Wild: the outcome is unpredictable, but its Egg Qi is alive.",
-    "The Aged Style: the decision has matured; more time will add only sulfur.",
-    "The Blanc Style: remove what is unnecessary. The answer will remain.",
-    "The Bouillon Style: the decision is heavy, but it brings Grounding.",
-    "The Pastoral Style: softness here is not the Void.",
-    "This batch is Nervous. Do not settle the question after one Attack.",
-  ],
 };
 
 const SensorReadout: React.FC<{
@@ -353,7 +186,7 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
   context = "adept",
   onComplete,
 }) => {
-  const ui = copy[lang];
+  const ui = motionCopy[lang];
   const trialCopy = ui[kind];
   const [mode, setMode] = useState<TrialMode>("ready");
   const [status, setStatus] = useState<string>(trialCopy.intro);
@@ -372,7 +205,15 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
   const latestOrientation = useRef<Orientation>(emptyOrientation);
   const modeRef = useRef<TrialMode>("ready");
   const manualModeRef = useRef(false);
+  const rootRef = useRef<HTMLElement | null>(null);
   const arenaRef = useRef<HTMLDivElement | null>(null);
+  const orientationBaseline = useRef<Orientation | null>(null);
+  const sensorReceived = useRef(false);
+  const completeRef = useRef(onComplete); completeRef.current = onComplete;
+  const completionEpoch = useRef(0);
+  const completedResult = useRef<MotionTrialResult | null>(null);
+  const [completionFailed, setCompletionFailed] = useState(false);
+  const [saving, setSaving] = useState(false);
   const arenaSize = useRef({
     width: 320,
     height: 420,
@@ -391,14 +232,7 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
   const oracleLastVibration = useRef(0);
   const manualTaps = useRef<number[]>([]);
   const manualControl = useRef<Vector2>({ x: 0, y: 0 });
-  const chalazaState = useRef({
-    x: 0,
-    y: 0,
-    vx: 0,
-    vy: 0,
-    holdMs: 0,
-    completed: false,
-  });
+  const chalazaState = useRef(new ChalazaSimulation());
 
   const fullscreenActive =
     kind === "chalaza" &&
@@ -433,10 +267,14 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
   };
 
   const reset = () => {
+    completionEpoch.current++;
+    completedResult.current = null;
+    setCompletionFailed(false); setSaving(false);
     clearTimers();
+    modeRef.current = "ready";
     setMode("ready");
     setStatus(trialCopy.intro);
-    setBaseline(null);
+    setBaseline(null); orientationBaseline.current = null;
     setManualMode(false);
     manualModeRef.current = false;
     manualControl.current = { x: 0, y: 0 };
@@ -446,18 +284,30 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
     resetOracle();
   };
 
-  const finish = async (score: number, prediction?: string) => {
-    setMode("complete");
-    setBaseline(null);
-    setManualMode(false);
-    manualModeRef.current = false;
-    setStatus(context === "fonin" ? trialCopy.foninSuccess : trialCopy.success);
-    const saved = await onComplete?.({ kind, score, prediction });
-    if (saved === false) {
-      setStatus(ui.common.completionError);
-      setMode("ready");
-    }
+  const saveCompletion = async (result: MotionTrialResult) => {
+    const epoch = ++completionEpoch.current;
+    setSaving(true); setCompletionFailed(false);
+    try {
+      if (await completeRef.current?.(result) === false) throw new Error("Result was not saved");
+      if (epoch === completionEpoch.current) setStatus(context === "fonin" ? trialCopy.foninSuccess : trialCopy.success);
+    } catch {
+      if (epoch === completionEpoch.current) { setCompletionFailed(true); setStatus(ui.common.completionError); }
+    } finally { if (epoch === completionEpoch.current) setSaving(false); }
   };
+
+  const finish = async (score: number, prediction?: string) => {
+    clearTimers(); modeRef.current = "complete";
+    setMode("complete");
+    setBaseline(null); orientationBaseline.current = null;
+    setManualMode(false); manualModeRef.current = false;
+    const result = { kind, score: Math.round(clamp(score, 0, 100)), prediction };
+    completedResult.current = result;
+    setStatus(context === "fonin" ? trialCopy.foninSuccess : trialCopy.success);
+    await saveCompletion(result);
+  };
+
+  useGameModal(rootRef, fullscreenActive, reset);
+  useEffect(() => () => { completionEpoch.current++; }, []);
 
   useEffect(() => {
     modeRef.current = mode;
@@ -466,16 +316,6 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
   useEffect(() => {
     manualModeRef.current = manualMode;
   }, [manualMode]);
-
-  useEffect(() => {
-    if (!fullscreenActive) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [fullscreenActive]);
-
   useEffect(() => {
     const updateArenaSize = () => {
       const arena = arenaRef.current;
@@ -518,17 +358,9 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
       if (oracleTimeoutTimer.current)
         window.clearTimeout(oracleTimeoutTimer.current);
 
-      const averagePeak =
-        peaks.reduce((total, peak) => total + peak, 0) / peaks.length;
+      const score = oracleSensorScore(peaks);
       setShakePower(0);
-      if (averagePeak >= ORACLE_SUCCESS_MIN_MAGNITUDE) {
-        const target =
-          (ORACLE_SUCCESS_MIN_MAGNITUDE + ORACLE_SUCCESS_MAX_MAGNITUDE) / 2;
-        const score = clamp(
-          100 - Math.abs(averagePeak - target) * 4,
-          82,
-          100,
-        );
+      if (score !== null) {
         const prediction = selectPrediction();
         setOracleAnswer(prediction);
         void finish(score, prediction);
@@ -586,12 +418,14 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
     };
 
     const handleOrientation = (event: DeviceOrientationEvent) => {
-      const next = {
-        alpha: event.alpha ?? 0,
-        beta: event.beta ?? 0,
-        gamma: event.gamma ?? 0,
-      };
+      const angle = window.screen.orientation?.angle ?? Number((window as Window & { orientation?: number }).orientation ?? 0);
+      const next = trialOrientation(event, angle);
+      if (!next) return;
+      sensorReceived.current = true;
       latestOrientation.current = next;
+      if (orientationBaseline.current && orientationBaseline.current.angle !== next.angle) {
+        orientationBaseline.current = next;
+      }
       setOrientation(next);
     };
 
@@ -663,56 +497,14 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
     if (kind !== "chalaza" || mode !== "playing") return;
     let frame = 0;
     let last = performance.now();
-    const startedAt = performance.now();
-
+    let suspended = document.hidden;
     const tick = (now: number) => {
-      const dt = Math.min(80, now - last);
+      const dt = now - last;
       last = now;
-      const t = (now - startedAt) / 1000;
       const state = chalazaState.current;
-      const sensorControlX = baseline
-        ? (latestOrientation.current.gamma - baseline.gamma) /
-          CHALAZA_CONTROL_DIVISOR
-        : 0;
-      const sensorControlY = baseline
-        ? (latestOrientation.current.beta - baseline.beta) /
-          CHALAZA_CONTROL_DIVISOR
-        : 0;
-      const driftX =
-        Math.sin(t * 0.9) * 0.13 +
-        Math.cos(t * 0.37) * 0.08 +
-        Math.sin(t * 2.25) * 0.055;
-      const driftY = Math.cos(t * 0.72) * 0.12 + Math.sin(t * 1.85) * 0.045;
-      if (manualMode) {
-        const frameScale = clamp(dt / 16.67, 0.5, 2.5);
-        const response = 1 - Math.pow(1 - CHALAZA_MANUAL_RESPONSE, frameScale);
-        const targetVx =
-          manualControl.current.x * CHALAZA_MANUAL_SPEED +
-          driftX * CHALAZA_MANUAL_DRIFT;
-        const targetVy =
-          manualControl.current.y * CHALAZA_MANUAL_SPEED +
-          driftY * CHALAZA_MANUAL_DRIFT;
-        state.vx += (targetVx - state.vx) * response;
-        state.vy += (targetVy - state.vy) * response;
-      } else {
-        const forceX = -sensorControlX * CHALAZA_CONTROL_FORCE;
-        const forceY = -sensorControlY * CHALAZA_CONTROL_FORCE;
-        state.vx += (driftX + forceX) * (dt / 1000);
-        state.vy += (driftY + forceY) * (dt / 1000);
-        state.vx *= CHALAZA_DAMPING;
-        state.vy *= CHALAZA_DAMPING;
-      }
-      state.x = clamp(
-        state.x + state.vx * (dt / CHALAZA_POSITION_STEP_MS),
-        -CHALAZA_FRAME_LIMIT,
-        CHALAZA_FRAME_LIMIT,
-      );
-      state.y = clamp(
-        state.y + state.vy * (dt / CHALAZA_POSITION_STEP_MS),
-        -CHALAZA_FRAME_LIMIT,
-        CHALAZA_FRAME_LIMIT,
-      );
-
+      const neutral = orientationBaseline.current;
+      const control = manualMode ? manualControl.current : neutral ? chalazaTilt(latestOrientation.current, neutral) : { x: 0, y: 0 };
+      if (!suspended) state.advance(dt, control, manualMode);
       const visualEggWidth =
         arenaSize.current.eggWidth * CHALAZA_VISUAL_EGG_WIDTH_RATIO;
       const visualEggHeight =
@@ -729,98 +521,96 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
         x: (state.x / CHALAZA_FRAME_LIMIT) * horizontalTravel,
         y: (state.y / CHALAZA_FRAME_LIMIT) * verticalTravel,
       };
-      const distance = distanceFromCenter(state);
-      const touchesFrame =
-        Math.abs(state.x) >= CHALAZA_FRAME_LIMIT ||
-        Math.abs(state.y) >= CHALAZA_FRAME_LIMIT;
 
-      if (distance < CHALAZA_CENTER_RADIUS) state.holdMs += dt;
-      else state.holdMs = Math.max(0, state.holdMs - dt * 0.8);
       setEggOffset(nextOffset);
       setChalazaHoldMs(state.holdMs);
 
-      if (touchesFrame) {
+      if (state.rolledAway) {
         setChalazaRolledAway(true);
         setStatus(ui.chalaza.rolledAway);
         vibrate([140, 60, 220]);
         rollTimer.current = window.setTimeout(() => {
           setChalazaRolledAway(false);
           setEggOffset({ x: 0, y: 0 });
-          chalazaState.current = {
-            x: 0,
-            y: 0,
-            vx: 0.006,
-            vy: -0.003,
-            holdMs: 0,
-            completed: false,
-          };
+          chalazaState.current = new ChalazaSimulation();
           setChalazaHoldMs(0);
           setMode("ready");
           setStatus(ui.chalaza.retryAfterRoll);
         }, 1150);
         return;
       }
-      if (state.holdMs >= CHALAZA_HOLD_MS && !state.completed) {
-        state.completed = true;
+      if (state.completed) {
         void finish(94);
         return;
       }
       setStatus(
-        distance < CHALAZA_CENTER_RADIUS
-          ? ui.chalaza.centered
-          : ui.chalaza.drifting,
+        state.centered
+          ? state.correcting ? ui.chalaza.centered : ui.chalaza.needsCorrection
+          : manualMode ? ui.chalaza.manualDrifting : ui.chalaza.drifting,
       );
       frame = requestAnimationFrame(tick);
     };
+    const resetClock = () => { last = performance.now(); manualControl.current = { x: 0, y: 0 }; };
+    const visibility = () => { suspended = document.hidden; resetClock(); };
+    const blur = () => { suspended = true; resetClock(); };
+    const focus = () => { suspended = document.hidden; resetClock(); };
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("blur", blur); window.addEventListener("focus", focus);
     frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    return () => { cancelAnimationFrame(frame); document.removeEventListener("visibilitychange", visibility); window.removeEventListener("blur", blur); window.removeEventListener("focus", focus); };
   }, [kind, mode, baseline, manualMode, lang]);
 
   useEffect(() => {
     if (!manualMode || kind !== "chalaza" || mode !== "playing") return;
+    const held = new Set<string>();
     const handleKey = (event: KeyboardEvent) => {
+      if (!acceptsGameKey(event)) return;
       const controls: Record<string, Vector2> = {
         ArrowLeft: { x: -1, y: 0 },
         ArrowRight: { x: 1, y: 0 },
         ArrowUp: { x: 0, y: -1 },
         ArrowDown: { x: 0, y: 1 },
       };
-      if (controls[event.key]) {
-        event.preventDefault();
-        manualControl.current = controls[event.key];
+      if (controls[event.code]) {
+        event.preventDefault(); held.add(event.code);
+        manualControl.current = { x: Number(held.has("ArrowRight")) - Number(held.has("ArrowLeft")), y: Number(held.has("ArrowDown")) - Number(held.has("ArrowUp")) };
       }
     };
-    const stop = () => {
-      manualControl.current = { x: 0, y: 0 };
+    const stop = () => { held.clear(); manualControl.current = { x: 0, y: 0 }; };
+    const release = (event: KeyboardEvent) => {
+      held.delete(event.code);
+      manualControl.current = { x: Number(held.has("ArrowRight")) - Number(held.has("ArrowLeft")), y: Number(held.has("ArrowDown")) - Number(held.has("ArrowUp")) };
     };
     window.addEventListener("keydown", handleKey);
-    window.addEventListener("keyup", stop);
+    window.addEventListener("keyup", release);
+    window.addEventListener("blur", stop);
     return () => {
       window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("keyup", stop);
+      window.removeEventListener("keyup", release);
+      window.removeEventListener("blur", stop);
     };
   }, [manualMode, kind, mode]);
 
   const calibrate = async () => {
-    const allowed = await requestMotionPermission();
+    const epoch = ++completionEpoch.current;
+    const allowed = await requestMotionPermission().catch(() => false);
+    if (epoch !== completionEpoch.current) return;
     if (!allowed) {
       setStatus(ui.common.permissionDenied);
       return;
     }
     setMode("calibrating");
+    sensorReceived.current = false;
     setStatus(ui.chalaza.calibrationStatus);
     calibrationTimer.current = window.setTimeout(() => {
       const current = latestOrientation.current;
-      const unavailable =
-        Math.abs(current.alpha) < 0.01 &&
-        Math.abs(current.beta) < 0.01 &&
-        Math.abs(current.gamma) < 0.01;
+      const unavailable = !sensorReceived.current;
       if (unavailable) {
         setMode("ready");
         setStatus(ui.chalaza.sensorUnavailable);
         return;
       }
-      setBaseline(current);
+      setBaseline(current); orientationBaseline.current = current;
       setMode("ready");
       setStatus(ui.chalaza.calibrated);
     }, 3000);
@@ -828,17 +618,12 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
 
   const startChalaza = (manual: boolean) => {
     if (!manual && !baseline) return;
+    completionEpoch.current++;
+    clearTimers();
     setManualMode(manual);
     manualModeRef.current = manual;
     manualControl.current = { x: 0, y: 0 };
-    chalazaState.current = {
-      x: 0,
-      y: 0,
-      vx: 0.006,
-      vy: -0.003,
-      holdMs: 0,
-      completed: false,
-    };
+    chalazaState.current = new ChalazaSimulation();
     setEggOffset({ x: 0, y: 0 });
     setChalazaHoldMs(0);
     setChalazaRolledAway(false);
@@ -848,7 +633,10 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
   };
 
   const startOracle = async (manual: boolean) => {
-    if (!manual && !(await requestMotionPermission())) {
+    const epoch = ++completionEpoch.current;
+    const allowed = manual || await requestMotionPermission().catch(() => false);
+    if (epoch !== completionEpoch.current) return;
+    if (!allowed) {
       setStatus(ui.common.permissionDenied);
       return;
     }
@@ -911,6 +699,10 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
 
   const trial = (
     <section
+      ref={rootRef}
+      role={fullscreenActive ? "dialog" : undefined}
+      aria-modal={fullscreenActive || undefined}
+      tabIndex={-1}
       className={`motion-trial ${fullscreenActive ? "motion-trial--fullscreen" : ""}`}
       aria-label={trialCopy.title}
     >
@@ -948,6 +740,7 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
           }}
           onPointerUp={() => setManualDirection({ x: 0, y: 0 })}
           onPointerCancel={() => setManualDirection({ x: 0, y: 0 })}
+          onLostPointerCapture={() => setManualDirection({ x: 0, y: 0 })}
         >
           <div className="motion-chalaza-target" />
           <MonumentalEggModel offset={eggOffset} />
@@ -1011,6 +804,7 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
               }}
               onPointerUp={() => setManualDirection({ x: 0, y: 0 })}
               onPointerCancel={() => setManualDirection({ x: 0, y: 0 })}
+              onLostPointerCapture={() => setManualDirection({ x: 0, y: 0 })}
             >
               {label}
             </button>
@@ -1019,6 +813,8 @@ export const MotionTrial: React.FC<MotionTrialProps> = ({
       ) : null}
 
       <div className="motion-actions">
+        {completionFailed && completedResult.current && <button type="button" disabled={saving} onClick={() => { if (completedResult.current) void saveCompletion(completedResult.current); }}>{ui.common.retrySave}</button>}
+        {saving && <p role="status">{ui.common.saving}</p>}
         {kind === "chalaza" && !baseline && !manualMode && mode !== "complete" ? (
           <button type="button" onClick={() => void calibrate()} disabled={mode === "calibrating"}>
             {mode === "calibrating" ? ui.chalaza.calibrating : ui.chalaza.calibrate}

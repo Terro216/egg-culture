@@ -1,7 +1,7 @@
 ---
 title: "Color Dichotomy: Porcelain vs Terracotta"
 excerpt: "Why the aesthetics of a white egg require more discipline of perception than the usual cult of farm brown shells."
-date: "15.10.26"
+date: "28.04.26"
 image: "/white-vs-dark.webp"
 ---
 

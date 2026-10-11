@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { allowRequestAttempt, readJsonObject, RequestBodyError } from "../../server/requestBody.ts";
 
 export const prerender = false;
 
@@ -6,7 +7,7 @@ export const prerender = false;
 // а .env в Docker-образ не попадает (секреты приходят через env_file в рантайме).
 const accessWord =
   process.env.FONIN_ACCESS_WORD ??
-  import.meta.env.FONIN_ACCESS_WORD ??
+  import.meta.env?.FONIN_ACCESS_WORD ??
   "Яй Ци";
 
 const normalize = (value: string) =>
@@ -26,13 +27,15 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || clientAddress;
+  if (!allowRequestAttempt(`fonin:${ip}`, 30, 15 * 60000)) return json({ error: "rate_limit", message: "Подождите перед следующей попыткой." }, 429);
   let body: { accessWord?: unknown };
 
   try {
-    body = await request.json();
-  } catch {
-    return json({ message: "Кладка не распознала запрос." }, 400);
+    body = await readJsonObject(request);
+  } catch (error) {
+    return json({ error: error instanceof RequestBodyError ? error.code : "invalid_body", message: "Кладка не распознала запрос." }, error instanceof RequestBodyError ? error.status : 400);
   }
 
   if (typeof body.accessWord !== "string") {

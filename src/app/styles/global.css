@@ -3,6 +3,7 @@
   --color-shell: #f0ead6;
   --color-text: #2b2b2b;
   --color-yolk: #d4af37;
+  --color-yolk-text: #80600f;
   --color-white: #ffffff;
   --color-gray-light: #e0dacc;
 
@@ -58,7 +59,7 @@ h6 {
   font-weight: normal;
   line-height: 1.2;
   margin-bottom: var(--spacing-sm);
-  color: var(--color-yolk);
+  color: var(--color-yolk-text);
 }
 
 a {
@@ -68,7 +69,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-yolk);
+  color: var(--color-yolk-text);
 }
 
 img,

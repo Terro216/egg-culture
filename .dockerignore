@@ -8,6 +8,7 @@ dist
 .news_cache.json
 .news-cache
 .kladka
+**/__pycache__
 .vscode
 .dockerignore
 Dockerfile

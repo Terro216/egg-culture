@@ -190,7 +190,7 @@ function drawCard(
 
   // Шапка
   ctx.font = "600 30px 'Playfair Display', serif";
-  ctx.fillStyle = "#b8963a";
+  ctx.fillStyle = "#80600f";
   const spaced = "EGG CULTURE".split("").join("  ");
   ctx.fillText(spaced, CARD_W / 2, 128);
   ctx.font = "italic 34px 'Lora', serif";
@@ -446,7 +446,7 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
         }
         .egg-persona-question {
           font-family: var(--font-serif-headers, serif);
-          color: var(--color-yolk, #d4af37);
+          color: var(--color-yolk-text, #80600f);
           font-size: 1.8rem;
           text-align: center;
           margin: 0;
@@ -462,7 +462,7 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
         }
         .egg-persona-option:hover {
           background: var(--color-yolk, #d4af37);
-          color: var(--color-shell, #f0ead6);
+          color: var(--color-text, #2b2b2b);
           border-color: var(--color-yolk, #d4af37);
         }
         .egg-persona-result-title {

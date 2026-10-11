@@ -69,6 +69,21 @@ export async function startPolling({
   logger.log("[kladka-poller] запущен");
   while (!signal.aborted) {
     let retryAfterMs = 0;
+    // Outgoing moderation is a durable server outbox. Retry it independently of
+    // incoming callbacks, including when getUpdates itself is temporarily broken.
+    try {
+      const response = await fetchImpl(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-telegram-bot-api-secret-token": secret },
+        body: JSON.stringify({ action: "deliver_pending" }),
+        signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
+      });
+      const result = await response.json();
+      if (!response.ok || (result.attempted && !result.delivered)) logger.warn("[kladka-poller] moderation_outbox_pending");
+    } catch (error) {
+      if (!signal.aborted) logger.warn(`[kladka-poller] moderation_outbox: ${errorCode(error)}`);
+    }
+    if (signal.aborted) break;
     try {
       if (!webhookCleared) {
         await api("deleteWebhook", { drop_pending_updates: false });

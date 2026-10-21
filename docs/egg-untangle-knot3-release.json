@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-22",
+  "generator": "KNOT3",
+  "runtimeImage": "sha256:602cd0424af1bdba22148adcba49a00e9477c3ac0e108b8a25105a6143e68c2c",
+  "rollbackImage": "egg-culture-web:rollback-before-knot3-20261022",
+  "unitTests": {
+    "passed": 332,
+    "failed": 0
+  },
+  "types": {
+    "site": "passed",
+    "games": "passed"
+  },
+  "generationSweep": {
+    "boards": 12000,
+    "failures": 0,
+    "distinctComponentSizePartitions": 491,
+    "boardsByComponentCount": {
+      "1": 2082,
+      "2": 3431,
+      "3": 2696,
+      "4": 2250,
+      "5": 1541
+    },
+    "worstGenerationMillisecondsOnBigOne": 13.23
+  },
+  "isolatedBrowser": {
+    "fullInteractionScenariosPassed": 6,
+    "newFigureSolvesPassed": 11,
+    "viewports": [
+      1200,
+      390,
+      320
+    ],
+    "locales": [
+      "ru",
+      "en"
+    ],
+    "pageErrors": 0,
+    "checks": [
+      "mouse and touch solves",
+      "keyboard",
+      "swap animation and rope endpoints",
+      "undo and redo",
+      "hints",
+      "reload and pause",
+      "fixed slot enforcement",
+      "legacy seeds",
+      "explicit switch from old save",
+      "tutorial to KNOT3",
+      "daily entrypoint",
+      "account isolation and retry",
+      "guest result import",
+      "browser and server generation parity",
+      "visible egg silhouette"
+    ]
+  },
+  "deployment": {
+    "service": "web",
+    "healthy": true,
+    "restarts": 0,
+    "runtimeSourceFilesMatchedCandidate": 9,
+    "configurationUnchanged": true,
+    "unchangedNeighborContainers": 79,
+    "unchangedDatabaseTables": 17,
+    "unchangedKladkaFiles": 13,
+    "sqliteIntegrity": "ok",
+    "foreignKeyErrors": 0
+  },
+  "publicBrowser": {
+    "solvesPassed": 11,
+    "viewports": [
+      1200,
+      390,
+      320
+    ],
+    "locales": [
+      "ru",
+      "en"
+    ],
+    "pageErrors": 0,
+    "networkWrites": "blocked",
+    "artifactsOnBigOne": "/tmp/egg-knot3-20261022/public",
+    "reviewed": "desktop gallery and 390/320 px solved boards"
+  }
+}

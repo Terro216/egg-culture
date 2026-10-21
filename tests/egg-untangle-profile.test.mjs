@@ -170,6 +170,20 @@ test('swap-only results require an exact slot permutation even when other coordi
   assert.equal(completed.achievements.includes('untangle.campaign'), false, 'hard campaign is a separate achievement');
 }));
 
+test('KNOT3 cloud results retain old personal bests and share stage credit without duplicate progress', async () => fixture(({ store, player }) => {
+  const old = result(campaignSeed(12, 'swap', 'KNOT1'));
+  const fresh = result(campaignSeed(12, 'swap'));
+  store.portalResult(player, old);
+  const archived = store.ownProfile(player).untangle.puzzles[0];
+  store.portalResult(player, fresh);
+  store.portalResult(player, fresh);
+  const progress = store.ownProfile(player).untangle;
+  assert.deepEqual(progress.hardCampaign, [12]);
+  assert.equal(progress.hardSolved, 2);
+  assert.deepEqual(progress.puzzles.find(record => record.seed === old.untangle.seed), archived);
+  assert.equal(progress.puzzles.find(record => record.seed === fresh.untangle.seed).solves, 1);
+}));
+
 test('daily receipts from all editions are accepted without triple-counting one Moscow day', async () => fixture(({ store, player }) => {
   const day = moscowDay();
   for (const [mechanics, version] of [['drag', 'NEST1'], ['drag', 'NEST2'], ['swap', 'KNOT1']]) {

@@ -6,6 +6,10 @@ services:
         DOMAIN: ${DOMAIN:-ilyamedve.dev}
     restart: unless-stopped
     env_file: .env
+    environment:
+      NODE_USE_ENV_PROXY: "1"
+      HTTPS_PROXY: http://telegram-egress:3128
+      NO_PROXY: localhost,127.0.0.1,::1
     volumes:
       - news_cache:/app/.news-cache
       - kladka_data:/app/.kladka
@@ -14,13 +18,10 @@ services:
       caddy.reverse_proxy: "{{upstreams 4321}}"
     networks:
       - caddy_net
-    # Модерация Книги Кладки шлёт в Telegram, а с deployment-host путь туда заблокирован
-    # с 2026-08-10. Пиним имя на единственный отвечающий адрес: подмена только на
-    # этапе «имя → адрес», URL и SNI прежние, сертификат сходится.
-    # Node >=22.21 поддерживает HTTPS_PROXY при NODE_USE_ENV_PROXY=1; здесь
-    # пока используется прямой маршрут с пином. Разбор и ограничения: /BOTS.md.
-    extra_hosts:
-      - "api.telegram.org:149.154.167.220"
+      - telegram
+    # Прямой маршрут и прежний Telegram-пин перестали отвечать 22.10.2026.
+    # Используем существующий SSH-туннель до DE; соседние сервисы не меняются.
+    # Локальные вызовы поллера обходят прокси через NO_PROXY.
     healthcheck:
       test: ["CMD", "node", "scripts/healthcheck.mjs"]
       interval: 30s
@@ -73,6 +74,8 @@ services:
 
 networks:
   caddy_net:
+    external: true
+  telegram:
     external: true
 
 volumes:

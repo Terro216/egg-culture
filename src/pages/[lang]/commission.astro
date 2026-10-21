@@ -1,0 +1,25 @@
+---
+import Commission from "../../features/Commission/Commission";
+export const prerender = false;
+const { lang } = Astro.params;
+if (lang !== "ru" && lang !== "en") return new Response("Not found", { status: 404 });
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("Referrer-Policy", "same-origin");
+const title = lang === "ru" ? "Комиссия по форме — Яичная Культура" : "The Form Commission — Egg Culture";
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#e9e1d1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Commission client:load lang={lang} />
+    <noscript><p>{lang === "ru" ? "Для работы Комиссии включите JavaScript. Прогресс сохраняется после каждого действия." : "Enable JavaScript to operate the Commission. Progress is saved after every action."}</p></noscript>
+  </body>
+</html>

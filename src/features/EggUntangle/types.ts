@@ -2,7 +2,7 @@
 export type Point = { x: number; y: number };
 export type Edge = readonly [number, number];
 export type PuzzleMechanics = "drag" | "swap";
-export type PuzzleVersion = "NEST1" | "NEST2" | "NEST3" | "KNOT1" | "KNOT2";
+export type PuzzleVersion = "NEST1" | "NEST2" | "NEST3" | "KNOT1" | "KNOT2" | "KNOT3";
 
 export type UntangleSeed = {
   seed: string;

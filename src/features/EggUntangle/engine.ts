@@ -1,42 +1,16 @@
-import type { BoardAnalysis, Edge, Point, PuzzleMechanics, PuzzleVersion, UntanglePuzzle, UntangleSeed } from "./types.ts";
+import type { Edge, Point, PuzzleMechanics, PuzzleVersion, UntanglePuzzle, UntangleSeed } from "./types.ts";
+
+import { BOARD_SIZE, analyzeBoard, isSolved, validPoint } from "./geometry.ts";
+import { hash, randomGenerator, shuffled } from "./random.ts";
+import { figureEmbedding } from "./figures.ts";
+export { BOARD_SIZE, NODE_MIN_DISTANCE, ROPE_NODE_CLEARANCE, analyzeBoard, isSolved } from "./geometry.ts";
 
 export const LEVEL_COUNT = 24;
-export const BOARD_SIZE = 1000;
-// Match the visible shell (28 units wide, up to 35 high), not just its centre.
-export const NODE_MIN_DISTANCE = 72;
-export const ROPE_NODE_CLEARANCE = 32;
 export const PUZZLE_VERSION = "NEST2";
-const EPSILON = 1e-7;
-
-function hash(value: string): number {
-  let result = 2166136261;
-  for (let i = 0; i < value.length; i++) result = Math.imul(result ^ value.charCodeAt(i), 16777619);
-  return result >>> 0;
-}
-
-/** Integer operations make a shared seed stable in browsers and on the server. */
-function randomGenerator(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let value = Math.imul(state ^ (state >>> 15), state | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function shuffled<T>(values: readonly T[], random: () => number): T[] {
-  const result = [...values];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
 
 function versionFor(mechanics: PuzzleMechanics, version?: PuzzleVersion): PuzzleVersion {
-  const selected = version ?? (mechanics === "swap" ? "KNOT1" : PUZZLE_VERSION);
-  if (!["drag", "swap"].includes(mechanics) || !["NEST1", "NEST2", "NEST3", "KNOT1", "KNOT2"].includes(selected)
+  const selected = version ?? (mechanics === "swap" ? "KNOT3" : PUZZLE_VERSION);
+  if (!["drag", "swap"].includes(mechanics) || !["NEST1", "NEST2", "NEST3", "KNOT1", "KNOT2", "KNOT3"].includes(selected)
     || selected.startsWith("KNOT") !== (mechanics === "swap")) throw new RangeError("Invalid nest rules");
   return selected;
 }
@@ -61,7 +35,7 @@ export function parseSeed(input: string): UntangleSeed | null {
       value = url.searchParams.get("nest") ?? url.searchParams.get("untangle") ?? "";
     } catch { return null; }
   }
-  const match = /^(NEST[123]|KNOT[12])-(\d{1,2})-([0-9a-z]{1,7})$/i.exec(value);
+  const match = /^(NEST[123]|KNOT[123])-(\d{1,2})-([0-9a-z]{1,7})$/i.exec(value);
   if (!match) return null;
   const version = match[1].toUpperCase() as PuzzleVersion, mechanics = version.startsWith("KNOT") ? "swap" : "drag";
   const level = Number(match[2]), numeric = parseInt(match[3], 36);
@@ -131,89 +105,6 @@ export function levelNodeCount(level: number, mechanics: PuzzleMechanics = "drag
     return 2 + level * 2;
   }
   return selected === "NEST1" ? 5 + Math.floor((level - 1) * 19 / (LEVEL_COUNT - 1)) : MODERN_COUNTS[level - 1];
-}
-
-function orientation(a: Point, b: Point, c: Point): number {
-  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-}
-
-function withinSegment(point: Point, a: Point, b: Point): boolean {
-  return Math.abs(orientation(a, b, point)) <= EPSILON
-    && point.x >= Math.min(a.x, b.x) - EPSILON && point.x <= Math.max(a.x, b.x) + EPSILON
-    && point.y >= Math.min(a.y, b.y) - EPSILON && point.y <= Math.max(a.y, b.y) + EPSILON;
-}
-
-function segmentsIntersect(a: Point, b: Point, c: Point, d: Point): boolean {
-  const abC = orientation(a, b, c), abD = orientation(a, b, d);
-  const cdA = orientation(c, d, a), cdB = orientation(c, d, b);
-  if (((abC > EPSILON && abD < -EPSILON) || (abC < -EPSILON && abD > EPSILON))
-    && ((cdA > EPSILON && cdB < -EPSILON) || (cdA < -EPSILON && cdB > EPSILON))) return true;
-  return withinSegment(c, a, b) || withinSegment(d, a, b) || withinSegment(a, c, d) || withinSegment(b, c, d);
-}
-
-function distanceToSegmentSquared(point: Point, a: Point, b: Point): number {
-  const x = b.x - a.x, y = b.y - a.y, length = x * x + y * y;
-  const t = length ? Math.max(0, Math.min(1, ((point.x - a.x) * x + (point.y - a.y) * y) / length)) : 0;
-  return (point.x - a.x - t * x) ** 2 + (point.y - a.y - t * y) ** 2;
-}
-
-function validPoint(point: Point): boolean {
-  return Boolean(point) && typeof point.x === "number" && typeof point.y === "number"
-    && Number.isFinite(point.x) && Number.isFinite(point.y)
-    && point.x >= 0 && point.x <= BOARD_SIZE && point.y >= 0 && point.y <= BOARD_SIZE;
-}
-
-/** Shared endpoints are allowed; overlaps, T-junctions and hidden nodes are not. */
-export function analyzeBoard(points: readonly Point[], edges: readonly Edge[]): BoardAnalysis {
-  const crossingPairs: [number, number][] = [], overlappingNodes: [number, number][] = [];
-  const crossedEdges = new Set<number>(), blockedNodes = new Set<number>();
-  const invalidNodes: number[] = [], invalidEdges: number[] = [];
-  for (let i = 0; i < points.length; i++) if (!validPoint(points[i])) invalidNodes.push(i);
-  const seenEdges = new Set<string>();
-  for (let i = 0; i < edges.length; i++) {
-    const edge = edges[i];
-    if (!Array.isArray(edge) || edge.length !== 2 || !edge.every(index => Number.isInteger(index) && index >= 0 && index < points.length)
-      || edge[0] === edge[1]) { invalidEdges.push(i); continue; }
-    const key = `${Math.min(...edge)}:${Math.max(...edge)}`;
-    if (seenEdges.has(key)) invalidEdges.push(i);
-    seenEdges.add(key);
-  }
-  if (invalidNodes.length === 0 && invalidEdges.length === 0) {
-    for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) {
-      if ((points[i].x - points[j].x) ** 2 + (points[i].y - points[j].y) ** 2 < NODE_MIN_DISTANCE ** 2) overlappingNodes.push([i, j]);
-    }
-    for (let i = 0; i < edges.length; i++) {
-      const [a, b] = edges[i];
-      for (let node = 0; node < points.length; node++) {
-        if (node !== a && node !== b && distanceToSegmentSquared(points[node], points[a], points[b]) < ROPE_NODE_CLEARANCE ** 2) {
-          blockedNodes.add(node); crossedEdges.add(i);
-        }
-      }
-      for (let j = i + 1; j < edges.length; j++) {
-        const [c, d] = edges[j];
-        const shared = a === c || a === d ? a : b === c || b === d ? b : -1;
-        let intersects: boolean;
-        if (shared >= 0) {
-          const first = points[a === shared ? b : a], second = points[c === shared ? d : c], origin = points[shared];
-          // Adjacent ropes may meet, but may not run over one another in the same direction.
-          intersects = Math.abs(orientation(origin, first, second)) <= EPSILON
-            && (first.x - origin.x) * (second.x - origin.x) + (first.y - origin.y) * (second.y - origin.y) > EPSILON;
-        } else intersects = segmentsIntersect(points[a], points[b], points[c], points[d]);
-        if (intersects) { crossingPairs.push([i, j]); crossedEdges.add(i); crossedEdges.add(j); }
-      }
-    }
-  }
-  return {
-    crossings: crossingPairs.length, crossingPairs,
-    crossedEdges: [...crossedEdges].sort((a, b) => a - b), overlappingNodes,
-    blockedNodes: [...blockedNodes].sort((a, b) => a - b), invalidNodes, invalidEdges,
-    solved: points.length >= 3 && edges.length >= 2 && !invalidNodes.length && !invalidEdges.length
-      && !crossingPairs.length && !overlappingNodes.length && !blockedNodes.size,
-  };
-}
-
-export function isSolved(points: readonly Point[], edges: readonly Edge[]): boolean {
-  return analyzeBoard(points, edges).solved;
 }
 
 function connected(count: number, edges: readonly Edge[]): boolean {
@@ -395,8 +286,9 @@ function hasOneSwapWin(points: readonly Point[], edges: readonly Edge[]): boolea
 
 function generateModernPuzzle(parsed: UntangleSeed): UntanglePuzzle {
   const random = randomGenerator(hash(parsed.seed)), count = levelNodeCount(parsed.level, parsed.mechanics, parsed.version);
-  const graph = parsed.mechanics === "swap" && parsed.level % 2 === 0
-    ? multipleFigures(count, parsed.level, random) : meshEmbedding(count, parsed.level, random);
+  const graph = parsed.version === "KNOT3" ? figureEmbedding(count, parsed.level, random)
+    : parsed.mechanics === "swap" && parsed.level % 2 === 0
+      ? multipleFigures(count, parsed.level, random) : meshEmbedding(count, parsed.level, random);
   const order = shuffled(Array.from({ length: count }, (_, i) => i), random), inverse = Array<number>(count);
   order.forEach((oldIndex, newIndex) => { inverse[oldIndex] = newIndex; });
   const solution = order.map(index => graph.solution[index]);
@@ -406,7 +298,10 @@ function generateModernPuzzle(parsed: UntangleSeed): UntanglePuzzle {
     const [x, y] = RING[Math.floor(i * RING.length / count)];
     return { x: 500 + x, y: 500 + y };
   });
-  const witnesses = parsed.level <= 2 ? 2 : parsed.level <= 8 ? 3 : 4;
+  let witnesses = parsed.level <= 2 ? 2 : parsed.level <= 8 ? 3 : 4;
+  // Odd-sized separate figures may not admit a perfect edge matching. Measure
+  // the available witnesses instead of forcing triangles back into a grid.
+  if (parsed.version === "KNOT3") while (witnesses > 1 && !edgeMatching(edges, witnesses * 2)) witnesses--;
   const targetCrossings = Math.ceil(edges.length * (.55 + parsed.level * .018));
   let initial: Point[] | undefined;
   for (let attempt = 0; attempt < 96; attempt++) {

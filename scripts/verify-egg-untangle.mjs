@@ -308,7 +308,7 @@ try {
   await check('hardmode-fixed-swaps-components-and-legacy', async () => {
     const desktop = await setup(), mobile = await setup({ width: 390, height: 844, mobile: true });
     const seed = campaignSeed(4, 'swap'), puzzle = generatePuzzle(seed);
-    assert.ok(componentCount(puzzle) >= 2, 'hard even level has separate figures');
+    assert.ok(componentCount(puzzle) >= 2, 'this campaign clutch has separate figures');
     await openGame(desktop.page, 'ru', `?nest=${seed}`);
     const initial = await pointsOnPage(desktop.page);
     assert.deepEqual(initial, puzzle.initial);
@@ -353,7 +353,7 @@ try {
 
   await check('animated-swaps-settlement-and-tutorial-progression', async () => {
     const { page, errors } = await setup({ reducedMotion: 'no-preference' });
-    const seed = 'KNOT1-12-ABC', puzzle = generatePuzzle(seed);
+    const seed = 'KNOT3-12-ABC', puzzle = generatePuzzle(seed);
     await openGame(page, 'en', `?nest=${seed}`);
     assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), false);
     const initial = await pointsOnPage(page), target = swapNodes(initial, 0, 1);
@@ -434,11 +434,11 @@ try {
       await reduced.page.getByRole('button', { name: 'Следующая ступень →', exact: true }).click();
     }
     assert.equal(await seedOnPage(reduced.page), campaignSeed(4, 'swap'));
-    assert.equal(parseSeed(await seedOnPage(reduced.page)).version, 'KNOT1', 'step four retains the published ramp');
+    assert.equal(parseSeed(await seedOnPage(reduced.page)).version, 'KNOT3', 'step four enters the varied figure campaign');
     await noOverflow(reduced.page);
     await reduced.page.screenshot({ path: `${output}/tutorial-bridge-mobile.png`, fullPage: true });
     assert.deepEqual(errors, []); assert.deepEqual(reduced.errors, []);
-    return { forward, undo, redo, rapidInputBlocked: true, canonicalPersistence: true, pauseSettles: true, visibilitySignalSettles: true, ruleSwitchSettles: true, reloadSettles: true, victoryAfterLanding: true, reducedMotionImmediate: true, tutorialSteps, legacyStepFour: true, errors: [] };
+    return { forward, undo, redo, rapidInputBlocked: true, canonicalPersistence: true, pauseSettles: true, visibilitySignalSettles: true, ruleSwitchSettles: true, reloadSettles: true, victoryAfterLanding: true, reducedMotionImmediate: true, tutorialSteps, newFigureStepFour: true, errors: [] };
   });
 
   await check('account-offline-retry-cloud-and-privacy', async () => {

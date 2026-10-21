@@ -214,3 +214,15 @@ test('partial quota failure in any session write reports nondurable while retain
     assert.equal(JSON.parse(localStorage.getItem(keys.receipt)).ticket.id, proof.ticket.id);
   }
 });
+
+
+test('new figure records preserve the old hardmode receipt and credit a stage only once', () => {
+  const owner = 'new-figure-progress';
+  const old = { seed: campaignSeed(12, 'swap', 'KNOT1'), level: 12, mode: 'campaign', moves: 20, seconds: 60, hints: 0 };
+  const current = { ...old, seed: campaignSeed(12, 'swap'), moves: 15 };
+  saveNestRecord(owner, old); saveNestRecord(owner, current);
+  const progress = readNestProgress(owner);
+  assert.deepEqual(progress.hardCampaign, [12]);
+  assert.equal(progress.puzzles.length, 2);
+  assert.deepEqual(progress.puzzles.find(record => record.seed === old.seed), old);
+});

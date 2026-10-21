@@ -44,6 +44,8 @@
 .nest-chapter h3 { color: #f4e1be; font-size: clamp(20px, 3.5vw, 28px); margin: 4px 0 0; }
 .nest-chapter > p { max-width: 230px; font-size: 12px; color: var(--nest-muted); font-style: italic; text-align: right; }
 .nest-story { margin: -8px 0 18px; color: #d6c6b4; font: 14px/1.7 var(--font-serif-headers, serif); }
+.nest-archive { margin: 0 0 18px; font: 12px/1.65 var(--font-sans-ui, sans-serif); color: var(--nest-muted); }
+.nest-archive p { margin: 0 0 10px; }
 .nest-controls { margin: 0 0 16px; color: #dfcfb9; font: 12px/1.65 var(--font-sans-ui, sans-serif); }
 .nest-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
 .nest-metrics > div { padding: 10px 4px; text-align: center; background: #0c0a0c2b; border: 1px solid #a889531f; border-radius: 10px; }
@@ -68,18 +70,18 @@
 .nest-thread.is-connected:not(.is-crossed) .nest-thread-core { stroke: #f7e0a0; }
 .nest-egg { cursor: grab; outline: none; }
 .nest-egg:active { cursor: grabbing; }
-.nest-egg > path { stroke: #ffedb785; stroke-width: 1.4px; }
+.nest-egg-shell { stroke: #ffedb785; stroke-width: 1.4px; }
 .nest-egg-halo { fill: none; stroke: transparent; stroke-width: 3; }
 .nest-egg.is-selected .nest-egg-halo, .nest-egg:focus-visible .nest-egg-halo { stroke: #9bd0cf; }
 .nest-egg.is-blocked .nest-egg-halo { stroke: #efa18e; stroke-dasharray: 5 4; }
 .nest-egg.is-hint .nest-egg-halo { stroke: #b3dedc; stroke-width: 5; stroke-dasharray: 7 6; }
 .nest-egg.is-swapping .nest-egg-halo { fill: #ebc77e10; stroke: #f4d793; stroke-width: 3; }
 .nest-board.is-swapping .nest-egg { cursor: default; }
-.nest-board.is-swapping .nest-egg.is-swapping > path { stroke: #ffe7a9; stroke-width: 2.5; }
+.nest-board.is-swapping .nest-egg.is-swapping .nest-egg-shell { stroke: #ffe7a9; stroke-width: 2.5; }
 .nest-egg > text { fill: #4c3013; text-anchor: middle; font: 600 18px var(--font-sans-ui, sans-serif); pointer-events: none; }
 .nest-hint { pointer-events: none; }
 .nest-hint line { stroke: #a4cdcb80; stroke-width: 3; stroke-dasharray: 7 10; }
-.nest-hint ellipse { fill: #a4cdcb0d; stroke: #b3dedc; stroke-width: 3; stroke-dasharray: 7 6; }
+.nest-hint path { fill: #a4cdcb0d; stroke: #b3dedc; stroke-width: 3; stroke-dasharray: 7 6; }
 .nest-hint text { fill: #b3dedc; text-anchor: middle; font: 20px var(--font-sans-ui, sans-serif); }
 .nest-board.is-solved { border-color: #aacda57a; box-shadow: inset 0 0 65px #b7d0940c; }
 .nest-board.is-solved .nest-thread-core { stroke: #cae1a2; }

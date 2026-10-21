@@ -1,7 +1,7 @@
 {
   "date": "2026-10-22",
   "generator": "KNOT3",
-  "runtimeImage": "sha256:602cd0424af1bdba22148adcba49a00e9477c3ac0e108b8a25105a6143e68c2c",
+  "runtimeImage": "sha256:a1ee7a65a93be4d251e811d21a8522dded4419c9b6658531f08c4c2ac584353b",
   "rollbackImage": "egg-culture-web:rollback-before-knot3-20261022",
   "unitTests": {
     "passed": 332,
@@ -80,7 +80,24 @@
     ],
     "pageErrors": 0,
     "networkWrites": "blocked",
-    "artifactsOnBigOne": "/tmp/egg-knot3-20261022/public",
+    "artifactsOnBigOne": "/tmp/egg-knot3-20261022/vite-public",
     "reviewed": "desktop gallery and 390/320 px solved boards"
+  },
+  "initialRuntimeImage": "sha256:602cd0424af1bdba22148adcba49a00e9477c3ac0e108b8a25105a6143e68c2c",
+  "dependencyPatch": {
+    "viteBefore": "8.3.0",
+    "viteAfter": "8.3.5",
+    "productionAuditVulnerabilities": 0,
+    "testsPassedInPatchedImage": 332,
+    "browserScenariosRepeated": 6,
+    "publicSolvesRepeated": 11,
+    "unchangedApplicationSourceFiles": 220,
+    "unchangedPublicAssets": 24,
+    "unchangedPrivateAssets": 2,
+    "rollbackImage": "egg-culture-web:rollback-before-knot3-vite-20261022",
+    "runtimeConfigurationUnchanged": true,
+    "mountOrderNormalized": true,
+    "healthy": true,
+    "restarts": 0
   }
 }

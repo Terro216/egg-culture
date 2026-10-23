@@ -10,7 +10,7 @@ assert.ok(['http://127.0.0.1:4453', 'https://egg.ilyamedve.dev'].includes(origin
 const output = process.env.NEST_ARTIFACTS || '/tmp/egg-knot3-browser';
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+const browser = await chromium.launch({ headless: true, ...(process.env.NEST_CHROMIUM_EXECUTABLE ? { executablePath: process.env.NEST_CHROMIUM_EXECUTABLE } : {}), args: ['--no-sandbox'] });
 const results = [], images = [];
 const seeds = [campaignSeed(4, 'swap')], partitions = new Set();
 for (let value = 0; value < 120 && seeds.length < 7; value++) {
@@ -26,6 +26,7 @@ try {
   for (const [width, lang] of [[1200, 'ru'], [390, 'en'], [320, 'ru']]) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, isMobile: width < 600, hasTouch: width < 600, reducedMotion: 'reduce', serviceWorkers: 'block' });
     await context.route('**/*', route => new URL(route.request().url()).origin === origin && ['GET', 'HEAD'].includes(route.request().method()) ? route.continue() : route.abort());
+    await context.addInitScript(() => localStorage.setItem('egg_untangle_focus', '0'));
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
     if (width === 1200) {
@@ -33,8 +34,8 @@ try {
       await page.locator('.nest-egg').first().waitFor();
       assert.deepEqual(await readPoints(page), generatePuzzle('KNOT1-12-ABC').initial);
       await page.getByRole('button', { name: 'Открыть новые фигуры', exact: true }).click();
-      assert.equal(new URL(page.url()).searchParams.get('nest'), 'KNOT3-12-ABC');
-      assert.deepEqual(await readPoints(page), generatePuzzle('KNOT3-12-ABC').initial);
+      assert.equal(new URL(page.url()).searchParams.get('nest'), 'KNOT4-12-ABC');
+      assert.deepEqual(await readPoints(page), generatePuzzle('KNOT4-12-ABC').initial);
       assert.ok(await page.evaluate(() => localStorage.getItem('egg_untangle_v1:guest:session:KNOT1-12-ABC')), 'the archived layout is retained');
     }
     for (const seed of width === 1200 ? seeds : [seeds[1], seeds.at(-1)]) {

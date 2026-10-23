@@ -199,7 +199,7 @@ export function createRoadRecordStore(directory: string) {
   const untangleProgress = (player: string): UntangleProgress => {
     const campaigns = db.prepare("SELECT seed, level FROM untangle_puzzles WHERE player = ? AND mode = 'campaign' ORDER BY level").all(player);
     const levels = (versions: readonly string[]) => [...new Set(campaigns.filter(row => versions.includes(parseSeed(String(row.seed))?.version ?? "")).map(row => Number(row.level)))].sort((a, b) => a - b);
-    const campaign = levels(["NEST2", "NEST3"]), hardCampaign = levels(["KNOT1", "KNOT2", "KNOT3"]), legacyCampaign = levels(["NEST1"]);
+    const campaign = levels(["NEST2", "NEST3"]), hardCampaign = levels(["KNOT1", "KNOT2", "KNOT3", "KNOT4"]), legacyCampaign = levels(["NEST1"]);
     const days = db.prepare("SELECT DISTINCT day FROM untangle_puzzles WHERE player = ? AND mode = 'daily' ORDER BY day").all(player).map(row => String(row.day));
     let consecutive = 0, bestDailyStreak = 0, previous = -Infinity;
     for (const day of days) {
@@ -216,7 +216,7 @@ export function createRoadRecordStore(directory: string) {
       seed: String(row.seed), level: Number(row.level), mode: row.mode as UntanglePuzzleRecord["mode"],
       ...(row.mode === "daily" ? { day: String(row.day) } : {}), moves: Number(row.moves), seconds: Number(row.seconds), hints: Number(row.hints), solves: Number(row.solves),
     }));
-    const totals = db.prepare("SELECT COUNT(*) AS total, COALESCE(SUM(seed LIKE 'KNOT1-%' OR seed LIKE 'KNOT2-%' OR seed LIKE 'KNOT3-%'), 0) AS hard FROM untangle_puzzles WHERE player = ?").get(player)!;
+    const totals = db.prepare("SELECT COUNT(*) AS total, COALESCE(SUM(seed LIKE 'KNOT1-%' OR seed LIKE 'KNOT2-%' OR seed LIKE 'KNOT3-%' OR seed LIKE 'KNOT4-%'), 0) AS hard FROM untangle_puzzles WHERE player = ?").get(player)!;
     return { campaignVersion: 2, campaign, hardCampaign, legacyCampaign, puzzles, totalSolved: Number(totals.total), hardSolved: Number(totals.hard), dailySolved: days.length, dailyStreak, bestDailyStreak };
   };
   const validateUntangle = (result: PortalRun) => {

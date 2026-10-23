@@ -57,7 +57,8 @@ async function check(name, run) {
 async function openGame(page, lang = 'ru', query = '') {
   await page.goto(`${origin}/${lang}/untangle/${query}`, { waitUntil: 'networkidle' });
   await page.locator('.nest-egg').first().waitFor();
-  await page.locator('.nest-modes button:not(:disabled)').first().waitFor();
+  await page.locator('.nest-modes button:not(:disabled)').first().waitFor({ state: 'attached' });
+  if (await page.locator('.egg-nest.is-focused').count()) await page.locator('.nest-view-controls button').click();
 }
 
 const seedOnPage = async page => parseSeed((await page.locator('.nest-footer button').innerText()).replace(/\s*↗$/, '').trim())?.seed;
@@ -307,7 +308,8 @@ try {
 
   await check('hardmode-fixed-swaps-components-and-legacy', async () => {
     const desktop = await setup(), mobile = await setup({ width: 390, height: 844, mobile: true });
-    const seed = campaignSeed(4, 'swap'), puzzle = generatePuzzle(seed);
+    // Pin the published disconnected fixture; future campaign seeds may join shapes.
+    const seed = campaignSeed(4, 'swap', 'KNOT3'), puzzle = generatePuzzle(seed);
     assert.ok(componentCount(puzzle) >= 2, 'this campaign clutch has separate figures');
     await openGame(desktop.page, 'ru', `?nest=${seed}`);
     const initial = await pointsOnPage(desktop.page);
@@ -434,7 +436,7 @@ try {
       await reduced.page.getByRole('button', { name: 'Следующая ступень →', exact: true }).click();
     }
     assert.equal(await seedOnPage(reduced.page), campaignSeed(4, 'swap'));
-    assert.equal(parseSeed(await seedOnPage(reduced.page)).version, 'KNOT3', 'step four enters the varied figure campaign');
+    assert.equal(parseSeed(await seedOnPage(reduced.page)).version, 'KNOT4', 'step four enters the varied figure campaign');
     await noOverflow(reduced.page);
     await reduced.page.screenshot({ path: `${output}/tutorial-bridge-mobile.png`, fullPage: true });
     assert.deepEqual(errors, []); assert.deepEqual(reduced.errors, []);

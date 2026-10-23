@@ -69,7 +69,7 @@ test('versioned seeds round-trip canonically and reject unsupported, oversized o
   assert.equal(parseSeed('NEST1-01-0000000').seed, 'NEST1-1-0');
   assert.equal(parseSeed(`https://egg.example/ru/games?nest=${seed}`).seed, seed);
   assert.equal(parseSeed(`https://egg.example/ru/games?untangle=${seed}`).seed, seed);
-  for (const invalid of ['NEST4-1-0', 'KNOT4-1-0', 'NEST3-4-0', 'KNOT2-4-0', 'NEST1-0-0', 'NEST1-25-0', 'NEST1-1-1Z141Z4', 'NEST1-1--1', 'NEST1-1-A\nB', 'x'.repeat(2049), null, {}, 'https://egg.example/?other=NEST1-1-0']) {
+  for (const invalid of ['NEST4-1-0', 'KNOT5-1-0', 'NEST3-4-0', 'KNOT2-4-0', 'NEST1-0-0', 'NEST1-25-0', 'NEST1-1-1Z141Z4', 'NEST1-1--1', 'NEST1-1-A\nB', 'x'.repeat(2049), null, {}, 'https://egg.example/?other=NEST1-1-0']) {
     assert.equal(parseSeed(invalid), null, String(invalid));
   }
   for (const level of [-1, 0, 25, NaN, 1.5]) assert.throws(() => formatSeed(level, 1), RangeError);
@@ -233,7 +233,7 @@ test('hardmode supports independent figures and all fixed-slot layouts can be so
 });
 
 test('default campaigns keep the lessons and use current generators; explicit archived editions remain available', () => {
-  for (const [mechanics, tutorial, published] of [['drag', 'NEST3', 'NEST2'], ['swap', 'KNOT2', 'KNOT3']]) {
+  for (const [mechanics, tutorial, published] of [['drag', 'NEST3', 'NEST2'], ['swap', 'KNOT2', 'KNOT4']]) {
     for (let level = 1; level <= LEVEL_COUNT; level++) {
       const seed = campaignSeed(level, mechanics), expectedVersion = level <= 3 ? tutorial : published;
       assert.equal(parseSeed(seed).version, expectedVersion);

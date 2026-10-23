@@ -54,6 +54,7 @@
 .nest-metrics span { font: 10px/1.4 var(--font-sans-ui, sans-serif); color: #c7b8a5; }
 .nest-board { position: relative; overflow: hidden; border: 1px solid #b9926145; border-radius: 18px; background: radial-gradient(ellipse at center, #393130 0%, #2b2527 65%, #211d23 100%); }
 .nest-board > svg { display: block; width: 100%; height: auto; aspect-ratio: 1; touch-action: none; user-select: none; -webkit-user-select: none; }
+.nest-board, .nest-board * { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
 .nest-orbit { fill: none; stroke: #d1b78d16; stroke-width: 1.4; stroke-dasharray: 2 10; }
 .nest-orbit-inner { stroke: #d1b78d0c; stroke-dasharray: none; }
 .nest-watermark, .nest-watermark-sub { fill: #e5cb9d0b; text-anchor: middle; font: 45px var(--font-serif-headers, serif); letter-spacing: 14px; pointer-events: none; }
@@ -61,8 +62,12 @@
 .nest-thread { pointer-events: none; }
 .nest-thread-core { transition: stroke .18s, opacity .18s; }
 .nest-thread.is-muted { opacity: .38; }
+.nest-board.is-inspecting .nest-thread.is-muted, .nest-egg.is-muted { opacity: .15; }
+.nest-thread.is-inspected .nest-thread-core { stroke-width: 7px; }
+.nest-egg.is-inspected .nest-egg-halo { stroke: #b3dedc; }
 .nest-slot { fill: #0c0a0c30; stroke: #c7b8a547; stroke-width: 2; stroke-dasharray: 3 7; pointer-events: none; }
 .nest-board.is-hard .nest-egg, .nest-board.is-hard .nest-egg:active { cursor: pointer; }
+.nest-board.is-hard > svg { touch-action: pan-y; -webkit-touch-callout: none; }
 .nest-thread-shadow { stroke: #140d17b3; stroke-width: 10px; stroke-linecap: round; }
 .nest-thread-core { stroke: #d9b66d; stroke-width: 4px; stroke-linecap: round; }
 .nest-thread.is-crossed .nest-thread-core { stroke: #e79989; stroke-dasharray: 10 5; }
@@ -110,5 +115,38 @@
 .nest-help { margin-top: 24px; border-top: 1px solid #c3a87a30; padding-top: 16px; }
 .nest-help summary { color: #e5c792; cursor: pointer; min-height: 44px; font: 14px/1.8 var(--font-serif-headers, serif); }
 .nest-help p { margin: 0 0 12px; font: 12px/1.8 var(--font-sans-ui, sans-serif); color: #c7b8a5; }
+.nest-view-controls { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 16px; }
+.nest-view-controls > strong { display: none; font: 13px/1.4 var(--font-sans-ui, sans-serif); }
+.nest-board-tools { display: flex; justify-content: space-between; gap: 8px; margin: 10px 0; }
+.nest-board-tools button { font-size: 12px; padding: 8px 12px; }
+.nest-board.is-zoomed { overflow: auto; max-height: 70dvh; overscroll-behavior: contain; scrollbar-color: #c7a870 #2b2527; }
+.nest-board.is-zoomed > svg { width: 200%; max-width: none; touch-action: pan-x pan-y; }
+.egg-nest.is-focused { position: fixed; inset: 0; z-index: 1000; width: 100%; max-width: none; height: 100dvh; margin: 0; padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); border: 0; border-radius: 0; overflow: auto; overscroll-behavior: contain; scrollbar-color: #c7a870 #211c20; }
+.egg-nest.is-focused .nest-setup, .egg-nest.is-focused .nest-chapter, .egg-nest.is-focused .nest-story, .egg-nest.is-focused .nest-archive, .egg-nest.is-focused .nest-controls, .egg-nest.is-focused .nest-footer, .egg-nest.is-focused .nest-best, .egg-nest.is-focused .nest-help { display: none; }
+.egg-nest.is-focused .nest-view-controls { justify-content: space-between; margin: 0 auto 8px; max-width: 900px; }
+.egg-nest.is-focused .nest-view-controls > strong { display: block; }
+.egg-nest.is-focused .nest-view-controls button { padding: 8px 12px; font-size: 12px; }
+.egg-nest.is-focused .nest-metrics { max-width: 900px; margin: 0 auto; gap: 6px; }
+.egg-nest.is-focused .nest-metrics > div { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 4px 3px; border: 0; border-radius: 0; background: transparent; }
+.egg-nest.is-focused .nest-metrics strong { font-size: 22px; }
+.egg-nest.is-focused .nest-metrics span { font-size: 10px; }
+.egg-nest.is-focused .nest-board-tools { max-width: 900px; margin: 4px auto 8px; }
+.egg-nest.is-focused .nest-board { width: min(100%, calc(100dvh - 270px)); aspect-ratio: 1; max-width: 900px; margin: 0 auto; border-radius: 12px; }
+.egg-nest.is-focused .nest-board.is-zoomed { max-height: calc(100dvh - 270px); }
+.egg-nest.is-focused .nest-feedback { max-width: 700px; min-height: 34px; margin: 8px auto 4px; }
+.egg-nest.is-focused > .nest-actions { display: grid; grid-template-columns: repeat(5, 1fr); max-width: 700px; gap: 4px; margin: 0 auto; }
+.egg-nest.is-focused > .nest-actions button { min-width: 0; padding: 8px 2px; font-size: 11px; }
+.egg-nest.is-focused .nest-result { max-width: 700px; margin: 10px auto; padding: 14px; }
+.egg-nest.is-focused .nest-result h3 { font-size: 24px; }
+.egg-nest.is-focused .nest-result > p:not(.nest-eyebrow) { margin: 8px 0 14px; }
+@media (max-height: 500px) and (min-width: 600px) {
+  .egg-nest.is-focused { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto 1fr; gap: 6px 16px; align-content: start; }
+  .egg-nest.is-focused .nest-view-controls { grid-column: 1 / -1; width: 100%; margin-bottom: 0; }
+  .egg-nest.is-focused .nest-board, .egg-nest.is-focused .nest-board.is-zoomed { grid-column: 1; grid-row: 2 / 6; width: min(100%, calc(100dvh - 80px)); max-height: calc(100dvh - 80px); align-self: start; }
+  .egg-nest.is-focused .nest-metrics { grid-column: 2; grid-row: 2; width: 100%; }
+  .egg-nest.is-focused .nest-board-tools { grid-column: 2; grid-row: 3; width: 100%; }
+  .egg-nest.is-focused .nest-feedback { grid-column: 2; grid-row: 4; }
+  .egg-nest.is-focused > .nest-actions, .egg-nest.is-focused .nest-result { grid-column: 2; grid-row: 5; align-self: start; }
+}
 @media (max-width: 600px) { .egg-nest { border-radius: 16px; padding: 15px; } .nest-seal { display: none; } .nest-levels { grid-template-columns: repeat(6, 1fr); gap: 6px; } .nest-chapter > p { display: none; } .nest-modes button { font-size: 11px; } .nest-chapter { margin: 20px 0 14px; } .nest-metrics { gap: 5px; } .nest-metrics strong { font-size: 23px; } .nest-board { margin-left: -7px; margin-right: -7px; border-radius: 12px; } .nest-actions { gap: 6px; } .nest-actions button { padding: 9px 10px; } .nest-thread-core { stroke-width: 5px; } .nest-footer { justify-content: center; } }
 @media (prefers-reduced-motion: reduce) { .egg-nest * { transition: none !important; animation: none !important; } }

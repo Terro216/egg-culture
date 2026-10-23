@@ -1,0 +1,351 @@
+{
+  "version": "KNOT4",
+  "date": "2026-10-23",
+  "image": "sha256:6e5376ba3ce16ef0b66f27b1e398e825dce3b502380dbdba4cb1ffeb053a1d98",
+  "rollbackImage": "sha256:addc8e6428e0704ccb0897849f27dfe9d416211adc0a6db7e78e17ddcf66af69",
+  "validation": {
+    "unitTestsPassed": 371,
+    "typechecksPassed": [
+      "check",
+      "check:games"
+    ],
+    "productionAuditVulnerabilities": 0,
+    "generation": {
+      "boards": 2400,
+      "componentCounts": {
+        "1": 443,
+        "2": 828,
+        "3": 495,
+        "4": 380,
+        "5": 254
+      },
+      "levels": [
+        {
+          "level": 1,
+          "min": 2,
+          "max": 2,
+          "mean": 2
+        },
+        {
+          "level": 2,
+          "min": 2,
+          "max": 2,
+          "mean": 2
+        },
+        {
+          "level": 3,
+          "min": 3,
+          "max": 3,
+          "mean": 3
+        },
+        {
+          "level": 4,
+          "min": 3,
+          "max": 3,
+          "mean": 3
+        },
+        {
+          "level": 5,
+          "min": 3,
+          "max": 4,
+          "mean": 3.3
+        },
+        {
+          "level": 6,
+          "min": 3,
+          "max": 4,
+          "mean": 3.46
+        },
+        {
+          "level": 7,
+          "min": 4,
+          "max": 5,
+          "mean": 4.52
+        },
+        {
+          "level": 8,
+          "min": 4,
+          "max": 5,
+          "mean": 4.54
+        },
+        {
+          "level": 9,
+          "min": 5,
+          "max": 6,
+          "mean": 5.54
+        },
+        {
+          "level": 10,
+          "min": 5,
+          "max": 6,
+          "mean": 5.44
+        },
+        {
+          "level": 11,
+          "min": 6,
+          "max": 7,
+          "mean": 6.58
+        },
+        {
+          "level": 12,
+          "min": 6,
+          "max": 7,
+          "mean": 6.52
+        },
+        {
+          "level": 13,
+          "min": 7,
+          "max": 8,
+          "mean": 7.6
+        },
+        {
+          "level": 14,
+          "min": 7,
+          "max": 8,
+          "mean": 7.65
+        },
+        {
+          "level": 15,
+          "min": 8,
+          "max": 9,
+          "mean": 8.61
+        },
+        {
+          "level": 16,
+          "min": 8,
+          "max": 9,
+          "mean": 8.65
+        },
+        {
+          "level": 17,
+          "min": 9,
+          "max": 10,
+          "mean": 9.74
+        },
+        {
+          "level": 18,
+          "min": 9,
+          "max": 10,
+          "mean": 9.63
+        },
+        {
+          "level": 19,
+          "min": 10,
+          "max": 11,
+          "mean": 10.76
+        },
+        {
+          "level": 20,
+          "min": 10,
+          "max": 11,
+          "mean": 10.81
+        },
+        {
+          "level": 21,
+          "min": 11,
+          "max": 12,
+          "mean": 11.8
+        },
+        {
+          "level": 22,
+          "min": 11,
+          "max": 12,
+          "mean": 11.74
+        },
+        {
+          "level": 23,
+          "min": 12,
+          "max": 13,
+          "mean": 12.78
+        },
+        {
+          "level": 24,
+          "min": 12,
+          "max": 13,
+          "mean": 12.82
+        }
+      ],
+      "campaign": [
+        {
+          "seed": "KNOT2-1-163POXC",
+          "eggs": 4,
+          "measuredMoves": 1
+        },
+        {
+          "seed": "KNOT2-2-16XOI09",
+          "eggs": 6,
+          "measuredMoves": 2
+        },
+        {
+          "seed": "KNOT2-3-16NOWBA",
+          "eggs": 8,
+          "measuredMoves": 3
+        },
+        {
+          "seed": "KNOT4-4-1W1EBE9",
+          "eggs": 10,
+          "measuredMoves": 3
+        },
+        {
+          "seed": "KNOT4-5-1VREPPA",
+          "eggs": 10,
+          "measuredMoves": 4
+        },
+        {
+          "seed": "KNOT4-6-1VHF40B",
+          "eggs": 12,
+          "measuredMoves": 4
+        },
+        {
+          "seed": "KNOT4-7-1V7FIBC",
+          "eggs": 12,
+          "measuredMoves": 4
+        },
+        {
+          "seed": "KNOT4-8-1UXFWMD",
+          "eggs": 14,
+          "measuredMoves": 4
+        },
+        {
+          "seed": "KNOT4-9-1UNGAXE",
+          "eggs": 14,
+          "measuredMoves": 5
+        },
+        {
+          "seed": "KNOT4-10-16IF0A6",
+          "eggs": 15,
+          "measuredMoves": 6
+        },
+        {
+          "seed": "KNOT4-11-16SELZ5",
+          "eggs": 16,
+          "measuredMoves": 6
+        },
+        {
+          "seed": "KNOT4-12-15YFSW8",
+          "eggs": 16,
+          "measuredMoves": 7
+        },
+        {
+          "seed": "KNOT4-13-168FEL7",
+          "eggs": 17,
+          "measuredMoves": 8
+        },
+        {
+          "seed": "KNOT4-14-17MDF22",
+          "eggs": 18,
+          "measuredMoves": 8
+        },
+        {
+          "seed": "KNOT4-15-17WD0R1",
+          "eggs": 18,
+          "measuredMoves": 9
+        },
+        {
+          "seed": "KNOT4-16-172E7O4",
+          "eggs": 19,
+          "measuredMoves": 8
+        },
+        {
+          "seed": "KNOT4-17-17CDTD3",
+          "eggs": 20,
+          "measuredMoves": 10
+        },
+        {
+          "seed": "KNOT4-18-14AI6QE",
+          "eggs": 20,
+          "measuredMoves": 9
+        },
+        {
+          "seed": "KNOT4-19-14KHSFD",
+          "eggs": 21,
+          "measuredMoves": 11
+        },
+        {
+          "seed": "KNOT4-20-14UE8MD",
+          "eggs": 22,
+          "measuredMoves": 11
+        },
+        {
+          "seed": "KNOT4-21-14KEMXE",
+          "eggs": 22,
+          "measuredMoves": 12
+        },
+        {
+          "seed": "KNOT4-22-14AF18F",
+          "eggs": 23,
+          "measuredMoves": 12
+        },
+        {
+          "seed": "KNOT4-23-140FFJG",
+          "eggs": 24,
+          "measuredMoves": 13
+        },
+        {
+          "seed": "KNOT4-24-13QFTUH",
+          "eggs": 24,
+          "measuredMoves": 13
+        }
+      ],
+      "worstMs": 204.5801550000033,
+      "worstSeed": "KNOT4-23-1QJBCPJ",
+      "failures": [],
+      "seconds": 82.04190698400001
+    },
+    "browserRegressionScenariosPassed": 6,
+    "figureSolvesPassed": 11,
+    "newFeatureScenariosPassed": 4,
+    "publicNewFeatureScenariosPassed": 4,
+    "viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        568
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        1200,
+        900
+      ]
+    ],
+    "languages": [
+      "ru",
+      "en"
+    ],
+    "publicNetworkWritesBlocked": true
+  },
+  "deployment": {
+    "image": "sha256:6e5376ba3ce16ef0b66f27b1e398e825dce3b502380dbdba4cb1ffeb053a1d98",
+    "health": "healthy",
+    "restarts": 0,
+    "neighborsPreserved": true,
+    "neighborCount": 79,
+    "tablesPreserved": true,
+    "tableCount": 20,
+    "filesPreserved": true,
+    "fileCount": 16,
+    "integrity": [
+      {
+        "integrity_check": "ok"
+      }
+    ],
+    "foreignKeys": [],
+    "sourceMatchesCandidate": true,
+    "rawRuntimeFingerprintMatched": false,
+    "environmentValuesPreserved": true,
+    "composeServiceConfigurationPreserved": true,
+    "configurationNote": "The broad Docker metadata fingerprint differs. The actual Compose service config hash is unchanged, and environment values, mounts, networks, command, healthcheck, and restart policy were verified separately."
+  },
+  "sourceScope": {
+    "runtimeFilesChanged": 9,
+    "otherSourceAndAssetFilesUnchanged": 254
+  },
+  "artifactsOnBigOne": "/tmp/egg-knot4-20261023",
+  "backupOnBigOne": "/tmp/egg-knot4-private-20261023/records.sqlite"
+}

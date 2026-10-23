@@ -6,7 +6,7 @@ import { graphComponents } from '../src/features/EggUntangle/geometry.ts';
 
 test('KNOT3 has legal separated slots, reproducible solutions and usable hints throughout the difficulty range', () => {
   for (let level = 1; level <= 24; level++) for (let sample = 0; sample < 40; sample++) {
-    const seed = sample ? formatSeed(level, Math.imul(sample, 2654435761) >>> 0, 'swap') : campaignSeed(level, 'swap', 'KNOT3');
+    const seed = sample ? formatSeed(level, Math.imul(sample, 2654435761) >>> 0, 'swap', 'KNOT3') : campaignSeed(level, 'swap', 'KNOT3');
     const puzzle = generatePuzzle(seed), { initial, solution, edges } = puzzle;
     assert.equal(puzzle.version, 'KNOT3');
     assert.ok(analyzeBoard(solution, edges).solved, seed);
@@ -36,7 +36,7 @@ test('different seeds change component sizes and actual shapes on both odd and e
     const sizes = new Set(), counts = new Set(), kinds = new Set();
     let fullySeparate = 0;
     for (let seed = 0; seed < 160; seed++) {
-      const { solution, edges } = generatePuzzle(formatSeed(level, seed, 'swap'));
+      const { solution, edges } = generatePuzzle(formatSeed(level, seed, 'swap', 'KNOT3'));
       const groups = graphComponents(solution.length, edges);
       counts.add(groups.length);
       sizes.add(groups.map(group => group.length).sort((a, b) => a - b).join(','));
@@ -65,17 +65,17 @@ test('different seeds change component sizes and actual shapes on both odd and e
 
 test('new hard clutches cannot be finished by one lucky swap', () => {
   for (const level of [1, 2, 4, 7, 12, 18, 24]) for (let seed = 0; seed < 10; seed++) {
-    const puzzle = generatePuzzle(formatSeed(level, seed, 'swap'));
+    const puzzle = generatePuzzle(formatSeed(level, seed, 'swap', 'KNOT3'));
     for (let a = 0; a < puzzle.initial.length; a++) for (let b = a + 1; b < puzzle.initial.length; b++) {
       assert.equal(analyzeBoard(swapNodes(puzzle.initial, a, b), puzzle.edges).solved, false, puzzle.seed);
     }
   }
 });
 
-test('new campaign, daily and free entrypoints reach KNOT3 while old shares keep their own edition', () => {
-  assert.equal(parseSeed(campaignSeed(4, 'swap')).version, 'KNOT3');
-  assert.equal(parseSeed(dailySeed('2026-10-22', 'swap')).version, 'KNOT3');
-  assert.equal(parseSeed(formatSeed(1, 42, 'swap')).version, 'KNOT3');
+test('new campaign, daily and free entrypoints reach KNOT4 while old shares keep their own edition', () => {
+  assert.equal(parseSeed(campaignSeed(4, 'swap')).version, 'KNOT4');
+  assert.equal(parseSeed(dailySeed('2026-10-22', 'swap')).version, 'KNOT4');
+  assert.equal(parseSeed(formatSeed(1, 42, 'swap')).version, 'KNOT4');
   assert.equal(nextCampaignSeed(campaignSeed(3, 'swap')), campaignSeed(4, 'swap'));
   assert.equal(nextCampaignSeed(campaignSeed(8, 'swap', 'KNOT1')), campaignSeed(9, 'swap', 'KNOT1'));
   assert.notEqual(dailySeed('2026-10-22', 'swap'), dailySeed('2026-10-22', 'swap', 'KNOT1'));

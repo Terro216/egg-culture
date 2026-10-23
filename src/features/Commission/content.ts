@@ -15,7 +15,7 @@ export const tools: Record<Tool, { title: Words; action: Words; description: Wor
   scale: { title: w("Весы", "Scales"), action: w("Взвесить образец", "Weigh the specimen"), description: w("Сравните измерение с диапазоном в паспорте. Допуск: ±2 г.", "Compare the reading with the passport range. Tolerance: ±2 g."), cost: 1, day: 1 },
   light: { title: w("Овоскоп", "Candling lamp"), action: w("Просветить образец", "Candle the specimen"), description: w("Сопоставьте воздушную камеру с заявленной категорией выдержки.", "Compare the air cell with the declared aging category."), cost: 1, day: 2 },
   plate: { title: w("Контрольное блюдце", "Examination dish"), action: w("Вскрыть контрольный образец", "Open the control specimen"), description: w("На исследование расходуется один выделенный образец, а не вся партия. Протокол сохраняется.", "One designated control specimen is used, not the whole batch. Its examination is retained."), cost: 3, day: 4 },
-  archive: { title: w("Реестр", "Registry"), action: w("Запросить запись", "Request the record"), description: w("Проверьте печать, срок свидетельства и цепочку происхождения. Сведения приходят одним ответом.", "Check the seal, certificate and chain of provenance. The registry returns one consolidated reply."), cost: 2, day: 3 },
+  archive: { title: w("Реестр", "Registry"), action: w("Запросить запись", "Request the record"), description: w("Проверьте печать, срок свидетельства и цепочку происхождения. Найдите нужную редакцию записи и сравните её со свидетельством в паспорте.", "Check the seal, certificate and chain of provenance. Find the correct revision and compare it with the passport certificate."), cost: 2, day: 3 },
 };
 
 export const reasonLabels: Record<Reason, Words> = {
@@ -55,20 +55,20 @@ export const shifts: Shift[] = [
   {
     title: w("То, что видно на свету", "What light reveals"),
     letter: w("В отделение доставлен овоскоп. Несколько свежих партий сопровождаются необычно подробными рассказами о выдержке. Рассказы можно выслушать после измерений.", "A candling lamp has arrived. Several fresh batches come with unusually elaborate stories about aging. You may listen to the stories after taking measurements."),
-    rule: w("Если в направлении указана проверка выдержки, используйте овоскоп. Широкая камера у заявленного свежего образца требует объяснения; у Архивного Стиля сама по себе она допустима.", "Use the lamp when the referral requires an aging check. A broad air cell in a declared fresh specimen needs explanation; in Aged Style it is not itself a defect."),
-    event: w("Ася просит показать ей ваш протокол: она хочет понять, что исправить к следующей поставке. Копия обойдётся отделению в две единицы бюджета.", "Asya asks to see your report: she wants to understand what to correct for her next shipment. A copy will cost the department two budget units."),
+    rule: w("Измерьте камеру в окуляре овоскопа. Для свежего поступления допустимо до 6 мм включительно, для архивной выдержки — от 8 до 13 мм. Одинаковая камера может означать разное: сверяйте категорию в паспорте.", "Measure the air cell in the eyepiece. Fresh arrivals allow up to 6 mm inclusive; aged specimens allow 8–13 mm. The same cell can mean different things: check the passport category."),
+    event: w("Ася просит показать ей ваш протокол: она хочет понять, что исправить к следующей поставке. Копия обойдётся отделению в 2 ₽.", "Asya asks to see your report: she wants to understand what to correct for her next shipment. A copy will cost the department 2 ₽."),
     options: [
-      { label: w("Выдать объяснение и копию", "Provide an explanation and copy"), effect: w("Бюджет −2 · поддержка +1 · доверие Аси +2", "Budget −2 · solidarity +1 · Asya's trust +2"), budget: -2, solidarity: 1, relations: { asya: 2 } },
-      { label: w("Направить к общему справочнику", "Refer her to the general handbook"), effect: w("Бюджет сохранён · доверие Аси −1", "Budget preserved · Asya's trust −1"), relations: { asya: -1 } },
+      { label: w("Выдать объяснение и копию", "Provide an explanation and copy"), effect: w("−2 ₽ · поддержка +1 · доверие Аси +2", "−2 ₽ · solidarity +1 · Asya's trust +2"), budget: -2, solidarity: 1, relations: { asya: 2 } },
+      { label: w("Направить к общему справочнику", "Refer her to the general handbook"), effect: w("Без расходов · доверие Аси −1", "No expense · Asya's trust −1"), relations: { asya: -1 } },
     ],
   },
   {
     title: w("Печать и её владелец", "The seal and its owner"),
     letter: w("Нина открыла доступ к реестру. Его ответы содержат срок свидетельства, владельца печати и зарегистрированное происхождение. Подлинная печать ещё не подтверждает любую историю её предъявителя.", "Nina has opened registry access. Replies include certificate validity, seal ownership and registered provenance. A genuine seal does not authenticate every story told by its bearer."),
     rule: w("Проверяйте реестр для партий с архивным направлением. Несуществующая печать и неверное происхождение — разные основания отказа. Ответ сохраняется в деле.", "Check the registry for batches with an archival referral. An unregistered seal and false provenance are distinct rejection grounds. Replies remain in the file."),
-    event: w("Нина нашла накладную ИС-41. «Пока это просто бумага. Но вы ведь уже видели этот номер?» Заверенная копия стоит три единицы.", "Nina has found invoice IS-41. ‘For now it's just a piece of paper. But you've seen that number already, haven't you?’ A certified copy costs three units."),
+    event: w("Нина нашла накладную ИС-41. «Пока это просто бумага. Но вы ведь уже видели этот номер?» Заверенная копия стоит 3 ₽.", "Nina has found invoice IS-41. ‘For now it's just a piece of paper. But you've seen that number already, haven't you?’ A certified copy costs 3 ₽."),
     options: [
-      { label: w("Заказать заверенную копию", "Order a certified copy"), effect: w("Бюджет −3 · улика «Накладная ИС-41» · доверие Нины +1", "Budget −3 · exhibit ‘Invoice IS-41’ · Nina's trust +1"), budget: -3, proof: "source1", relations: { nina: 1 } },
+      { label: w("Заказать заверенную копию", "Order a certified copy"), effect: w("−3 ₽ · улика «Накладная ИС-41» · доверие Нины +1", "−3 ₽ · exhibit ‘Invoice IS-41’ · Nina's trust +1"), budget: -3, proof: "source1", relations: { nina: 1 } },
       { label: w("Сообщить начальнику о совпадении", "Tell the head about the match"), effect: w("Влияние +1 · доверие начальника +1", "Influence +1 · head's trust +1"), influence: 1, relations: { ratin: 1 } },
     ],
   },
@@ -84,12 +84,12 @@ export const shifts: Shift[] = [
   },
   {
     title: w("Исключение из порядка", "An exception to order"),
-    letter: w("Срок приёма близится. Поставщики просят ускорить проверку. Для отдельных коллекционных партий приложены особые письма. Ознакомьтесь с ними, прежде чем считать исключение общим правилом.", "The admissions deadline approaches. Suppliers ask for faster checks. Some collectible batches carry special letters. Read them before treating an exception as a general rule."),
+    letter: w("Сегодня придут Ася и Аркадий — оба с просроченными свидетельствами. У Аркадия есть письмо начальника. Найдите его в реестре и проверьте, кому именно разрешён допуск. После обслуживания также проверьте ноль на весах.", "Asya and Arkady both arrive with expired certificates today. Arkady carries a letter from the head. Find it in the registry and check exactly whom it permits. Also check the scale zero after servicing."),
     rule: w("На уточнении может находиться не более двух дел. Они вернутся завтра с дополнительными сведениями; физические дефекты от ожидания не исчезают. Последняя смена не допускает отсрочки.", "At most two files may await clarification. They return tomorrow with additional information; waiting does not remove physical defects. Deferral is unavailable on the final shift."),
     event: w("Аркадий предлагает оплатить расходные материалы. «Без обязательств. Только не отправляйте мою коллекцию в общую очередь». Предложение поступило письменно.", "Arkady offers to cover your supplies. ‘No obligations. Just don't put my collection in the general queue.’ The offer is in writing."),
     options: [
       { label: w("Зарегистрировать предложение в досье", "Register the offer in your dossier"), effect: w("Улика «Письмо об исключении» · самостоятельность +1", "Exhibit ‘Exemption letter’ · integrity +1"), proof: "pressure1", integrity: 1 },
-      { label: w("Принять помощь куратора", "Accept the curator's assistance"), effect: w("Бюджет +6 · влияние +2 · доверие Аркадия +2", "Budget +6 · influence +2 · Arkady's trust +2"), budget: 6, influence: 2, relations: { arkady: 2 } },
+      { label: w("Принять помощь куратора", "Accept the curator's assistance"), effect: w("+6 ₽ · влияние +2 · доверие Аркадия +2", "+6 ₽ · influence +2 · Arkady's trust +2"), budget: 6, influence: 2, relations: { arkady: 2 } },
     ],
   },
   {
@@ -119,16 +119,16 @@ export const shifts: Shift[] = [
     event: w("Вера признаётся: однажды она согласилась с таким исправлением. «Я думала, оно единственное». Она предлагает вместе подписать заявление о сохранении первичного протокола.", "Vera admits she once accepted such an alteration. ‘I thought it was the only one.’ She offers to co-sign a request to preserve the original report."),
     options: [
       { label: w("Подписать заявление вместе", "Co-sign the request"), effect: w("Улика «Исправленный протокол» · самостоятельность +1 · доверие Веры +2", "Exhibit ‘Altered protocol’ · integrity +1 · Vera's trust +2"), proof: "pressure2", integrity: 1, relations: { vera: 2 } },
-      { label: w("Согласовать исправление", "Approve the alteration"), effect: w("Бюджет +4 · влияние +2 · доверие Веры −2", "Budget +4 · influence +2 · Vera's trust −2"), budget: 4, influence: 2, relations: { vera: -2 } },
+      { label: w("Согласовать исправление", "Approve the alteration"), effect: w("+4 ₽ · влияние +2 · доверие Веры −2", "+4 ₽ · influence +2 · Vera's trust −2"), budget: 4, influence: 2, relations: { vera: -2 } },
     ],
   },
   {
     title: w("Место за столом", "A place at the table"),
     letter: w("Список участников Встречи почти закрыт. Несколько небольших производителей готовят собственную дегустацию. Для неё нужны образцы, помещение и люди, готовые отвечать за свои слова.", "The Meeting's participant list is nearly closed. Several small producers are preparing their own tasting. They need specimens, a room and people willing to stand by their words."),
     rule: w("Партии рассматриваются по собственным документам. Репутация знакомого поставщика не заменяет обязательное исследование. Поручительство покрывает только свидетельство.", "Assess each batch on its own documents. A familiar supplier's reputation does not replace required checks. A guarantee covers only the certificate."),
-    event: w("Ася нашла небольшую комнату для независимой Слепой Встречи. Нужны четыре единицы на аренду. Никто не обещает, что гости придут без официального приглашения.", "Asya found a small room for an independent Blind Meeting. Rent costs four units. No one promises that guests will come without an official invitation."),
+    event: w("Ася нашла небольшую комнату для независимой Слепой Встречи. Нужны 4 ₽ на аренду. Никто не обещает, что гости придут без официального приглашения.", "Asya found a small room for an independent Blind Meeting. Rent costs 4 ₽. No one promises that guests will come without an official invitation."),
     options: [
-      { label: w("Помочь с помещением", "Help secure the room"), effect: w("Бюджет −4 · поддержка +3 · доверие Аси +2", "Budget −4 · solidarity +3 · Asya's trust +2"), budget: -4, solidarity: 3, relations: { asya: 2 } },
+      { label: w("Помочь с помещением", "Help secure the room"), effect: w("−4 ₽ · поддержка +3 · доверие Аси +2", "−4 ₽ · solidarity +3 · Asya's trust +2"), budget: -4, solidarity: 3, relations: { asya: 2 } },
       { label: w("Остаться в официальной программе", "Remain with the official programme"), effect: w("Влияние +1 · доверие начальника +1", "Influence +1 · head's trust +1"), influence: 1, relations: { ratin: 1 } },
     ],
   },
@@ -149,7 +149,7 @@ export const shifts: Shift[] = [
     event: w("Аркадий предлагает место хранителя новой коллекции. Он знает, что вы многое поняли. «Вопрос теперь в том, что вы намерены с этим сделать». Рядом ждёт Нина с открытым архивом.", "Arkady offers you the position of keeper of a new collection. He knows how much you have understood. ‘The question is what you intend to do with it.’ Nina waits nearby with the archive open."),
     options: [
       { label: w("Попросить Нину подтвердить цепочку", "Ask Nina to corroborate the chain"), effect: w("Улика «Двойная запись» · доверие Нины +1 · самостоятельность +1", "Exhibit ‘Duplicate entry’ · Nina's trust +1 · integrity +1"), proof: "source2", integrity: 1, relations: { nina: 1 } },
-      { label: w("Принять предложение коллекции", "Accept the collection's offer"), effect: w("Бюджет +8 · влияние +3 · доверие Аркадия +2", "Budget +8 · influence +3 · Arkady's trust +2"), budget: 8, influence: 3, relations: { arkady: 2 } },
+      { label: w("Принять предложение коллекции", "Accept the collection's offer"), effect: w("+8 ₽ · влияние +3 · доверие Аркадия +2", "+8 ₽ · influence +3 · Arkady's trust +2"), budget: 8, influence: 3, relations: { arkady: 2 } },
     ],
   },
   {

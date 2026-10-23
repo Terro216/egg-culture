@@ -142,3 +142,81 @@ All 79 neighboring container identities and the two existing data mounts stayed
 unchanged. The 17 pre-existing tables retained identical contents, and the Book
 and images retained identical hashes. Only the three empty Commission tables
 were added during the release; test accounts and scores stayed in isolated previews.
+
+## Mobile playtest revision (23 October 2026)
+
+Player feedback identified automatic tool verdicts, unclear resources and dossier
+purpose, an obscured shift counter, and a clipped specimen shadow. The revision
+keeps the existing campaign, case seeds, accounts and saved action histories.
+
+- Resource display uses rubles and minutes. One existing time unit is five
+  minutes; old balances and purchases are unchanged. Preparing the desk adds
+  twenty minutes, confirmed in the following shift's briefing. Reading and
+  rotating have no real-time countdown.
+- Selecting a tool opens its workbench. `prepare` pays once and survives reload;
+  `examine` records the player's observation and raw measurement/reference.
+  Old `tool` actions remain replayable without resetting completed checks.
+- Inspection requires four visible sides, with explicit progress and keyboard,
+  pointer and button controls. Cracks are seeded on one of the other three
+  sides. Candling has asymmetric internal geometry and an adjustable measuring
+  line; the player compares depth with the passport's fresh/aged range.
+- The scale starts with an empty pan; from day five its zero can drift. The dish
+  supplies observed traits and a four-style reference. Neither announces a
+  conformity verdict before the player records an observation.
+- The registry contains neighboring lots and older revisions. Compare lot,
+  revision, seal, signature specimen, provenance and expiry with the passport.
+  The fifth-shift exemption names Arkady's batch explicitly; Asya's expired
+  certificate requires a separate decision. Wrong measurements/revisions are
+  evaluated when the player signs, with actionable review feedback.
+- The dossier explains its optional investigation role, shows collected
+  documents, and asks the player to select two exhibits supporting a conclusion.
+  `connect` validates ownership and independent corroboration. Legacy `file`
+  actions remain valid. An acquired exhibit is signposted at the desk.
+- The shift counter is prominent and stays visible while scrolling on phones.
+  Required checks are available above the instruments, with an explicit next
+  step after recording. The contact shadow has no light-frustum clipping edge;
+  rotation controls occupy space outside the rendering canvas.
+
+Verification: 365 tests passed on the production-based candidate, including
+12 new workbench tests (full campaign, legacy fifth-shift resume, bad readings,
+wrong archive revisions, deferral preservation, dossier pairing and input
+bounds). Final and rebased candidates also passed TypeScript, the production build and all 33 Commission tests.
+
+
+The revised campaign was completed through the browser at 390px, including
+hold/return, the fifth-shift guarantee and exemption, political appeals, all
+three conclusions and the open ending. English daily duty finished at 800
+points. Desktop, 390px and 320px checks, keyboard/pointer rotation, a hidden
+crack, visibly rotating candling, incorrect measurement/revision feedback,
+prepared-tool reload and a legacy fifth-shift import passed. Registration,
+explicit guest import, two-device resume, offline/conflict handling, account
+isolation and opt-in daily publication/withdrawal passed on the rebased image.
+No page errors or HTTP 5xx were observed.
+
+A parallel site release changed production during verification. The final game
+image was rebuilt from `sha256:f1fc167bcf46e379cd2db9c1bfaa783db4d34972e83293fdbe8e4044f0eeaafc`;
+345 source/public/script/document/test files were preserved exactly, and the
+changed/added paths were limited to this game's 14 files. Only `web` was
+recreated. Release image:
+`sha256:43e8c46155e38fc9604d4207bc780b9460814223b7661a78d2e0deb0ab7ff81e`,
+tag `egg-culture-web:commission-revision-20261023`.
+
+Public RU/EN mobile checks passed with GET/HEAD-only browser transport. Both
+unlisted routes retain noindex/no-store and remain absent from navigation,
+game catalogues, sitemap and robots. Health is healthy, restart count zero;
+environment, mounts and networks are unchanged. The poller reported a recent
+successful poll and no blocked delivery. All 79 other continuing containers
+retained their IDs; the separate `tick-laugh-browser-check` temporary container
+was no longer running at the second inventory and was not touched by this work.
+
+The protected, validated pre-release snapshot is at
+`/tmp/egg-commission-recovery-20261023/pre-release` on big-one. A read-only
+post-release database check returned `ok`; the existing saved campaign replayed
+successfully (1 checked, 1 valid, 0 invalid), without printing account contents.
+The previous image is tagged
+`egg-culture-web:rollback-before-commission-revision-20261023`. Legacy actions
+remain supported by the new version; the old binary cannot parse newly recorded
+`prepare`/`examine`/`connect` actions. Preserve the volume and any new transcripts
+when diagnosing a rollback; do not overwrite live progress with the snapshot.
+Browser evidence is retained in `/tmp/egg-commission-browser-20261023` and build,
+source-parity and release audits in `/tmp/egg-commission-revision-20261023`.

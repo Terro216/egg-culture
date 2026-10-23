@@ -4,13 +4,14 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { restoreRun, currentCase, canAppeal, canFile } from '../src/features/Commission/engine.ts';
-import { tools, claims } from '../src/features/Commission/content.ts';
+import { tools, claims, proofs } from '../src/features/Commission/content.ts';
+import { actualProfile, examinationAnswers, expectedAnswer } from '../src/features/Commission/examination.ts';
 import { storageKey } from '../src/features/Commission/storage.ts';
 
 const preview = new URL(process.env.COMMISSION_PREVIEW ?? 'http://127.0.0.1:4457');
 assert.equal(preview.hostname, '127.0.0.1', 'Use an isolated loopback preview, never production');
 const origin = 'https://egg.ilyamedve.dev';
-const out = process.env.COMMISSION_EVIDENCE ?? '/tmp/egg-commission-browser-20261022';
+const out = process.env.COMMISSION_EVIDENCE ?? '/tmp/egg-commission-browser-20261023';
 const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE).href);
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE, args: ['--no-sandbox', '--disable-dev-shm-usage', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -52,6 +53,38 @@ async function run(page, owner = 'guest', slot = 'campaign') {
 }
 async function state(page, owner, slot) { return restoreRun(await run(page, owner, slot))?.state; }
 async function click(page, text) { await page.getByRole('button', { name: text, exact: typeof text === 'string' }).click(); }
+const toolOrder = ['inspect', 'scale', 'light', 'plate', 'archive'];
+async function selectTool(page, tool) { await page.locator('.commission-tool-tray button').nth(toolOrder.indexOf(tool)).click(); }
+async function prepareTool(page, tool) {
+  await selectTool(page, tool);
+  if (await page.locator('.commission-exam-start .commission-primary').count()) await page.locator('.commission-exam-start .commission-primary').click();
+}
+async function examine(page, lang, item, tool) {
+  await prepareTool(page, tool);
+  if (tool === 'inspect') {
+    for (let n = 1; n < 4; n++) {
+      await page.locator('.commission-rotate button').last().click();
+      await page.locator('.commission-surfaces .is-seen').nth(n).waitFor();
+    }
+  } else if (tool === 'scale') {
+    await click(page, lang === 'ru' ? 'Выставить ноль' : 'Set zero');
+    await click(page, lang === 'ru' ? 'Положить образец' : 'Place specimen');
+    assert.equal(Number(await page.locator('.commission-scale-readout > span').innerText()), item.mass);
+  } else if (tool === 'light') {
+    const depth = (Number(await page.locator('.commission-air-gauge rect').getAttribute('height')) - 22) / 10;
+    const ruler = page.locator('input[type="range"]'); await ruler.focus(); await ruler.press('Home');
+    for (let i = 0; i < depth; i++) await ruler.press('ArrowRight');
+  } else if (tool === 'archive') {
+    await page.locator('.commission-search input').fill(item.lot);
+    const candidates = page.locator('.commission-record-list button').filter({ has: page.getByText(item.lot, { exact: true }) });
+    await candidates.filter({ hasText: new RegExp(`${lang === 'ru' ? 'Редакция' : 'Revision'} ${item.returned ? 2 : 1}`) }).click();
+    if (item.day === 5 && item.person === 'arkady') assert.match(await page.locator('.commission-exception').innerText(), new RegExp(item.lot));
+  }
+  const index = tool === 'plate' ? ['blanc', 'bouillon', 'pastoral', 'aged'].indexOf(actualProfile(item)) : examinationAnswers[tool].indexOf(expectedAnswer(item, tool));
+  await page.locator('.commission-findings input').nth(index).check();
+  await click(page, lang === 'ru' ? 'Записать наблюдение' : 'Record observation');
+  await page.locator('.commission-observation').waitFor();
+}
 async function play(page, lang, owner = 'guest', slot = 'campaign') {
   let guard = 0;
   while (++guard < 350) {
@@ -63,9 +96,10 @@ async function play(page, lang, owner = 'guest', slot = 'campaign') {
       const item = currentCase(s);
       if (await page.locator('.commission-mobile-tabs').isVisible()) await page.getByRole('tab').first().click();
       for (const tool of item.mandatory) if (!s.observed.includes(tool)) {
-        await click(page, new RegExp(`^${tools[tool].action[lang]}`));
+        await examine(page, lang, item, tool);
         if (s.mode === 'campaign' && s.index === 0 && ((s.day === 2 && tool === 'light') || (s.day === 4 && tool === 'plate'))) await shot(page, `${lang}-${tool}`);
       }
+      if (s.day === 5 && s.index < 2) await shot(page, `ru-mobile-day5-${s.index}`);
       let decision = item.defect === 'none' ? 'admit' : 'reject';
       if (s.mode === 'campaign' && s.day === 3 && s.index === 0) decision = 'hold';
       if (s.mode === 'campaign' && s.day === 5 && s.index === 0) decision = 'guarantee';
@@ -92,7 +126,12 @@ async function play(page, lang, owner = 'guest', slot = 'campaign') {
     const updated = await state(page, owner, slot);
     if (Object.keys(claims).some(id => canFile(updated, id) && !updated.claims.includes(id))) {
       await page.locator('.commission-toolbar button[aria-label="Досье"]').click();
-      for (const button of await page.locator('.commission-evidence-thread button:enabled').all()) await button.click();
+      for (const id of Object.keys(claims)) if (canFile(updated, id) && !updated.claims.includes(id)) {
+        for (const box of await page.locator('.commission-exhibit-list input:checked').all()) await box.uncheck();
+        for (const proof of claims[id].required.filter(p => updated.proofs.includes(p)).slice(0, 2)) await page.getByLabel(proofs[proof]["title"][lang], { exact: true }).check();
+        await page.locator('.commission-claim-select select').selectOption(id);
+        await page.locator('.commission-dossier > .commission-primary').click();
+      }
       await page.keyboard.press('Escape');
     }
     console.log(`campaign shift ${s.day}: ${s.reports.at(-1).correct} correct`);
@@ -112,17 +151,17 @@ try {
   await page.waitForTimeout(150); const after = await canvas.screenshot();
   assert.notDeepEqual(before, after, 'Keyboard rotation must change the rendered specimen');
   const fixture = JSON.parse(await readFile(`${out}/campaign.json`, 'utf8'));
-  const firstDish = fixture.actions.findIndex(action => action.type === 'tool' && action.tool === 'plate');
+  const firstDish = fixture.actions.findIndex(action => action.type === 'prepare' && action.tool === 'plate');
   assert.ok(firstDish > 0); fixture.actions = fixture.actions.slice(0, firstDish + 1);
   await click(page, 'Account and saves');
   await page.locator('input[type="file"]').setInputFiles({ name: 'specimen.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(fixture)) });
   await page.keyboard.press('Escape');
-  await click(page, /Open the control specimen/);
+  await prepareTool(page, 'plate');
   await shot(page, 'final-en-320-dish');
   await page.setViewportSize({ width: 1440, height: 1080 });
   await shot(page, 'final-en-desktop-dish');
-  await click(page, /Candle the specimen/); await shot(page, 'final-en-candling');
-  await click(page, /Request the record/); await shot(page, 'final-en-registry');
+  await prepareTool(page, 'light'); await shot(page, 'final-en-candling');
+  await prepareTool(page, 'archive'); await shot(page, 'final-en-registry');
   assert.equal(await page.locator('.commission-model-fallback').count(), 0);
   await click(page, 'Account and saves');
   const exportEvent = page.waitForEvent('download'); await click(page, 'Download save');
@@ -138,7 +177,7 @@ try {
   await click(page, /Открыть приём/);
   await page.locator('.commission-specimen-canvas canvas').waitFor();
   await shot(page, 'ru-desktop-desk');
-  await click(page, /Взвесить образец/);
+  await prepareTool(page, 'scale');
   await shot(page, 'ru-desktop-scale');
   assert.equal(await page.locator('.commission-model-fallback').count(), 0, 'WebGL model must render');
   await page.setViewportSize({ width: 390, height: 844 });
@@ -150,7 +189,7 @@ try {
   await click(page, 'Регламент');
   await shot(page, 'ru-small-regulations');
   await page.keyboard.press('Escape');
-  await page.setViewportSize({ width: 1440, height: 1080 });
+  await page.setViewportSize({ width: 390, height: 844 });
   const final = await play(page, 'ru');
   assert.equal(final.phase, 'final'); assert.equal(final.claims.length, 3);
   await shot(page, 'ru-finale');
@@ -183,7 +222,7 @@ try {
   const accountContext = await context(); page = await open(accountContext);
   const name = `Commission${Date.now().toString(36)}`, password = crypto.randomUUID();
   await page.locator('.commission-intro-actions .commission-primary').click();
-  await click(page, /Открыть приём/); await click(page, /Взвесить образец/);
+  await click(page, /Открыть приём/); await prepareTool(page, 'scale');
   const guest = await run(page);
   await click(page, 'Аккаунт и сохранение');
   await click(page, 'Войти, чтобы сохранять прогресс');
@@ -206,7 +245,7 @@ try {
   await device.locator('.commission-save-dot.saved').waitFor(); await device.keyboard.press('Escape');
   assert.deepEqual(await run(device, name), guest, 'Second browser must resume the same run');
   await deviceContext.route('**/api/commission*', route => route.abort());
-  await click(device, /Осмотреть скорлупу/);
+  await examine(device, 'ru', currentCase(await state(device, name)), 'inspect');
   await device.locator('.commission-save-dot.offline').waitFor();
   await page.locator('.commission-decisions .admit').click();
   await page.locator('.commission-signature .commission-primary').click();
@@ -256,7 +295,7 @@ try {
   await device.locator('.commission-intro-actions .commission-primary').click();
   await click(device, /Открыть приём/); await device.locator('.commission-save-dot.saved').waitFor();
   await deviceContext.route('**/api/commission*', route => route.abort());
-  await click(device, /Взвесить образец/); await device.locator('.commission-save-dot.offline').waitFor();
+  await prepareTool(device, 'scale'); await device.locator('.commission-save-dot.offline').waitFor();
   await deviceContext.unroute('**/api/commission*'); await device.evaluate(() => window.dispatchEvent(new Event('online')));
   await device.locator('.commission-save-dot.saved').waitFor();
   const retried = await device.evaluate(async () => (await (await fetch('/api/commission')).json()).run);
@@ -266,8 +305,8 @@ try {
   const memoryPage = await open(blocked, 'en');
   await memoryPage.locator('[role="alert"]').waitFor();
   await memoryPage.locator('.commission-intro-actions .commission-primary').click();
-  await click(memoryPage, /Open admissions/); await click(memoryPage, /Weigh the specimen/);
-  assert.match(await memoryPage.locator('.commission-observation').innerText(), /Measured mass/);
+  await click(memoryPage, /Open admissions/); await prepareTool(memoryPage, 'scale'); await click(memoryPage, 'Place specimen');
+  assert.match(await memoryPage.locator('.commission-scale-readout').innerText(), /Specimen on the pan/);
   await shot(memoryPage, 'en-storage-unavailable');
   evidence.push('registration-guest-import-two-device-resume-offline-conflict-account-isolation-daily-opt-in-withdraw-storage-blocked');
  }

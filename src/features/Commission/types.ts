@@ -17,13 +17,17 @@ export type GameCase = {
   style: Style; defect: Reason; suspect: boolean; mandatory: Tool[];
   proofs: { id: Proof; tool: Tool }[]; political: boolean; returned: boolean;
   preserved?: Tool[];
+  preservedFindings?: Partial<Record<Tool, Finding>>;
 };
 export type Receipt = {
   item: GameCase; decision: Decision; reason: Reason; observed: Tool[];
   correct: boolean; factual: boolean; procedural: boolean; supported: boolean;
   political: boolean; intentional: boolean; score: number;
+  findings?: Partial<Record<Tool, Finding>>;
 };
-export type HeldCase = { item: GameCase; observed: Tool[] };
+export type HeldCase = { item: GameCase; observed: Tool[]; findings?: Partial<Record<Tool, Finding>> };
+export type Finding = { answer: Reason; valid: boolean; sample?: number; record?: string };
+export type Examination = { tool: Tool; answer: Reason; sample: number; record: string };
 export type DayReport = {
   day: number; receipts: Receipt[]; correct: number; errors: number; quota: number;
   income: number; sanction: boolean; political: boolean; appealed: boolean;
@@ -33,6 +37,7 @@ export type State = {
   version: 1; seed: string; mode: "campaign" | "daily"; date: string;
   phase: Phase; day: number; time: number; budget: number; strikes: number;
   queue: GameCase[]; index: number; observed: Tool[]; receipt: Receipt | null;
+  prepared: Tool[]; findings: Partial<Record<Tool, Finding>>;
   receipts: Receipt[]; held: HeldCase[]; guaranteeUsed: boolean;
   reports: DayReport[]; proofs: Proof[]; claims: Claim[];
   relations: Record<Person, number>; solidarity: number; influence: number;
@@ -42,6 +47,9 @@ export type State = {
 export type Action =
   | { type: "start" }
   | { type: "tool"; tool: Tool }
+  | { type: "prepare"; tool: Tool }
+  | ({ type: "examine" } & Examination)
+  | { type: "connect"; claim: Claim; exhibits: Proof[] }
   | { type: "decide"; decision: Decision; reason: Reason }
   | { type: "next" }
   | { type: "close" }

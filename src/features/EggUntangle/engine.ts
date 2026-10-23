@@ -3,14 +3,16 @@ import type { Edge, Point, PuzzleMechanics, PuzzleVersion, UntanglePuzzle, Untan
 import { BOARD_SIZE, analyzeBoard, isSolved, validPoint } from "./geometry.ts";
 import { hash, randomGenerator, shuffled } from "./random.ts";
 import { figureEmbedding } from "./figures.ts";
+import { BALANCED_COUNTS, balancedStart } from "./difficulty.ts";
+import { chooseSwapHint } from "./solver.ts";
 export { BOARD_SIZE, NODE_MIN_DISTANCE, ROPE_NODE_CLEARANCE, analyzeBoard, isSolved } from "./geometry.ts";
 
 export const LEVEL_COUNT = 24;
 export const PUZZLE_VERSION = "NEST2";
 
 function versionFor(mechanics: PuzzleMechanics, version?: PuzzleVersion): PuzzleVersion {
-  const selected = version ?? (mechanics === "swap" ? "KNOT3" : PUZZLE_VERSION);
-  if (!["drag", "swap"].includes(mechanics) || !["NEST1", "NEST2", "NEST3", "KNOT1", "KNOT2", "KNOT3"].includes(selected)
+  const selected = version ?? (mechanics === "swap" ? "KNOT4" : PUZZLE_VERSION);
+  if (!["drag", "swap"].includes(mechanics) || !["NEST1", "NEST2", "NEST3", "KNOT1", "KNOT2", "KNOT3", "KNOT4"].includes(selected)
     || selected.startsWith("KNOT") !== (mechanics === "swap")) throw new RangeError("Invalid nest rules");
   return selected;
 }
@@ -35,7 +37,7 @@ export function parseSeed(input: string): UntangleSeed | null {
       value = url.searchParams.get("nest") ?? url.searchParams.get("untangle") ?? "";
     } catch { return null; }
   }
-  const match = /^(NEST[123]|KNOT[123])-(\d{1,2})-([0-9a-z]{1,7})$/i.exec(value);
+  const match = /^(NEST[123]|KNOT[1234])-(\d{1,2})-([0-9a-z]{1,7})$/i.exec(value);
   if (!match) return null;
   const version = match[1].toUpperCase() as PuzzleVersion, mechanics = version.startsWith("KNOT") ? "swap" : "drag";
   const level = Number(match[2]), numeric = parseInt(match[3], 36);
@@ -100,6 +102,7 @@ const MODERN_COUNTS = [8, 10, 12, 12, 14, 14, 15, 16, 16, 17, 18, 18, 19, 20, 20
 export function levelNodeCount(level: number, mechanics: PuzzleMechanics = "drag", version?: PuzzleVersion): number {
   if (!Number.isInteger(level) || level < 1 || level > LEVEL_COUNT) throw new RangeError("Invalid nest level");
   const selected = versionFor(mechanics, version);
+  if (selected === "KNOT4") return BALANCED_COUNTS[level - 1];
   if (tutorialVersion(selected)) {
     if (level > 3) throw new RangeError("Tutorial nests have only three stages");
     return 2 + level * 2;
@@ -286,6 +289,17 @@ function hasOneSwapWin(points: readonly Point[], edges: readonly Edge[]): boolea
 
 function generateModernPuzzle(parsed: UntangleSeed): UntanglePuzzle {
   const random = randomGenerator(hash(parsed.seed)), count = levelNodeCount(parsed.level, parsed.mechanics, parsed.version);
+  if (parsed.version === "KNOT4") {
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const graph = figureEmbedding(count, parsed.level, random), order = shuffled(Array.from({ length: count }, (_, i) => i), random);
+      const inverse = Array<number>(count); order.forEach((old, i) => { inverse[old] = i; });
+      const puzzle: UntanglePuzzle = { seed: parsed.seed, version: parsed.version, mechanics: parsed.mechanics, level: parsed.level, initial: [], solution: order.map(i => graph.solution[i]), slots: graph.solution,
+        edges: graph.edges.map(([a, b]) => [Math.min(inverse[a], inverse[b]), Math.max(inverse[a], inverse[b])] as Edge).sort((a, b) => a[0] - b[0] || a[1] - b[1]) };
+      try { puzzle.initial = balancedStart(puzzle, random); return puzzle; }
+      catch (error) { if (!(error instanceof Error) || error.message !== "Cannot calibrate clutch difficulty") throw error; }
+    }
+    throw new Error("Cannot generate a calibrated clutch");
+  }
   const graph = parsed.version === "KNOT3" ? figureEmbedding(count, parsed.level, random)
     : parsed.mechanics === "swap" && parsed.level % 2 === 0
       ? multipleFigures(count, parsed.level, random) : meshEmbedding(count, parsed.level, random);
@@ -383,10 +397,18 @@ function generateTutorialPuzzle(parsed: UntangleSeed): UntanglePuzzle {
     ...(parsed.mechanics === "swap" ? { slots: lesson.solution.map(transform) } : {}) };
 }
 
+const calibratedPuzzles = new Map<string, UntanglePuzzle>();
 export function generatePuzzle(seed: string, level?: number): UntanglePuzzle {
   const parsed = parseSeed(seed);
   if (!parsed || (level !== undefined && level !== parsed.level)) throw new RangeError("Invalid nest seed or level");
-  return tutorialVersion(parsed.version) ? generateTutorialPuzzle(parsed) : parsed.version === "NEST1" ? generateLegacyPuzzle(parsed) : generateModernPuzzle(parsed);
+  const cached = calibratedPuzzles.get(parsed.seed);
+  if (cached) return structuredClone(cached);
+  const puzzle = tutorialVersion(parsed.version) ? generateTutorialPuzzle(parsed) : parsed.version === "NEST1" ? generateLegacyPuzzle(parsed) : generateModernPuzzle(parsed);
+  if (parsed.version === "KNOT4") {
+    if (calibratedPuzzles.size >= 32) calibratedPuzzles.delete(calibratedPuzzles.keys().next().value!);
+    calibratedPuzzles.set(parsed.seed, structuredClone(puzzle));
+  }
+  return puzzle;
 }
 
 export function swapNodes(points: readonly Point[], a: number, b: number): Point[] {
@@ -404,11 +426,8 @@ export function isSlotPermutation(puzzle: UntanglePuzzle, positions: readonly Po
   return remaining.size === 0;
 }
 
-/** A swap toward one valid embedding, without disturbing eggs already in that embedding. */
+/** Immediate wins, bounded two-move search, then a guaranteed-progress fallback. */
 export function findSwapHint(puzzle: UntanglePuzzle, positions: readonly Point[]): [number, number] | null {
   if (!isSlotPermutation(puzzle, positions) || isSolved(positions, puzzle.edges)) return null;
-  const egg = positions.findIndex((point, index) => point.x !== puzzle.solution[index].x || point.y !== puzzle.solution[index].y);
-  if (egg < 0) return null;
-  const target = puzzle.solution[egg], occupant = positions.findIndex(point => point.x === target.x && point.y === target.y);
-  return occupant >= 0 ? [egg, occupant] : null;
+  return chooseSwapHint(puzzle, positions);
 }

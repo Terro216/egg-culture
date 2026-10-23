@@ -37,6 +37,10 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
   const [mechanics, setMechanics] = useState<PuzzleMechanics>("drag");
   const [swapSelection, setSwapSelection] = useState<number | null>(null), swapChoice = useRef<number | null>(null);
   const [swapHint, setSwapHint] = useState<[number, number] | null>(null);
+  const [focused, setFocused] = useState(false), [zoomed, setZoomed] = useState(false);
+  const [inspected, setInspected] = useState<number | null>(null);
+  const press = useRef<{ node: number; pointer: number; x: number; y: number; timer: number; held: boolean; moved: boolean } | null>(null);
+  const section = useRef<HTMLElement>(null), viewToggle = useRef<HTMLButtonElement>(null);
   const [motion, setMotion] = useState<SwapMotion | null>(null);
   const flight = useRef<{ frame: number } | null>(null), reduceMotion = useRef(false);
   const [paused, setPaused] = useState(false), [selected, setSelected] = useState<number | null>(null);
@@ -57,6 +61,14 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
   const completed = hard ? progress.hardCampaign ?? [] : progress.campaign;
   const activeNode = swapSelection ?? selected;
   const groups = useMemo(() => puzzle ? graphComponents(puzzle.initial.length, puzzle.edges) : [], [puzzle]);
+  const inspectedGroup = useMemo(() => new Set(inspected === null ? [] : groups.find(group => group.includes(inspected))), [groups, inspected]);
+
+  function cancelPress() { if (press.current) clearTimeout(press.current.timer); press.current = null; setInspected(null); }
+  function toggleFocus() {
+    cancelPress(); const next = !focused; setFocused(next);
+    try { localStorage.setItem("egg_untangle_focus", next ? "1" : "0"); } catch { /* The current view still works without storage. */ }
+    if (!next) requestAnimationFrame(() => section.current?.scrollIntoView({ block: "start" }));
+  }
 
   function clearSwap() { swapChoice.current = null; setSwapSelection(null); setSwapHint(null); }
 
@@ -83,11 +95,12 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
   function update(next: NestSession) { current.current = next; setSession(next); }
   function persist(next: NestSession) { setDurable(saveNestSession(next)); }
   function cancelCurrentDrag() {
+    cancelPress();
     const s = current.current, d = drag.current;
     if (s && d) { drag.current = null; const restored = { ...s, points: d.before }; update(restored); persist(restored); }
   }
   function finish(next: NestSession) {
-    const p = generatePuzzle(next.seed);
+    const p = puzzle?.seed === next.seed ? puzzle : generatePuzzle(next.seed);
     if (!analyzeBoard(next.points, p.edges).solved || p.mechanics === "swap" && !isSlotPermutation(p, next.points) || next.moves === 0) return;
     const done = { ...next, done: true };
     update(done); const sessionDurable = saveNestSession(done);
@@ -98,7 +111,7 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
     const accepted = submitPortalResult(next.ticket, { score: String(p.level), peak: String(p.level), seconds: next.seconds, sector: 0, losses: 0, jackpot: false, dodged: 0, swaps: 0,
       untangle: { ...record, positions: next.points } });
     if (!accepted) setMessage(ru ? "Не удалось записать результат. Раскладка сохранена; откройте игру снова для повторной отправки." : "The result could not be recorded. Your layout is retained; reopen the game to retry.");
-    setHint(null); setSelected(null); clearSwap();
+    setHint(null); setSelected(null); setInspected(null); clearSwap();
     if (next.ticket.owner === null) window.dispatchEvent(new Event("egg:nest-guest"));
   }
   function load(seed: string, nextMode: NestMode, day?: string, restart = false) {
@@ -113,7 +126,7 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
       seed: p.seed, mode: nextMode, ...(day ? { day } : {}), points: clone(p.initial), moves: 0, hints: 0, seconds: 0, ticket: beginPortalRun("untangle"), done: false,
     };
     update(next); persist(next); setMode(nextMode); setMechanics(p.mechanics); setLevel(p.level); setPaused(false); pausedRef.current = false; started.current = next.moves > 0 || next.seconds > 0;
-    setUndo([]); setRedo([]); setSelected(null); setHint(null); clearSwap(); setMessage(""); setShareLink(""); drag.current = null;
+    setUndo([]); setRedo([]); setSelected(null); setHint(null); setZoomed(false); clearSwap(); setMessage(""); setShareLink(""); drag.current = null;
     const url = new URL(location.href); url.searchParams.set("nest", seed); url.searchParams.delete("day"); url.searchParams.delete("level");
     if (nextMode === "daily" && day) url.searchParams.set("day", day);
     if (nextMode === "campaign") url.searchParams.set("level", String(p.level));
@@ -138,10 +151,29 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
         else load(campaignSeed(1, query.get("rules") === "swap" ? "swap" : "drag"), "campaign");
         if (query.has("nest")) setMessage(ru ? "Код кладки не распознан. Открыт первый уровень." : "Clutch code not recognised. Level one is open.");
       }
-      setReady(true);
+      let compact = window.matchMedia("(max-width: 600px)").matches;
+      try { const stored = localStorage.getItem("egg_untangle_focus"); if (stored === "0" || stored === "1") compact = stored === "1"; } catch { /* Use the viewport default. */ }
+      setFocused(compact); setReady(true);
     });
     return () => { disposed = true; };
   }, []);
+  useEffect(() => {
+    if (!focused || !section.current) return;
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    // Keep keyboard navigation inside the full-window game without hiding the
+    // ancestor that owns React. Restore every sibling's original inert value.
+    const siblings: [HTMLElement, boolean][] = [];
+    for (let branch: HTMLElement | null = section.current; branch?.parentElement && branch !== document.body; branch = branch.parentElement) {
+      for (const sibling of branch.parentElement.children) if (sibling !== branch && sibling instanceof HTMLElement) {
+        siblings.push([sibling, sibling.inert]); sibling.inert = true;
+      }
+    }
+    if (document.activeElement instanceof HTMLElement && document.activeElement.closest(".nest-setup")) viewToggle.current?.focus({ preventScroll: true });
+    const exit = (event: globalThis.KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); clearSwap(); toggleFocus(); } };
+    document.addEventListener("keydown", exit);
+    return () => { document.body.style.overflow = priorOverflow; siblings.forEach(([node, inert]) => { node.inert = inert; }); document.removeEventListener("keydown", exit); };
+  }, [focused]);
   useEffect(() => {
     if (!didInit.current) return;
     const owner = activePortalName();
@@ -186,7 +218,7 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
     const s = current.current; if (!s || s.done || pausedRef.current || flight.current) return;
     if (points.every((p, i) => p.x === before[i].x && p.y === before[i].y)) return;
     if (puzzle?.mechanics === "swap" && !isSlotPermutation(puzzle, points)) return;
-    clearSwap();
+    cancelPress(); clearSwap();
     if (!historyMove) { setUndo(list => [...list.slice(-99), before]); setRedo([]); }
     if (puzzle?.mechanics === "swap") animateSwap(before, points);
     const next = { ...s, points, moves: s.moves + 1 }; update(next); persist(next); finish(next);
@@ -213,37 +245,65 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
         : formatSeed(puzzle.level, parseSeed(puzzle.seed)!.code, "swap");
     load(seed, session.mode, session.day);
   }
+  function nextRandomClutch() {
+    if (!puzzle) return;
+    const previous = parseSeed(puzzle.seed)!, random = crypto.getRandomValues(new Uint32Array(1))[0];
+    const code = random === parseInt(previous.code, 36) ? (random + 1) >>> 0 : random;
+    load(formatSeed(puzzle.level, code, puzzle.mechanics), "free");
+    requestAnimationFrame(() => {
+      if (focused) section.current?.scrollTo({ top: 0 }); else svg.current?.scrollIntoView({ block: "start", behavior: "instant" });
+      svg.current?.querySelector<SVGGElement>(".nest-egg")?.focus({ preventScroll: true });
+    });
+  }
   function pointAt(event: PointerEvent<SVGSVGElement>): Point {
     const rect = event.currentTarget.getBoundingClientRect();
     return { x: Math.round(Math.max(45, Math.min(955, (event.clientX - rect.left) / rect.width * 1000))), y: Math.round(Math.max(45, Math.min(955, (event.clientY - rect.top) / rect.height * 1000))) };
   }
   function pointerDown(event: PointerEvent<SVGSVGElement>) {
-    const s = current.current; if (!s || s.done || paused || flight.current || drag.current || event.button !== 0) return;
+    const s = current.current; if (!s || s.done || paused || flight.current || drag.current || press.current || event.button !== 0) return;
     const point = pointAt(event), nearest = s.points.map((p, id) => ({ id, d: Math.hypot(point.x - p.x, point.y - p.y) })).sort((a, b) => a.d - b.d)[0];
     const radius = Math.max(34, 25 * 1000 / event.currentTarget.getBoundingClientRect().width);
     if (!nearest || nearest.d > radius) return;
-    if (puzzle?.mechanics === "swap") { event.preventDefault(); chooseSwap(nearest.id); return; }
+    if (puzzle?.mechanics === "swap") {
+      const pending = { node: nearest.id, pointer: event.pointerId, x: event.clientX, y: event.clientY, timer: 0, held: false, moved: false };
+      pending.timer = window.setTimeout(() => { if (press.current === pending && !pending.moved) { pending.held = true; setInspected(nearest.id); } }, 420);
+      press.current = pending; event.currentTarget.setPointerCapture(event.pointerId); return;
+    }
     started.current = true;
     event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setSelected(nearest.id);
     drag.current = { id: nearest.id, pointer: event.pointerId, before: clone(s.points), start: point };
   }
   function pointerMove(event: PointerEvent<SVGSVGElement>) {
+    const pending = press.current;
+    if (pending?.pointer === event.pointerId) {
+      if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > 9) { pending.moved = true; clearTimeout(pending.timer); setInspected(null); }
+      return;
+    }
     const d = drag.current, s = current.current; if (!d || d.pointer !== event.pointerId || !s) return;
     const p = pointAt(event), initial = d.before[d.id];
     const points = s.points.map((old, i) => i === d.id ? { x: Math.max(45, Math.min(955, initial.x + p.x - d.start.x)), y: Math.max(45, Math.min(955, initial.y + p.y - d.start.y)) } : old);
     update({ ...s, points });
   }
   function pointerEnd(event: PointerEvent<SVGSVGElement>, cancelled = false) {
+    const pending = press.current;
+    if (pending?.pointer === event.pointerId) {
+      cancelPress();
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      if (!cancelled && !pending.held && !pending.moved) chooseSwap(pending.node);
+      return;
+    }
     const d = drag.current, s = current.current; if (!d || d.pointer !== event.pointerId || !s) return;
     drag.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     if (cancelled) { const restored = { ...s, points: d.before }; update(restored); persist(restored); } else commit(s.points, d.before);
   }
   function keyMove(event: KeyboardEvent<SVGGElement>, index: number) {
+    if (pausedRef.current || current.current?.done) return;
     if (flight.current) { if (["Enter", " ", "Escape", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) event.preventDefault(); return; }
     if (puzzle?.mechanics === "swap") {
       if (event.key === "Enter" || event.key === " ") { event.preventDefault(); chooseSwap(index); }
-      else if (event.key === "Escape") { event.preventDefault(); clearSwap(); setSelected(null); }
+      else if (event.key.toLowerCase() === "f" || event.key.toLowerCase() === "а") { event.preventDefault(); if (!event.repeat) setInspected(value => value === index ? null : index); }
+      else if (event.key === "Escape") { event.preventDefault(); cancelPress(); clearSwap(); setSelected(null); }
       else if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
         event.preventDefault(); const next = (index + (event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1) + puzzle.initial.length) % puzzle.initial.length;
         svg.current?.querySelector<SVGGElement>(`[data-node="${next}"]`)?.focus();
@@ -258,13 +318,16 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
   }
   function showHint() {
     const s = current.current; if (!s || !puzzle || s.done || paused || flight.current) return;
+    const fingerprint = s.points.map(p => `${p.x},${p.y}`).join(";");
+    const next = { ...s, hintPosition: fingerprint, hints: s.hints + Number(s.hintPosition !== fingerprint) };
+    cancelPress();
     if (puzzle.mechanics === "swap") {
       const pair = findSwapHint(puzzle, s.points); if (!pair) return;
       clearSwap(); setSwapHint(pair); setSelected(null);
-      const next = { ...s, hints: s.hints + 1 }; update(next); persist(next); return;
+      update(next); persist(next); return;
     }
     const index = s.points.map((p, id) => ({ id, d: Math.hypot(p.x - puzzle.solution[id].x, p.y - puzzle.solution[id].y) })).sort((a, b) => b.d - a.d)[0].id;
-    setHint(index); setSelected(index); const next = { ...s, hints: s.hints + 1 }; update(next); persist(next);
+    setHint(index); setSelected(index); update(next); persist(next);
   }
   async function share(result = false) {
     if (!session || !puzzle) return;
@@ -276,7 +339,9 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
     } catch (error) { if ((error as Error)?.name !== "AbortError") { setShareLink(text); setMessage(ru ? "Скопируйте вызов из поля ниже." : "Copy the challenge from the field below."); } }
   }
 
-  return <section className="egg-nest" aria-label={title}>
+  return <section ref={section} className={`egg-nest${focused ? " is-focused" : ""}`} aria-label={title}>
+    {ready && <div className="nest-view-controls"><strong>{ru ? "Ступень" : "Stage"} {puzzle?.level} · {hard ? ru ? "Хардмод" : "Hardmode" : ru ? "Обычный" : "Classic"}</strong><button ref={viewToggle} type="button" aria-pressed={focused} onClick={toggleFocus}>{focused ? ru ? "Настройки и уровни" : "Settings & stages" : ru ? "Только игра" : "Focus on game"}</button></div>}
+    <div className="nest-setup">
     <header className="nest-heading"><div><p className="nest-eyebrow">{ru ? "Практика тихой формы · V" : "The practice of quiet form · V"}</p><h2>{title}</h2><p>{ru ? "Распутайте белковые нити. Верните кладке Яй Ци." : "Untangle the albumen threads. Restore the clutch’s Egg Qi."}</p></div><span className="nest-seal" aria-hidden="true"><i /></span></header>
     <PortalPresence lang={lang} />
     <GuestNestResults lang={lang} />
@@ -287,30 +352,32 @@ export default function EggUntangle({ lang }: { lang: "ru" | "en" }) {
       {(["campaign", "daily", "free"] as const).map((m, i) => <button key={m} type="button" aria-pressed={mode === m} disabled={!ready} onClick={() => { setMode(m); if (m === "daily") load(dailySeed(moscowDay(), mechanics), m, moscowDay()); if (m === "campaign") load(campaignSeed(Array.from({ length: LEVEL_COUNT }, (_, i) => i + 1).find(n => !completed.includes(n)) ?? 1, mechanics), m); }}>{(ru ? ["Путь адепта", "Кладка дня", "По сиду"] : ["Adept’s path", "Daily clutch", "Seed challenge"])[i]}</button>)}
     </div>
     <div className="nest-select">
-      {mode === "campaign" ? <><div className="nest-select-label"><span>{ru ? "24 ступени к Великому Куполу" : "24 steps to the Great Dome"}</span><strong>{completed.length} / 24</strong></div><div className="nest-levels">{Array.from({ length: LEVEL_COUNT }, (_, i) => i + 1).map(n => <button type="button" key={n} title={nestStory(lang, n)[0]} disabled={!ready} aria-label={`${ru ? "Уровень" : "Level"} ${n}${completed.includes(n) ? ru ? ", пройден" : ", complete" : ""}`} aria-pressed={session?.mode === "campaign" && session.seed === campaignSeed(n, mechanics)} className={completed.includes(n) ? "is-complete" : ""} onClick={() => load(campaignSeed(n, mechanics), "campaign")}>{n}<span aria-hidden="true">{completed.includes(n) ? "✓" : "·"}</span></button>)}</div></> : mode === "daily" ? <div className="nest-daily"><span>◌</span><div><strong>{ru ? hard ? "Общая кладка дня · хардмод" : "Одна кладка для всех адептов" : hard ? "Daily clutch · hardmode" : "One clutch for every adept"}</strong><p>{session?.mode === "daily" ? session.day : today} · {ru ? "Новая в 00:00 по Москве" : "Renews at 00:00 Moscow time"}</p>{session?.day !== today && <button type="button" onClick={() => load(dailySeed(moscowDay(), mechanics), "daily", moscowDay())}>{ru ? "Открыть сегодняшнюю" : "Open today’s clutch"}</button>}</div></div> : <form className="nest-seed-form" onSubmit={event => { event.preventDefault(); const seed = parseSeed(code); if (seed) { let day: string | null = null; try { day = new URL(code).searchParams.get("day"); } catch { /* A plain seed has no daily context. */ } const daily = matchesDaily(day, seed.seed); load(seed.seed, daily ? "daily" : isCampaignSeed(seed.seed) ? "campaign" : "free", daily && day ? day : undefined); } else setMessage(ru ? "Нужен код вида NEST2-8-ABC, KNOT3-8-ABC или ссылка на кладку." : "Use a NEST2-8-ABC or KNOT3-8-ABC code, or a clutch link."); }}><label>{ru ? "Код кладки или ссылка" : "Clutch code or link"}<input value={code} onChange={e => setCode(e.target.value)} maxLength={2048} placeholder={hard ? "KNOT3-8-ABC" : "NEST2-8-ABC"} spellCheck={false} /></label><button type="submit">{ru ? "Открыть" : "Open"}</button><label>{ru ? "Сложность" : "Difficulty"}<select value={level} onChange={e => setLevel(Number(e.target.value))}>{Array.from({ length: LEVEL_COUNT }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select></label><button type="button" onClick={() => load(formatSeed(level, crypto.getRandomValues(new Uint32Array(1))[0], mechanics), "free")}>{ru ? "Новая кладка" : "New clutch"}</button></form>}
+      {mode === "campaign" ? <><div className="nest-select-label"><span>{ru ? "24 ступени к Великому Куполу" : "24 steps to the Great Dome"}</span><strong>{completed.length} / 24</strong></div><div className="nest-levels">{Array.from({ length: LEVEL_COUNT }, (_, i) => i + 1).map(n => <button type="button" key={n} title={nestStory(lang, n)[0]} disabled={!ready} aria-label={`${ru ? "Уровень" : "Level"} ${n}${completed.includes(n) ? ru ? ", пройден" : ", complete" : ""}`} aria-pressed={session?.mode === "campaign" && session.seed === campaignSeed(n, mechanics)} className={completed.includes(n) ? "is-complete" : ""} onClick={() => load(campaignSeed(n, mechanics), "campaign")}>{n}<span aria-hidden="true">{completed.includes(n) ? "✓" : "·"}</span></button>)}</div></> : mode === "daily" ? <div className="nest-daily"><span>◌</span><div><strong>{ru ? hard ? "Общая кладка дня · хардмод" : "Одна кладка для всех адептов" : hard ? "Daily clutch · hardmode" : "One clutch for every adept"}</strong><p>{session?.mode === "daily" ? session.day : today} · {ru ? "Новая в 00:00 по Москве" : "Renews at 00:00 Moscow time"}</p>{session?.day !== today && <button type="button" onClick={() => load(dailySeed(moscowDay(), mechanics), "daily", moscowDay())}>{ru ? "Открыть сегодняшнюю" : "Open today’s clutch"}</button>}</div></div> : <form className="nest-seed-form" onSubmit={event => { event.preventDefault(); const seed = parseSeed(code); if (seed) { let day: string | null = null; try { day = new URL(code).searchParams.get("day"); } catch { /* A plain seed has no daily context. */ } const daily = matchesDaily(day, seed.seed); load(seed.seed, daily ? "daily" : isCampaignSeed(seed.seed) ? "campaign" : "free", daily && day ? day : undefined); } else setMessage(ru ? "Нужен код вида NEST2-8-ABC, KNOT4-8-ABC или ссылка на кладку." : "Use a NEST2-8-ABC or KNOT4-8-ABC code, or a clutch link."); }}><label>{ru ? "Код кладки или ссылка" : "Clutch code or link"}<input value={code} onChange={e => setCode(e.target.value)} maxLength={2048} placeholder={hard ? "KNOT4-8-ABC" : "NEST2-8-ABC"} spellCheck={false} /></label><button type="submit">{ru ? "Открыть" : "Open"}</button><label>{ru ? "Сложность" : "Difficulty"}<select value={level} onChange={e => setLevel(Number(e.target.value))}>{Array.from({ length: LEVEL_COUNT }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select></label><button type="button" onClick={() => load(formatSeed(level, crypto.getRandomValues(new Uint32Array(1))[0], mechanics), "free")}>{ru ? "Новая кладка" : "New clutch"}</button></form>}
+    </div>
     </div>
     {!ready || !session || !puzzle || !analysis ? <p role="status" className="nest-loading">{ru ? "Халазы обретают форму…" : "The chalazae are taking shape…"}</p> : <>
       <div className="nest-chapter"><div><small>{puzzle.version === "NEST1" ? ru ? "АРХИВ ПЕРВОЙ КЛАДКИ" : "FIRST CLUTCH ARCHIVE" : isTutorialSeed(puzzle.seed) ? ru ? "ПЕРВЫЕ ШАГИ" : "FIRST STEPS" : chapter} · {puzzle.level.toString().padStart(2, "0")}</small><h3>{session.mode === "campaign" && puzzle.version !== "NEST1" ? story[0] : session.mode === "daily" ? ru ? "Кладка дня" : "Daily clutch" : ru ? "Свободная форма" : "Free form"}</h3></div></div>
       {session.mode === "campaign" && puzzle.version !== "NEST1" && <p className="nest-story">{story[1]}</p>}
       {puzzle.version === "NEST1" && <p className="nest-story">{ru ? "Это прежняя версия кладки. Её раскладка и рекорды сохранены. Новый путь адепта — в уровнях выше." : "This is an earlier clutch. Its layout and records are preserved. The new adept’s path is available in the levels above."}</p>}
-      {puzzle.version === "KNOT1" && <div className="nest-archive"><p>{ru ? "Вы продолжаете прежнюю раскладку. В обновлённом хардмоде появились новые формы и отдельные фигуры." : "You are continuing an earlier layout. The updated hardmode has new shapes and separate figures."}</p><button type="button" onClick={openNewFigures}>{ru ? "Открыть новые фигуры" : "Open new shapes"}</button></div>}
-      <p className="nest-controls">{hard ? ru ? "Нажмите на яйцо, затем на другое — они поменяются местами. Распутайте все нити; отдельные фигуры тоже подходят." : "Select an egg, then another to swap them. Uncross every thread; separate shapes are valid too." : ru ? "Перетаскивайте яйца, пока нити не перестанут пересекаться." : "Drag the eggs until no threads cross."}</p>
+      {(puzzle.version === "KNOT1" || puzzle.version === "KNOT3") && <div className="nest-archive"><p>{ru ? "Эта прежняя раскладка сохранена. В обновлённом хардмоде сложность нарастает плавнее." : "This earlier layout is preserved. The updated hardmode has a smoother difficulty curve."}</p><button type="button" onClick={openNewFigures}>{ru ? "Открыть новые фигуры" : "Open new shapes"}</button></div>}
+      <p className="nest-controls">{hard ? ru ? "Нажмите на яйцо, затем на другое — они поменяются местами. Распутайте все нити. Удерживайте яйцо, чтобы увидеть его фигуру." : "Select an egg, then another to swap them. Uncross every thread. Hold an egg to see its whole shape." : ru ? "Перетаскивайте яйца, пока нити не перестанут пересекаться." : "Drag the eggs until no threads cross."}</p>
       <div className="nest-metrics"><div><strong className={analysis.crossings ? "is-tangled" : ""}>{analysis.crossings}</strong><span>{ru ? plural(analysis.crossings, ["пересечение", "пересечения", "пересечений"]) : "crossings"}</span></div><div><strong>{session.moves}</strong><span>{ru ? plural(session.moves, ["ход", "хода", "ходов"]) : session.moves === 1 ? "move" : "moves"}</span></div><div><strong>{time(session.seconds)}</strong><span>{ru ? "время" : "time"}</span></div><div><strong>{Math.round(100 * Math.max(0, 1 - analysis.crossedEdges.length / puzzle.edges.length))}%</strong><span>{ru ? "Яй Ци" : "Egg Qi"}</span></div></div>
-      <div aria-busy={animating} className={`nest-board${showResult ? " is-solved" : ""}${hard ? " is-hard" : ""}${animating ? " is-swapping" : ""}`}>
-        <svg ref={svg} viewBox="0 0 1000 1000" role="group" aria-label={hard ? ru ? "Кладка: выберите два яйца для обмена местами" : "Clutch: select two eggs to swap their positions" : ru ? "Кладка: перемещайте яйца, пока нити не перестанут пересекаться" : "Clutch: move the eggs until no threads cross"} aria-describedby={`${uid}-instructions`} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={event => pointerEnd(event)} onPointerCancel={event => pointerEnd(event, true)} onLostPointerCapture={event => pointerEnd(event, true)}>
+      {hard && <div className="nest-board-tools"><button type="button" aria-pressed={zoomed} onClick={() => { cancelPress(); setZoomed(value => !value); }}>{zoomed ? ru ? "Поле целиком" : "Fit board" : ru ? "Увеличить поле" : "Enlarge board"}</button><button type="button" disabled={activeNode === null || paused || animating || session.done} aria-pressed={inspected !== null} onClick={() => setInspected(value => value === null ? activeNode : null)}>{inspected !== null ? ru ? "Все фигуры" : "All shapes" : ru ? "Показать фигуру" : "Show shape"}</button></div>}
+      <div aria-busy={animating} className={`nest-board${showResult ? " is-solved" : ""}${hard ? " is-hard" : ""}${animating ? " is-swapping" : ""}${zoomed ? " is-zoomed" : ""}${inspected !== null ? " is-inspecting" : ""}`}>
+        <svg ref={svg} viewBox="0 0 1000 1000" role="group" aria-label={hard ? ru ? "Кладка: выберите два яйца для обмена местами" : "Clutch: select two eggs to swap their positions" : ru ? "Кладка: перемещайте яйца, пока нити не перестанут пересекаться" : "Clutch: move the eggs until no threads cross"} aria-describedby={`${uid}-instructions`} onContextMenu={event => { if (hard) event.preventDefault(); }} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={event => pointerEnd(event)} onPointerCancel={event => pointerEnd(event, true)} onLostPointerCapture={event => pointerEnd(event, true)}>
           <defs><radialGradient id={`${uid}-shell`} cx="35%" cy="25%" r="80%"><stop stopColor="#fffcec"/><stop offset=".58" stopColor="#f4dfb0"/><stop offset="1" stopColor="#bb854d"/></radialGradient></defs>
           {!hard && <><ellipse cx="500" cy="500" rx="415" ry="440" className="nest-orbit"/><ellipse cx="500" cy="500" rx="340" ry="365" className="nest-orbit nest-orbit-inner"/></>}
           <text x="500" y="488" className="nest-watermark">{ru ? "КУЛЬТУРА" : "CULTURE"}</text><text x="500" y="531" className="nest-watermark-sub">{ru ? "ЯЙЦА" : "OF THE EGG"}</text>
           {puzzle.slots?.map((p, i) => <path key={`slot-${i}`} d={EGG_OUTLINE} transform={`translate(${p.x} ${p.y}) scale(1.3)`} className="nest-slot" aria-hidden="true"/>)}
-          {puzzle.edges.map(([a, b], i) => <g key={i} className={`nest-thread${analysis.crossedEdges.includes(i) ? " is-crossed" : ""}${activeNode === a || activeNode === b ? " is-connected" : ""}${hard && swapSelection !== null && swapSelection !== a && swapSelection !== b ? " is-muted" : ""}`}><line x1={viewPoints[a].x} y1={viewPoints[a].y} x2={viewPoints[b].x} y2={viewPoints[b].y} className="nest-thread-shadow"/><line x1={viewPoints[a].x} y1={viewPoints[a].y} x2={viewPoints[b].x} y2={viewPoints[b].y} className="nest-thread-core"/></g>)}
+          {puzzle.edges.map(([a, b], i) => <g key={i} className={`nest-thread${analysis.crossedEdges.includes(i) ? " is-crossed" : ""}${activeNode === a || activeNode === b ? " is-connected" : ""}${inspected !== null ? inspectedGroup.has(a) ? " is-inspected" : " is-muted" : hard && swapSelection !== null && swapSelection !== a && swapSelection !== b ? " is-muted" : ""}`}><line x1={viewPoints[a].x} y1={viewPoints[a].y} x2={viewPoints[b].x} y2={viewPoints[b].y} className="nest-thread-shadow"/><line x1={viewPoints[a].x} y1={viewPoints[a].y} x2={viewPoints[b].x} y2={viewPoints[b].y} className="nest-thread-core"/></g>)}
           {swapHint && <g className="nest-hint" aria-hidden="true"><line x1={viewPoints[swapHint[0]].x} y1={viewPoints[swapHint[0]].y} x2={viewPoints[swapHint[1]].x} y2={viewPoints[swapHint[1]].y}/></g>}
           {hint !== null && <g className="nest-hint" aria-hidden="true"><line x1={viewPoints[hint].x} y1={viewPoints[hint].y} x2={puzzle.solution[hint].x} y2={puzzle.solution[hint].y}/><path d={EGG_OUTLINE} transform={`translate(${puzzle.solution[hint].x} ${puzzle.solution[hint].y})`}/><text x={puzzle.solution[hint].x} y={puzzle.solution[hint].y + 7}>{hint + 1}</text></g>}
-          {viewPoints.map((p, i) => <g key={i} data-node={i} transform={`translate(${p.x} ${p.y})`} role="button" tabIndex={session.done || paused || animating ? -1 : 0} aria-disabled={session.done || paused || animating} aria-pressed={hard ? swapSelection === i : undefined} aria-label={`${ru ? "Яйцо" : "Egg"} ${i + 1}, ${ru ? "связей" : "connections"}: ${puzzle.edges.filter(([a, b]) => a === i || b === i).length}. ${hard ? ru ? "Enter или пробел — выбрать для обмена" : "Enter or Space to select for a swap" : ru ? "Стрелки — переместить" : "Arrow keys to move"}`} className={`nest-egg${motion?.moving.includes(i) ? " is-swapping" : ""}${activeNode === i ? " is-selected" : ""}${swapHint?.includes(i) ? " is-hint" : ""}${analysis.overlappingNodes.some(pair => pair.includes(i)) || analysis.blockedNodes.includes(i) ? " is-blocked" : ""}`} onFocus={() => setSelected(i)} onKeyDown={event => keyMove(event, i)}><circle r="39" fill="transparent"/><path className="nest-egg-halo" d={EGG_OUTLINE} transform="scale(1.25)"/><path className="nest-egg-shell" d={EGG_OUTLINE} fill={`url(#${uid}-shell)`}/><text y="12">{i + 1}</text><ellipse cx="-7" cy="-15" rx="3" ry="7" transform="rotate(22 -7 -15)" fill="#fffef5" opacity=".65"/></g>)}
+          {viewPoints.map((p, i) => <g key={i} data-node={i} transform={`translate(${p.x} ${p.y})`} role="button" tabIndex={session.done || paused || animating ? -1 : 0} aria-disabled={session.done || paused || animating} aria-pressed={hard ? swapSelection === i : undefined} aria-label={`${ru ? "Яйцо" : "Egg"} ${i + 1}, ${ru ? "связей" : "connections"}: ${puzzle.edges.filter(([a, b]) => a === i || b === i).length}. ${hard ? ru ? "Enter или пробел — выбрать для обмена, F — показать фигуру" : "Enter or Space to select for a swap, F to show its shape" : ru ? "Стрелки — переместить" : "Arrow keys to move"}`} className={`nest-egg${inspected !== null && !inspectedGroup.has(i) ? " is-muted" : ""}${inspectedGroup.has(i) ? " is-inspected" : ""}${motion?.moving.includes(i) ? " is-swapping" : ""}${activeNode === i ? " is-selected" : ""}${swapHint?.includes(i) ? " is-hint" : ""}${analysis.overlappingNodes.some(pair => pair.includes(i)) || analysis.blockedNodes.includes(i) ? " is-blocked" : ""}`} onFocus={() => setSelected(i)} onKeyDown={event => keyMove(event, i)}><circle r="39" fill="transparent"/><path className="nest-egg-halo" d={EGG_OUTLINE} transform="scale(1.25)"/><path className="nest-egg-shell" d={EGG_OUTLINE} fill={`url(#${uid}-shell)`}/><text y="12">{i + 1}</text><ellipse cx="-7" cy="-15" rx="3" ry="7" transform="rotate(22 -7 -15)" fill="#fffef5" opacity=".65"/></g>)}
         </svg>
         {paused && <div className="nest-pause"><span>◌</span><h3>{ru ? "Кладка отдыхает" : "The clutch is resting"}</h3><button type="button" onClick={() => { setPaused(false); pausedRef.current = false; }}>{ru ? "Продолжить ритуал" : "Continue the ritual"}</button></div>}
       </div>
-      <p className="nest-feedback" role="status" aria-live="polite">{animating ? ru ? "Яйца меняются местами…" : "The eggs are swapping places…" : showResult ? ru ? "Нити свободны. Кладка обрела покой." : "The threads are free. The clutch is at peace." : swapHint ? ru ? `Поменяйте местами яйца ${swapHint[0] + 1} и ${swapHint[1] + 1}. Это шаг к одной из свободных форм.` : `Swap eggs ${swapHint[0] + 1} and ${swapHint[1] + 1}. This is a step towards one untangled form.` : swapSelection !== null ? ru ? `Яйцо ${swapSelection + 1} выбрано. Нажмите на другое для обмена или на него же, чтобы снять выбор.` : `Egg ${swapSelection + 1} selected. Choose another to swap, or select it again to cancel.` : analysis.overlappingNodes.length ? ru ? "Разведите яйца: каждому нужно своё место." : "Separate the eggs: each needs its own space." : hint !== null ? ru ? `Призрачная скорлупа — одно из возможных мест для яйца ${hint + 1}. На пути к решению пересечений может стать больше.` : `The ghost shell is one possible place for egg ${hint + 1}. Crossings may increase on the way to a solution.` : analysis.blockedNodes.length && !analysis.crossings ? ru ? "Пересечений не видно, но часть нитей скрыта за яйцами. Освободите их." : "No crossings are visible, but some threads are hidden behind eggs. Give them room." : ru ? "Распутайте выделенные нити, чтобы они не пересекались." : "Untangle the highlighted threads so that none cross."}</p>
-      {showResult ? <div className="nest-result" role="status"><p className="nest-eyebrow">{ru ? "Ритуал завершён" : "Ritual complete"}</p><h3>{ru ? "Хранитель тихой кладки" : "Keeper of the quiet clutch"}</h3><p>{session.moves} {ru ? plural(session.moves, ["ход", "хода", "ходов"]) : session.moves === 1 ? "move" : "moves"} · {time(session.seconds)} · {session.hints ? `${session.hints} ${ru ? plural(session.hints, ["подсказка", "подсказки", "подсказок"]) : session.hints === 1 ? "hint" : "hints"}` : ru ? "Без подсказок" : "No hints"}</p><div className="nest-actions"><button className="nest-primary" type="button" onClick={() => void share(true)}>{ru ? "Поделиться результатом" : "Share result"}</button>{session.mode === "campaign" && puzzle.level < 24 && <button type="button" onClick={() => load(nextCampaignSeed(puzzle.seed)!, "campaign")}>{ru ? "Следующая ступень →" : "Next step →"}</button>}<button type="button" onClick={() => load(session.seed, session.mode, session.day, true)}>{ru ? "Пройти ещё раз" : "Play again"}</button></div>{session.ticket.owner ? <ResultSync lang={lang} owner={session.ticket.owner}/> : <p>{durable ? ru ? "Результат сохранён в этом браузере. После входа его можно добавить в профиль." : "Your result is saved in this browser. Sign in to add it to your profile." : ru ? "Браузер запретил хранение. Результат доступен только в этой вкладке — поделитесь им перед закрытием." : "Browser storage is blocked. This result lasts only in this tab — share it before closing."} {durable && <a href={`/${lang}/profile/#nest-results`}>{ru ? "Войти и сохранить результат →" : "Sign in and save result →"}</a>}</p>}</div> : <div className="nest-actions"><button type="button" disabled={!undo.length || paused || animating || session.done} onClick={() => { const points = undo.at(-1); if (!points || !current.current || flight.current) return; const before = clone(current.current.points); setRedo(list => [...list, before]); setUndo(list => list.slice(0, -1)); commit(points, before, true); }}>{ru ? "↶ Отменить" : "↶ Undo"}</button><button type="button" disabled={!redo.length || paused || animating || session.done} onClick={() => { const points = redo.at(-1); if (!points || !current.current || flight.current) return; const before = clone(current.current.points); setUndo(list => [...list, before]); setRedo(list => list.slice(0, -1)); commit(points, before, true); }}>{ru ? "↷ Вернуть" : "↷ Redo"}</button><button type="button" onClick={showHint} disabled={paused || animating || session.done}>{ru ? "Подсказка" : "Hint"}{session.hints > 0 ? ` · ${session.hints}` : ""}</button><button type="button" disabled={session.done} onClick={() => { settleMotion(); cancelCurrentDrag(); const value = !paused; setPaused(value); pausedRef.current = value; }}>{paused ? ru ? "Продолжить" : "Resume" : ru ? "Пауза" : "Pause"}</button><button type="button" onClick={() => { if (session.moves === 0 || window.confirm(ru ? "Начать эту кладку заново? Текущая раскладка будет сброшена." : "Restart this clutch? Your current layout will be reset.")) load(session.seed, session.mode, session.day, true); }}>{ru ? "Сначала" : "Restart"}</button></div>}
+      <p className="nest-feedback" role="status" aria-live="polite">{inspected !== null ? ru ? `Выделена фигура: ${inspectedGroup.size} ${plural(inspectedGroup.size, ["яйцо", "яйца", "яиц"])}. Отпустите яйцо или нажмите «Все фигуры».` : `Shape highlighted: ${inspectedGroup.size} eggs. Release the egg or choose All shapes.` : animating ? ru ? "Яйца меняются местами…" : "The eggs are swapping places…" : showResult ? ru ? "Нити свободны. Кладка обрела покой." : "The threads are free. The clutch is at peace." : swapHint ? ru ? `Поменяйте местами яйца ${swapHint[0] + 1} и ${swapHint[1] + 1}. Это шаг к одной из свободных форм.` : `Swap eggs ${swapHint[0] + 1} and ${swapHint[1] + 1}. This is a step towards one untangled form.` : swapSelection !== null ? ru ? `Яйцо ${swapSelection + 1} выбрано. Нажмите на другое для обмена или на него же, чтобы снять выбор.` : `Egg ${swapSelection + 1} selected. Choose another to swap, or select it again to cancel.` : analysis.overlappingNodes.length ? ru ? "Разведите яйца: каждому нужно своё место." : "Separate the eggs: each needs its own space." : hint !== null ? ru ? `Призрачная скорлупа — одно из возможных мест для яйца ${hint + 1}. На пути к решению пересечений может стать больше.` : `The ghost shell is one possible place for egg ${hint + 1}. Crossings may increase on the way to a solution.` : analysis.blockedNodes.length && !analysis.crossings ? ru ? "Пересечений не видно, но часть нитей скрыта за яйцами. Освободите их." : "No crossings are visible, but some threads are hidden behind eggs. Give them room." : focused && hard ? ru ? "Нажмите два яйца для обмена. Удерживайте яйцо, чтобы увидеть фигуру." : "Tap two eggs to swap. Hold an egg to see its whole shape." : ru ? "Распутайте выделенные нити, чтобы они не пересекались." : "Untangle the highlighted threads so that none cross."}</p>
+      {showResult ? <div className="nest-result" role="status"><p className="nest-eyebrow">{ru ? "Ритуал завершён" : "Ritual complete"}</p><h3>{ru ? "Хранитель тихой кладки" : "Keeper of the quiet clutch"}</h3><p>{session.moves} {ru ? plural(session.moves, ["ход", "хода", "ходов"]) : session.moves === 1 ? "move" : "moves"} · {time(session.seconds)} · {session.hints ? `${session.hints} ${ru ? plural(session.hints, ["подсказка", "подсказки", "подсказок"]) : session.hints === 1 ? "hint" : "hints"}` : ru ? "Без подсказок" : "No hints"}</p><div className="nest-actions">{session.mode === "free" && <button className="nest-primary" type="button" onClick={nextRandomClutch}>{ru ? "Следующая случайная кладка →" : "Next random clutch →"}</button>}<button className={session.mode === "daily" ? "nest-primary" : undefined} type="button" onClick={() => void share(true)}>{ru ? "Поделиться результатом" : "Share result"}</button>{session.mode === "campaign" && puzzle.level < 24 && <button className="nest-primary" type="button" onClick={() => load(nextCampaignSeed(puzzle.seed)!, "campaign")}>{ru ? "Следующая ступень →" : "Next step →"}</button>}<button type="button" onClick={() => load(session.seed, session.mode, session.day, true)}>{ru ? "Пройти ещё раз" : "Play again"}</button></div>{session.ticket.owner ? <ResultSync lang={lang} owner={session.ticket.owner}/> : <p>{durable ? ru ? "Результат сохранён в этом браузере. После входа его можно добавить в профиль." : "Your result is saved in this browser. Sign in to add it to your profile." : ru ? "Браузер запретил хранение. Результат доступен только в этой вкладке — поделитесь им перед закрытием." : "Browser storage is blocked. This result lasts only in this tab — share it before closing."} {durable && <a href={`/${lang}/profile/#nest-results`}>{ru ? "Войти и сохранить результат →" : "Sign in and save result →"}</a>}</p>}</div> : <div className="nest-actions"><button type="button" disabled={!undo.length || paused || animating || session.done} onClick={() => { const points = undo.at(-1); if (!points || !current.current || flight.current) return; const before = clone(current.current.points); setRedo(list => [...list, before]); setUndo(list => list.slice(0, -1)); commit(points, before, true); }}>{ru ? "↶ Отменить" : "↶ Undo"}</button><button type="button" disabled={!redo.length || paused || animating || session.done} onClick={() => { const points = redo.at(-1); if (!points || !current.current || flight.current) return; const before = clone(current.current.points); setUndo(list => [...list, before]); setRedo(list => list.slice(0, -1)); commit(points, before, true); }}>{ru ? "↷ Вернуть" : "↷ Redo"}</button><button type="button" onClick={showHint} disabled={paused || animating || session.done}>{ru ? "Подсказка" : "Hint"}{session.hints > 0 ? ` · ${session.hints}` : ""}</button><button type="button" disabled={session.done} onClick={() => { settleMotion(); cancelCurrentDrag(); const value = !paused; setPaused(value); pausedRef.current = value; }}>{paused ? ru ? "Продолжить" : "Resume" : ru ? "Пауза" : "Pause"}</button><button type="button" onClick={() => { if (session.moves === 0 || window.confirm(ru ? "Начать эту кладку заново? Текущая раскладка будет сброшена." : "Restart this clutch? Your current layout will be reset.")) load(session.seed, session.mode, session.day, true); }}>{ru ? "Сначала" : "Restart"}</button></div>}
       <div className="nest-footer"><span>{puzzle.initial.length} {ru ? plural(puzzle.initial.length, ["яйцо", "яйца", "яиц"]) : "eggs"} · {puzzle.edges.length} {ru ? plural(puzzle.edges.length, ["халаза", "халазы", "халаз"]) : "chalazae"}{hard && groups.length > 1 && <> · {groups.length} {ru ? plural(groups.length, ["отдельная фигура", "отдельные фигуры", "отдельных фигур"]) : "separate shapes"}</>}</span><button type="button" onClick={() => void share()} aria-label={ru ? "Поделиться этой кладкой" : "Share this clutch"}>{session.seed} ↗</button></div>
       {best && <div className="nest-best"><p>{ru ? "Ваши лучшие результаты на этой кладке" : "Your best results for this clutch"}</p><dl><div><dt>{ru ? "Меньше всего ходов" : "Fewest moves"}</dt><dd>{best.moves}</dd></div><div><dt>{ru ? "Лучшее время" : "Fastest time"}</dt><dd>{time(best.seconds)}</dd></div></dl><p>{ru ? "Рекорд по ходам и рекорд по времени могут быть установлены в разных партиях." : "The move record and time record may come from different attempts."}</p></div>}
     </>}

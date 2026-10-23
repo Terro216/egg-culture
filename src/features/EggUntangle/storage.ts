@@ -7,6 +7,8 @@ export type NestRecord = { seed: string; level: number; mode: NestMode; day?: st
 export type NestSession = {
   seed: string; mode: NestMode; day?: string; points: Point[]; moves: number; hints: number;
   seconds: number; ticket: PortalTicket; done: boolean;
+  /** Reopening the same hint on an unchanged board is not another hint. */
+  hintPosition?: string;
 };
 export type NestProgress = { campaign: number[]; hardCampaign?: number[]; legacyCampaign?: number[]; campaignVersion?: 2; puzzles: NestRecord[]; totalSolved?: number; dailySolved?: number; dailyStreak?: number; bestDailyStreak?: number; hardSolved?: number };
 const memory = new Map<string, string>();
@@ -53,7 +55,7 @@ function normalizedProgress(value: NestProgress | null): NestProgress {
   const levels = (list: unknown) => Array.isArray(list) ? list.filter(n => Number.isInteger(n) && n >= 1 && n <= 24) as number[] : [];
   const forVersions = (versions: readonly string[], list: unknown) => [...new Set([...levels(list), ...puzzles.filter(r => r.mode === "campaign" && versions.includes(parseSeed(r.seed)?.version ?? "")).map(r => r.level)])].sort((a, b) => a - b);
   const next: NestProgress = { campaignVersion: 2, campaign: forVersions(["NEST2", "NEST3"], value?.campaignVersion === 2 ? value.campaign : []),
-    hardCampaign: forVersions(["KNOT1", "KNOT2", "KNOT3"], value?.hardCampaign), legacyCampaign: forVersions(["NEST1"], [...levels(value?.legacyCampaign), ...(value?.campaignVersion !== 2 ? levels(value?.campaign) : [])]), puzzles };
+    hardCampaign: forVersions(["KNOT1", "KNOT2", "KNOT3", "KNOT4"], value?.hardCampaign), legacyCampaign: forVersions(["NEST1"], [...levels(value?.legacyCampaign), ...(value?.campaignVersion !== 2 ? levels(value?.campaign) : [])]), puzzles };
   for (const field of ["totalSolved", "dailySolved", "dailyStreak", "bestDailyStreak", "hardSolved"] as const) {
     const number = value?.[field];
     if (typeof number === "number" && Number.isSafeInteger(number) && number >= 0) next[field] = number;

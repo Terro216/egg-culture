@@ -170,27 +170,29 @@ test('swap-only results require an exact slot permutation even when other coordi
   assert.equal(completed.achievements.includes('untangle.campaign'), false, 'hard campaign is a separate achievement');
 }));
 
-test('KNOT3 cloud results retain old personal bests and share stage credit without duplicate progress', async () => fixture(({ store, player }) => {
+test('KNOT4 cloud results retain old personal bests and share stage credit without duplicate progress', async () => fixture(({ store, player }) => {
   const old = result(campaignSeed(12, 'swap', 'KNOT1'));
   const fresh = result(campaignSeed(12, 'swap'));
+  const previous = result(campaignSeed(12, 'swap', 'KNOT3'));
+  store.portalResult(player, previous);
   store.portalResult(player, old);
-  const archived = store.ownProfile(player).untangle.puzzles[0];
+  const archived = store.ownProfile(player).untangle.puzzles.find(r => r.seed === old.untangle.seed);
   store.portalResult(player, fresh);
   store.portalResult(player, fresh);
   const progress = store.ownProfile(player).untangle;
   assert.deepEqual(progress.hardCampaign, [12]);
-  assert.equal(progress.hardSolved, 2);
+  assert.equal(progress.hardSolved, 3);
   assert.deepEqual(progress.puzzles.find(record => record.seed === old.untangle.seed), archived);
   assert.equal(progress.puzzles.find(record => record.seed === fresh.untangle.seed).solves, 1);
 }));
 
-test('daily receipts from all editions are accepted without triple-counting one Moscow day', async () => fixture(({ store, player }) => {
+test('daily receipts from all editions count a Moscow day once', async () => fixture(({ store, player }) => {
   const day = moscowDay();
-  for (const [mechanics, version] of [['drag', 'NEST1'], ['drag', 'NEST2'], ['swap', 'KNOT1']]) {
+  for (const [mechanics, version] of [['drag', 'NEST1'], ['drag', 'NEST2'], ['swap', 'KNOT1'], ['swap', 'KNOT3'], ['swap', 'KNOT4']]) {
     store.portalResult(player, result(dailySeed(day, mechanics, version), 'daily', { day }));
   }
   const own = store.ownProfile(player);
-  assert.equal(own.untangle.totalSolved, 3); assert.equal(own.untangle.hardSolved, 1);
+  assert.equal(own.untangle.totalSolved, 5); assert.equal(own.untangle.hardSolved, 3);
   assert.equal(own.untangle.dailySolved, 1); assert.equal(own.untangle.dailyStreak, 1);
   assert.deepEqual(own.untangle.campaign, []); assert.deepEqual(own.untangle.hardCampaign, []);
 }));

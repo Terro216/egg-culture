@@ -31,7 +31,7 @@ function withinSegment(point: Point, a: Point, b: Point): boolean {
     && point.y >= Math.min(a.y, b.y) - EPSILON && point.y <= Math.max(a.y, b.y) + EPSILON;
 }
 
-function segmentsIntersect(a: Point, b: Point, c: Point, d: Point): boolean {
+export function segmentsIntersect(a: Point, b: Point, c: Point, d: Point): boolean {
   const abC = orientation(a, b, c), abD = orientation(a, b, d);
   const cdA = orientation(c, d, a), cdB = orientation(c, d, b);
   if (((abC > EPSILON && abD < -EPSILON) || (abC < -EPSILON && abD > EPSILON))
@@ -39,7 +39,7 @@ function segmentsIntersect(a: Point, b: Point, c: Point, d: Point): boolean {
   return withinSegment(c, a, b) || withinSegment(d, a, b) || withinSegment(a, c, d) || withinSegment(b, c, d);
 }
 
-function distanceToSegmentSquared(point: Point, a: Point, b: Point): number {
+export function distanceToSegmentSquared(point: Point, a: Point, b: Point): number {
   const x = b.x - a.x, y = b.y - a.y, length = x * x + y * y;
   const t = length ? Math.max(0, Math.min(1, ((point.x - a.x) * x + (point.y - a.y) * y) / length)) : 0;
   return (point.x - a.x - t * x) ** 2 + (point.y - a.y - t * y) ** 2;

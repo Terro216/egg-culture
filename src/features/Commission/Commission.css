@@ -394,3 +394,102 @@ body { margin: 0; color: var(--co-ink); font-family: 'Commission Lora', Georgia,
 @media (prefers-reduced-motion: reduce) {
   .commission-app *, .commission-app *::before, .commission-app *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* The workbench keeps the specimen, the player's observation and the reference distinct. */
+.commission-app { accent-color: var(--co-green); caret-color: var(--co-green); scrollbar-color: #a29478 var(--co-bg); }
+.commission-app ::selection { background: #d8c594; color: #292f29; }
+.commission-case-progress { display: block; margin-bottom: 8px; font: 600 15px/1.5 var(--co-ui); color: var(--co-green); font-variant-numeric: tabular-nums; }
+.commission-required { padding: 18px 22px; background: var(--co-paper); border-bottom: 1px solid var(--co-rule); font: 13px/1.5 var(--co-ui); }
+.commission-required > div { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 7px; }
+.commission-required button { min-height: 40px; display: inline-flex; align-items: center; gap: 5px; border: 0; border-bottom: 1px solid var(--co-rule); background: none; padding: 5px 0; }
+.commission-required button.is-complete { color: var(--co-green); }
+.commission-workbench { min-width: 0; }
+.commission-exam-controls, .commission-exam-start { padding: 24px; background: var(--co-paper); font-size: 14px; }
+.commission-exam-controls h3 { margin-bottom: 12px; }
+.commission-exam-controls p, .commission-exam-start p { max-width: 68ch; }
+.commission-exam-controls .commission-primary { margin-top: 20px; }
+.commission-exam-controls .commission-caption { margin-top: 12px; }
+.commission-exam-start > .commission-caption { margin-top: 16px; }
+.commission-exam-controls details { border-block: 1px solid var(--co-rule); margin: 18px 0; }
+.commission-exam-controls summary { cursor: pointer; min-height: 44px; padding-block: 10px; font: 13px/1.6 var(--co-ui); }
+.commission-exam-controls details p { padding-top: 10px; }
+.commission-surfaces { display: flex; border-block: 1px solid var(--co-rule); margin-top: 20px; }
+.commission-surfaces > span { flex: 1; text-align: center; padding: 8px 4px; font: 20px/1.6 var(--co-ui); color: var(--co-muted); }
+.commission-surfaces small { display: block; font-size: 10px; }
+.commission-surfaces .is-seen { background: #e9eddf; color: #374c3c; }
+.commission-surfaces .is-current { box-shadow: inset 0 -2px var(--co-green); }
+.commission-findings { padding: 0; border: 0; border-top: 1px solid var(--co-rule); margin: 24px 0 0; }
+.commission-findings legend { padding: 0 0 12px; font: 600 13px/1.6 var(--co-ui); }
+.commission-findings label { display: flex; gap: 10px; align-items: center; min-height: 48px; padding: 8px 0; font: 14px/1.5 var(--co-ui); cursor: pointer; }
+.commission-findings input, .commission-exhibit-list input { width: 20px; height: 20px; flex: 0 0 20px; margin: 0; }
+.commission-findings:disabled { color: var(--co-muted); }
+.commission-exam-controls .commission-scale-readout { position: static; text-align: center; margin: 0 0 20px; padding: 18px; box-shadow: none; }
+.commission-exam-controls .commission-scale-readout > span { font-size: 38px; }
+.commission-exam-controls .commission-scale-readout p { font-size: 12px; margin: 8px auto 0; }
+.commission-exam-controls .commission-action-row { margin: 0 0 22px; }
+.commission-air-gauge { display: block; width: min(100%, 340px); margin: 18px auto; color: var(--co-ink); font: 11px var(--co-ui); }
+.commission-range-label { display: block; font: 14px/1.6 var(--co-ui); }
+.commission-range-label input { display: block; width: 100%; height: 44px; margin: 4px 0 12px; cursor: ew-resize; }
+.commission-reference { background: #eee8d8; padding: 16px 18px; font: 14px/1.65 var(--co-ui); }
+.commission-profile-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; font: 14px/1.5 var(--co-ui); margin: 20px 0; }
+.commission-profile-facts dd { margin: 0; }
+.commission-profile-facts > div { grid-column: 1 / -1; padding-bottom: 10px; }
+.commission-profile-facts > div dt { font-weight: 600; margin-bottom: 5px; }
+.commission-search, .commission-claim-select { display: block; font: 13px/1.6 var(--co-ui); margin: 20px 0; }
+.commission-search input, .commission-claim-select select { display: block; width: 100%; min-height: 48px; background: #fffdf6; border: 1px solid #8e8169; border-radius: 2px; color: var(--co-ink); margin-top: 8px; padding: 10px; font-size: 16px; }
+.commission-search input::placeholder { color: var(--co-muted); opacity: 1; }
+.commission-record-list { display: grid; gap: 0; border-top: 1px solid var(--co-rule); margin-bottom: 24px; }
+.commission-record-list button { min-height: 60px; padding: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; border: 0; border-bottom: 1px solid var(--co-rule); text-align: left; background: transparent; font: 13px/1.5 var(--co-ui); }
+.commission-record-list button:hover { background: #eee8d8; }
+.commission-record-list .is-selected { background: #e1e6d8; box-shadow: inset 0 -2px var(--co-green); }
+.commission-certificate { padding: 16px 0; border-top: 1px solid var(--co-rule); font: 13px/1.5 var(--co-ui); min-width: 0; }
+.commission-certificate > strong { display: block; min-height: 40px; }
+.commission-certificate dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 12px 0 0; }
+.commission-certificate dt { color: var(--co-muted); }
+.commission-certificate dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.commission-autograph { width: 72px; height: 46px; color: #354a60; }
+.commission-document-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.commission-document-comparison .commission-certificate dl { display: block; }
+.commission-document-comparison .commission-certificate dt { font-size: 11px; }
+.commission-document-comparison .commission-certificate dd { min-height: 48px; padding: 4px 0 10px; }
+.commission-exception { border-block: 1px solid var(--co-brass); padding: 12px 0; margin: 12px 0 20px; }
+.commission-exception h4 { margin: 0 0 12px; }
+.commission-exhibit-list article { border-top: 1px solid var(--co-rule); padding: 14px 0; }
+.commission-exhibit-list label { display: flex; gap: 12px; align-items: center; min-height: 44px; cursor: pointer; font: 14px/1.5 var(--co-ui); }
+.commission-exhibit-list p { margin: 8px 0; font-size: 14px; }
+.commission-empty-dossier { border-block: 1px solid var(--co-rule); padding: 22px 0; }
+.commission-dossier > section { margin-top: 32px; }
+@media (max-width: 760px) {
+  .commission-case-heading { position: sticky; top: 0; z-index: 6; padding: 12px 0; background: var(--co-bg); border-bottom: 1px solid var(--co-rule); }
+  .commission-case-heading h1 { margin: 0; font-size: 24px; }
+  .commission-case-progress { font-size: 13px; }
+}
+@media (max-width: 500px) {
+  .commission-required { padding: 14px; }
+  .commission-required > div { gap: 4px 14px; }
+  .commission-required button { font-size: 12px; }
+  .commission-exam-controls, .commission-exam-start { padding: 20px 16px; }
+  .commission-specimen, .commission-model-loading { height: 260px; }
+  .commission-tool-tray button { min-height: 98px; padding: 9px 3px; }
+  .commission-tool-tray span { font-size: 11px; }
+  .commission-tool-tray small { font-size: 9px; line-height: 1.4; }
+  .commission-document-comparison { gap: 14px; }
+  .commission-certificate { font-size: 12px; }
+  .commission-certificate > strong { min-height: 44px; }
+  .commission-exam-controls .commission-primary, .commission-exam-start .commission-primary { width: 100%; }
+  .commission-case-heading h1 { font-size: 22px; }
+  .commission-shiftbar span { font-size: 10px; }
+  .commission-shiftbar strong small { font-size: 11px; }
+}
+.commission-next-check, .commission-proof-note { padding: 20px 24px; background: var(--co-paper); border-top: 1px solid var(--co-rule); }
+.commission-proof-note p { margin: 0; font-size: 14px; }
+.commission-instrument-top { scroll-margin-top: 110px; }
+.commission-decision-area { scroll-margin-top: 100px; }
+.commission-signature select { max-width: 100%; }
+@media (max-width: 500px) { .commission-next-check { padding: 16px; } .commission-next-check > button { width: 100%; } }
+
+.commission-specimen-canvas { height: calc(100% - 52px); }
+.commission-rotate { bottom: 6px; height: 44px; }
+.commission-rotate button { width: 44px; height: 44px; }
+@media (max-width: 500px) { .commission-specimen { height: 290px; } }
+.commission-record-list button:disabled { opacity: 1; cursor: default; }

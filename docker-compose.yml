@@ -20,7 +20,6 @@ services:
       - caddy_net
       - telegram
     # Прямой маршрут и прежний Telegram-пин перестали отвечать 22.10.2026.
-    # Используем существующий SSH-туннель до DE; соседние сервисы не меняются.
     # Локальные вызовы поллера обходят прокси через NO_PROXY.
     healthcheck:
       test: ["CMD", "node", "scripts/healthcheck.mjs"]
@@ -34,6 +33,39 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  telegram-egress:
+    image: ${EGG_TUNNEL_IMAGE:-egg-culture-tunnel:local}
+    build: ./deploy/tunnel
+    container_name: egg-culture-tunnel
+    restart: unless-stopped
+    # Read-only rootfs/mounts and no Linux capabilities; no host ports/socket.
+    user: "0:0"
+    volumes:
+      - type: bind
+        source: ${EGG_TUNNEL_KEYS_DIR:-/etc/egg-culture/tunnel}
+        target: /keys
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: /etc/egg-culture/endpoint.json
+        target: /config/endpoint.json
+        read_only: true
+        bind: {create_host_path: false}
+    networks:
+      telegram:
+      telegram_egress:
+        gw_priority: 1
+    read_only: true
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 64m
+    cpus: 0.2
+    pids_limit: 32
+    logging:
+      driver: json-file
+      options: {max-size: 2m, max-file: "3"}
 
   backup:
     profiles: ["backup"]
@@ -76,7 +108,14 @@ networks:
   caddy_net:
     external: true
   telegram:
-    external: true
+    internal: true
+    ipam:
+      config:
+        - subnet: ${EGG_TELEGRAM_INTERNAL_SUBNET:-172.28.0.0/28}
+  telegram_egress:
+    ipam:
+      config:
+        - subnet: ${EGG_TELEGRAM_EGRESS_SUBNET:-172.28.0.16/28}
 
 volumes:
   news_cache:

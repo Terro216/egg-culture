@@ -43,7 +43,7 @@ test('failed image persistence never publishes a post or consumes its quota', as
   await assert.rejects(f.store.createPost(draft(), null, false), KladkaQuotaError);
 });
 
-test('durable moderation retries survive reopen, lease concurrent calls and stop after acknowledgement', async t => {
+test('durable moderation retries survive reopen, lease concurrent calls and stop after acknowledgement', { timeout: 5000 }, async t => {
   const f = await fixture(t), start = 1800000000000;
   const post = await f.store.createPost(draft(), null, true, start);
   let calls = 0;
@@ -51,8 +51,17 @@ test('durable moderation retries survive reopen, lease concurrent calls and stop
   assert.deepEqual(await f.store.deliverNext(fail, start), { attempted: true, delivered: false });
   const reopened = createKladkaStore(f.directory);
   assert.equal((await reopened.deliverNext(fail, start + 59999)).attempted, false);
-  const results = await Promise.all([reopened.deliverNext(async item => { calls++; assert.equal(item.id, post.id); }, start + 60000), f.store.deliverNext(fail, start + 60000)]);
-  assert.equal(results.filter(result => result.attempted).length, 1);
+  const started = Promise.withResolvers(), release = Promise.withResolvers();
+  const delivery = reopened.deliverNext(async item => {
+    calls++; started.resolve(); assert.equal(item.id, post.id); await release.promise;
+  }, start + 60000);
+  await started.promise;
+  try {
+    assert.equal((await f.store.deliverNext(fail, start + 60000)).attempted, false);
+  } finally {
+    release.resolve();
+  }
+  assert.deepEqual(await delivery, { attempted: true, delivered: true });
   assert.equal(calls, 2);
   assert.equal((await createKladkaStore(f.directory).deliverNext(fail, start + 86400000)).attempted, false);
   assert.equal((await reopened.getPost(post.id)).status, 'pending', 'delivery never approves the post');

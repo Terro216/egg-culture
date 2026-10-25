@@ -1,4 +1,4 @@
-// Requires an isolated, instrumented candidate; see docs/egg-road-upgrade.md.
+// Requires an isolated, instrumented candidate; see docs/egg-road.md.
 import assert from 'node:assert/strict';
 const { chromium } = await import(process.env.ROAD_PLAYWRIGHT_MODULE || 'playwright');
 import { mkdir, writeFile } from 'node:fs/promises';

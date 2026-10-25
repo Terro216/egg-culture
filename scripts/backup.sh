@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compose runs the worker where Docker runs (deployment-host under the remote shim).
+# Compose runs the worker on the selected Docker host.
 # No host-side staging, locks, sourcing .env, or dependency on the web image.
 set -Eeuo pipefail
 umask 077
@@ -19,7 +19,7 @@ fi
 # pulls, so ordinary jobs never depend on an implicit image build/download.
 docker image inspect egg-culture-backup:restic-0.19.1-rclone-1.74.4 >/dev/null \
     || { echo 'Build the backup image with scripts/backup.sh build first' >&2; exit 1; }
-# Fixed host paths are declared in Compose. Only the worker consumes this env
+# Host paths are configured through Compose. Only the worker consumes this env
 # file (raw values), so passwords cannot become shell code or Compose syntax.
 case "$mode" in
     run) mode=backup ;;

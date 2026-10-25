@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createKladkaStore, KladkaQuotaError, KladkaStorageError, visibleKladkaEntries } from '../src/shared/utils/kladkaStore.ts';
+const legacyIds = ['00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000002'];
+process.env.KLADKA_LEGACY_ADEPT_POST_IDS = ` ${legacyIds[0]},, ${legacyIds[1]} `;
+const { createKladkaStore, KladkaQuotaError, KladkaStorageError, visibleKladkaEntries } = await import('../src/shared/utils/kladkaStore.ts');
 
 const draft = (ipHash = 'test-ip') => ({ name: 'Adept', text: 'Breakfast', ipHash });
 async function fixture(t) {
@@ -92,8 +94,8 @@ test('audience survives moderation, retries and reopening; invalid audience neve
 
 test('legacy migration restricts only the requested entries, preserves explicit choices and never writes on read', async t => {
   const f = await fixture(t);
-  const base = { ...draft(), text: 'КАПУСТА', createdAt: '2026-09-23T17:00:57.298Z', status: 'approved' };
-  const ids = ['00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000002'];
+  const base = { ...draft(), text: 'Legacy fixture', createdAt: '2024-01-01T00:00:00.000Z', status: 'approved' };
+  const ids = legacyIds;
   const raw = JSON.stringify({ posts: [...ids.map(id => ({ ...base, id })), { ...base, id: 'abc' }] });
   await writeFile(f.file, raw);
   for (const id of ids) assert.equal((await f.store.getPost(id)).visibility, 'adepts');

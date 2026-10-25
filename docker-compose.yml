@@ -3,7 +3,7 @@ services:
     build:
       context: .
       args:
-        DOMAIN: ${DOMAIN:-ilyamedve.dev}
+        DOMAIN: ${DOMAIN:-example.org}
     restart: unless-stopped
     env_file: .env
     environment:
@@ -19,8 +19,7 @@ services:
     networks:
       - caddy_net
       - telegram
-    # Прямой маршрут и прежний Telegram-пин перестали отвечать 22.10.2026.
-    # Локальные вызовы поллера обходят прокси через NO_PROXY.
+    # Local poller requests bypass the Telegram proxy through NO_PROXY.
     healthcheck:
       test: ["CMD", "node", "scripts/healthcheck.mjs"]
       interval: 30s
@@ -39,8 +38,11 @@ services:
     build: ./deploy/tunnel
     container_name: egg-culture-tunnel
     restart: unless-stopped
+    # The restricted SSH key is root-owned and mounted read-only.
     # Read-only rootfs/mounts and no Linux capabilities; no host ports/socket.
     user: "0:0"
+    environment:
+      EGG_TUNNEL_USER: ${EGG_TUNNEL_USER:-tunnel}
     volumes:
       - type: bind
         source: ${EGG_TUNNEL_KEYS_DIR:-/etc/egg-culture/tunnel}
@@ -48,8 +50,8 @@ services:
         read_only: true
         bind: {create_host_path: false}
       - type: bind
-        source: /etc/egg-culture/endpoint.json
-        target: /config/endpoint.json
+        source: ${EGG_TUNNEL_ENDPOINT_FILE:-/etc/egg-culture/endpoint.json}
+        target: /config/de-endpoint.json
         read_only: true
         bind: {create_host_path: false}
     networks:
@@ -79,12 +81,12 @@ services:
     volumes:
       - kladka_data:/sources/kladka:ro
       - type: bind
-        source: /srv/egg-culture-backup
+        source: ${EGG_BACKUP_DATA_DIR:-/srv/egg-culture-backup}
         target: /backup
         bind:
           create_host_path: false
       - type: bind
-        source: /etc/egg-culture/rclone
+        source: ${EGG_BACKUP_RCLONE_DIR:-/etc/egg-culture/rclone}
         target: /config/rclone
         bind:
           create_host_path: false

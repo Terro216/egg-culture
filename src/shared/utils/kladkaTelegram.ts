@@ -6,7 +6,7 @@ import { postVisibility } from "./kladkaStore.ts";
 // прилетает админу сообщением с кнопками «Одобрить / Отклонить».
 //
 // Ответ забирает long polling'ом scripts/kladka-poller.mjs и переотправляет
-// на /api/kladka-telegram: webhook до нас не доходит, Telegram не может открыть
+// на /api/kladka-telegram; входящий публичный webhook не требуется.
 //
 // Настройка: KLADKA_BOT_TOKEN (у @BotFather) и KLADKA_ADMIN_CHAT_ID в .env.
 // Без токена бот отключен — записи публикуются сразу (режим разработки).

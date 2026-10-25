@@ -39,7 +39,7 @@ egg-backup backup
 egg-backup export "$id"
 expect_failure 'export refuses overwrite' egg-backup export "$id"
 printf 'other snapshot' >/tmp/foreign
-restic backup --json --host deployment-host --tag foreign /tmp/foreign >/tmp/foreign.json
+restic backup --json --host "${BACKUP_HOST:-egg-culture}" --tag foreign /tmp/foreign >/tmp/foreign.json
 foreign=$(jq -r 'select(.message_type == "summary") | .snapshot_id' /tmp/foreign.json)
 expect_failure 'foreign snapshot cannot pass Egg Culture restore' egg-backup restore "$foreign"
 egg-backup restore latest

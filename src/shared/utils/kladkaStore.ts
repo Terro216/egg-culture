@@ -10,12 +10,12 @@ import crypto from "node:crypto";
 export type KladkaStatus = "pending" | "approved" | "rejected";
 export type KladkaVisibility = "public" | "adepts";
 
-// The existing “КАПУСТА” and Кирка entries are restricted by request. Other legacy entries
-// remain public; an explicit visibility choice always takes precedence.
-const LEGACY_ADEPT_POSTS = new Set([
-  "00000000-0000-4000-8000-000000000001",
-  "00000000-0000-4000-8000-000000000002",
-]);
+// Installation-specific legacy restrictions stay in private configuration.
+// An explicit visibility choice always takes precedence.
+const LEGACY_ADEPT_POSTS = new Set(
+  (process.env.KLADKA_LEGACY_ADEPT_POST_IDS ?? import.meta.env?.KLADKA_LEGACY_ADEPT_POST_IDS ?? "")
+    .split(",").map((id: string) => id.trim()).filter(Boolean),
+);
 export const postVisibility = (post: Pick<KladkaPost, "id" | "visibility">): KladkaVisibility =>
   post.visibility ?? (LEGACY_ADEPT_POSTS.has(post.id) ? "adepts" : "public");
 

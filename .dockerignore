@@ -8,6 +8,10 @@ dist
 .news_cache.json
 .news-cache
 .kladka
+.local
+reports
+playwright-report
+test-results
 **/__pycache__
 .vscode
 .dockerignore

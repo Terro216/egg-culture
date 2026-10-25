@@ -1,7 +1,50 @@
-# Telegram egress
+# Telegram через SSH-прокси
 
-Activated 2026-10-24: the exact previous web image was retained, the dedicated
-tunnel passed CONNECT/TLS/API checks, and web getMe plus successful polling were
-verified through `http://telegram-egress:3128`. The first rollout on Docker's
-automatic 192.168.* subnets failed; web was rolled back before pinning the working
-subnets above and verifying the final switch. The shared firewall was unchanged.
+Compose направляет исходящие HTTPS-запросы приложения через
+`http://telegram-egress:3128`. `NO_PROXY` исключает локальные запросы поллера.
+Контейнер `telegram-egress` устанавливает отдельную SSH-сессию и перенаправляет
+порт 3128 к HTTP CONNECT-прокси на loopback удалённого узла.
+
+## Настройка
+
+Укажите в локальном `.env`:
+
+| Переменная | Назначение |
+| --- | --- |
+| `EGG_TUNNEL_KEYS_DIR` | Каталог с `tunnel_key` и проверенным `known_hosts` |
+| `EGG_TUNNEL_ENDPOINT_FILE` | JSON с адресом SSH-сервера и портом |
+| `EGG_TUNNEL_USER` | Пользователь SSH; по умолчанию `tunnel` |
+| `EGG_TUNNEL_IMAGE` | Тег образа прокси |
+| `EGG_TELEGRAM_INTERNAL_SUBNET` | Свободная подсеть для связи приложения с прокси |
+| `EGG_TELEGRAM_EGRESS_SUBNET` | Свободная подсеть с исходящим доступом |
+
+Пример файла endpoint с демонстрационным адресом:
+
+```json
+{"host": "192.0.2.10", "port": 22}
+```
+
+Обработчик также читает прежние поля `DE_PUBLIC_IPV4` и `DE_SSH_PORT`.
+Подсети выбираются с учётом маршрутизации своего хоста. На удалённом узле
+должен работать HTTP CONNECT-прокси на `127.0.0.1:3128`; SSH-ключу достаточно
+права перенаправлять соединение только к этому адресу.
+
+Файлы ключа и закреплённых ключей сервера монтируются только для чтения.
+Контейнер работает с UID 0 для чтения закрытого ключа, без Linux capabilities,
+с read-only rootfs и временным каталогом в tmpfs. Порты на хост не публикуются.
+Ключи, адрес своего сервера и его конфигурация хранятся вне Git.
+
+## Проверка
+
+```sh
+docker compose config --quiet
+docker compose build telegram-egress
+```
+
+После запуска проверьте healthcheck туннеля и свежий успешный опрос Telegram
+в состоянии поллера. Один только открытый SSH-порт не подтверждает доставку
+запросов через прокси. Не запускайте второй `getUpdates` одновременно
+с поллером приложения: два потребителя будут мешать друг другу.
+
+Для диагностики достаточно `getMe`/`getWebhookInfo` и состояния поллера;
+публикация записей Книги или отправка сообщений не требуется.

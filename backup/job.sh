@@ -11,7 +11,7 @@ case "$mode" in backup|init|weekly|monthly|restore|export) ;; *) echo 'Unknown b
 : "${YANDEX_DISK_TARGET:?Set YANDEX_DISK_TARGET in .env.backup}"
 export RESTIC_PASSWORD="$BACKUP_PASSWORD" RESTIC_REPOSITORY="$YANDEX_DISK_TARGET"
 export RCLONE_CONFIG=/config/rclone/rclone.conf RESTIC_CACHE_DIR=/tmp/restic-cache
-host=${BACKUP_HOST:-deployment-host}
+host=${BACKUP_HOST:-egg-culture}
 tag=egg-culture
 daily=${BACKUP_KEEP_DAILY:-7}
 weekly=${BACKUP_KEEP_WEEKLY:-8}

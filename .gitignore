@@ -17,6 +17,13 @@ pnpm-debug.log*
 .env
 .env.production
 .env.backup
+.env.*
+!.env.example
+# Local credentials, deployment notes and generated review output
+.local/
+reports/
+playwright-report/
+test-results/
 __pycache__/
 
 # private gift assets

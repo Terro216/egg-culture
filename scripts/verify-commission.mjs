@@ -1,4 +1,4 @@
-// Run on deployment-host with Node --experimental-strip-types. This runner only writes
+// Run with Node --experimental-strip-types. This runner only writes
 // to an isolated preview; every browser request is intercepted before transport.
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';

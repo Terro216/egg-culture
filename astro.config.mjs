@@ -6,7 +6,7 @@ import { loadEnv } from "vite";
 import { roadOffline } from "./scripts/road-offline.mjs";
 
 const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
-const domain = process.env.DOMAIN || env.DOMAIN || "ilyamedve.dev";
+const domain = process.env.DOMAIN || env.DOMAIN || "example.org";
 if (!/^[a-z0-9.-]+$/i.test(domain)) throw new Error("DOMAIN must be a bare domain name");
 
 // https://astro.build/config

@@ -48,6 +48,8 @@ test('approved legacy-profile migration preserves credentials, links and records
       store.portalResult(player,r);store.portalResult(player,r);
     }
     const privateProfile=store.ownProfile(player);assert.equal(privateProfile.stats.length,4);
+    assert.equal('achievementPopulation' in privateProfile,false);
+    assert.equal('achievementCounts' in privateProfile,false);
     for(const stat of privateProfile.stats)assert.equal(stat.runs,1,'retries do not inflate the attempt count');
     assert.equal(privateProfile.stats.find(s=>s.game==='road').best,'2000','legacy records survive the shared account migration');
     assert.equal(privateProfile.stats.find(s=>s.game==='fry').best,'123456789012345678901234567890');

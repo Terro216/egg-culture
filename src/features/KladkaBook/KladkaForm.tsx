@@ -51,6 +51,7 @@ const STRINGS = {
     photoChange: "Заменить фотографию",
     submit: "Оставить запись",
     submitting: "Запись ложится в Книгу…",
+    moderation: "Записи проходят через руки Хранителя Книги и появляются после одобрения.",
     counter: (n: number, max: number) => `${n} / ${max}`,
     errorGeneric: "Книга не приняла запись. Попробуйте позже.",
     errorImageSize: "Фотография тяжелее 5 МБ.",
@@ -88,6 +89,7 @@ const STRINGS = {
     photoChange: "Replace the photograph",
     submit: "Leave an entry",
     submitting: "The entry is settling into the Book…",
+    moderation: "Entries pass through the hands of the Keeper of the Book and appear after approval.",
     counter: (n: number, max: number) => `${n} / ${max}`,
     errorGeneric: "The Book did not accept the entry. Try again later.",
     errorImageSize: "The photograph is heavier than 5 MB.",
@@ -287,6 +289,7 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
   return (
     <div className="kladka-form" ref={formRef}>
       {css}
+      <p className="kladka-notice">{s.moderation}</p>
       <input
         className="kladka-input"
         type="text"
@@ -346,16 +349,16 @@ export const KladkaForm: React.FC<KladkaFormProps> = ({ lang }) => {
         onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
       />
       <div className="kladka-row">
-        {file && <button type="button" className="btn" disabled={busy} onClick={() => { setFile(null); setNotice(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>{lang === "ru" ? "Убрать фотографию" : "Remove photograph"}</button>}
+        {file && <button type="button" className="btn btn-link" disabled={busy} onClick={() => { setFile(null); setNotice(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>{lang === "ru" ? "Убрать фотографию" : "Remove photograph"}</button>}
         <button
-          className="btn"
-          style={{ opacity: 0.8 }}
+          className="btn btn-secondary"
           onClick={() => fileInputRef.current?.click()}
         >
           {file ? s.photoChange : s.photoBtn}
         </button>
         <button
           className="btn"
+          aria-busy={busy}
           disabled={busy || (!text.trim() && !file)}
           onClick={() => void submit()}
         >

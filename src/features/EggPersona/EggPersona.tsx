@@ -538,12 +538,11 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
             <button className="btn" onClick={() => void share()}>
               {s.share}
             </button>
-            <button className="btn" onClick={download}>
+            <button className="btn btn-secondary" onClick={download}>
               {s.download}
             </button>
             <button
-              className="btn"
-              style={{ opacity: 0.6 }}
+              className="btn btn-link"
               onClick={retake}
             >
               {s.retake}

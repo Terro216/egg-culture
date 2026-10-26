@@ -364,6 +364,14 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang, initia
     <div className="adept-cert">
       <style>{`
         .adept-cert {
+          --color-text: #f0ead6;
+          --button-fill: #8b0000;
+          --button-fill-hover: #a7191c;
+          --button-ink: #fff5ee;
+          --button-outline: #ef9d96;
+          --button-secondary-hover: #3e2423;
+          --button-muted-fill: #362627;
+          --button-muted-ink: #c6b6b4;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
@@ -399,45 +407,13 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang, initia
         .adept-cert-input:focus {
           border-color: #ff3333;
         }
-        .adept-cert-btn {
-          background: transparent;
-          border: 1px solid #8b0000;
-          color: #ff6b6b;
-          padding: 0.8rem 1.5rem;
-          font-family: var(--font-sans-ui, sans-serif);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          font-size: 0.8rem;
-          transition: all 0.3s ease;
-        }
-        .adept-cert-btn:hover:not(:disabled) {
-          background: #8b0000;
-          color: #fff;
-          box-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
-        }
-        .adept-cert-btn:disabled {
-          opacity: 0.4;
-          cursor: default;
-        }
+
         .adept-cert-gender {
           display: flex;
-          border: 1px solid rgba(139, 0, 0, 0.6);
+          gap: 0.5rem;
+          flex-wrap: wrap;
         }
-        .adept-cert-gender button {
-          background: transparent;
-          border: none;
-          color: #d1b8b8;
-          padding: 0.8rem 1.2rem;
-          font-family: var(--font-sans-ui, sans-serif);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          font-size: 0.8rem;
-          transition: all 0.3s ease;
-        }
-        .adept-cert-gender button.is-active {
-          background: #8b0000;
-          color: #fff;
-        }
+
         .adept-cert-canvas {
           width: 100%;
           max-width: 820px;
@@ -466,7 +442,7 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang, initia
           {(["m", "f"] as Gender[]).map((g) => (
             <button
               key={g}
-              className={gender === g ? "is-active" : ""}
+              className="btn btn-secondary"
               aria-pressed={gender === g}
               onClick={() => {
                 setGender(g);
@@ -479,14 +455,14 @@ export const AdeptCertificate: React.FC<AdeptCertificateProps> = ({ lang, initia
           ))}
         </div>
         <button
-          className="adept-cert-btn"
+          className={`btn adept-cert-btn${issued ? " btn-secondary" : ""}`}
           disabled={!name.trim()}
           onClick={() => void issue()}
         >
           {issued ? s.regenerate : s.generate}
         </button>
         {issued && (
-          <button className="adept-cert-btn" onClick={download}>
+          <button className="btn adept-cert-btn" onClick={download}>
             {s.download}
           </button>
         )}

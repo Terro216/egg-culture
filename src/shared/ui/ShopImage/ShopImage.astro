@@ -1,0 +1,70 @@
+---
+import { Image, getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: string;
+  alt: string;
+  lang: string;
+  eager?: boolean;
+  priority?: boolean;
+  sizes: string;
+}
+
+const { src, alt, lang, eager = false, priority = false, sizes } = Astro.props;
+const images = import.meta.glob<{ default: ImageMetadata }>('/public/*.webp', { eager: true });
+const source = images[`/public${src}`]?.default;
+if (!source) throw new Error(`Missing boutique image: ${src}`);
+const preview = await getImage({ src: source, width: 40, format: 'webp', quality: 35 });
+---
+
+<div class="shop-photo" data-shop-photo data-state="loading">
+  <img class="shop-photo-preview" src={preview.src} width="40" height="40" alt="" aria-hidden="true" decoding="async" />
+  <Image
+    src={source}
+    alt={alt}
+    widths={[320, 640, 960]}
+    sizes={sizes}
+    format="webp"
+    quality={80}
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    decoding="async"
+    class="shop-photo-main"
+    data-product-photo
+  />
+  <span class="shop-photo-error" hidden>{lang === 'ru' ? 'Фотография временно недоступна' : 'Photograph temporarily unavailable'}</span>
+</div>
+
+<noscript><style is:inline>html .shop-photo[data-shop-photo] .shop-photo-main { opacity: 1; transition: none; }</style></noscript>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-shop-photo]').forEach(photo => {
+    const image = photo.querySelector<HTMLImageElement>('[data-product-photo]');
+    if (!image) return;
+    const showError = () => {
+      photo.dataset.state = 'error';
+      const message = photo.querySelector<HTMLElement>('.shop-photo-error');
+      if (message) message.hidden = false;
+    };
+    const reveal = async () => {
+      if (!image.naturalWidth) { showError(); return; }
+      try { await image.decode(); } catch { /* A loaded image may already be decoded. */ }
+      photo.dataset.state = 'ready';
+    };
+    image.addEventListener('load', () => { void reveal(); }, { once: true });
+    image.addEventListener('error', showError, { once: true });
+    if (image.complete) void reveal();
+  });
+</script>
+
+<style>
+  .shop-photo { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; }
+  .shop-photo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .shop-photo-preview { position: absolute; inset: 0; filter: blur(8px); transform: scale(1.04); transition: visibility 0s .18s; }
+  .shop-photo :global(.shop-photo-main) { position: relative; opacity: 0; color: transparent; transition: opacity .18s ease; }
+  .shop-photo[data-state='ready'] :global(.shop-photo-main) { opacity: 1; }
+  .shop-photo[data-state='ready'] .shop-photo-preview { visibility: hidden; }
+  .shop-photo-error { position: absolute; bottom: 1rem; inset-inline: 1rem; padding: .5rem; background: var(--color-shell); color: var(--color-text-muted); font: .875rem/1.5 var(--font-sans-ui); text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .shop-photo-preview, .shop-photo :global(.shop-photo-main) { transition: none; } }
+</style>

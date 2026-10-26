@@ -39,8 +39,8 @@ export function useRoadAccount(board: AccountBoard) {
   return { profile, recovery, error, pending, notice, send, clearRecovery: () => setRecovery(null), clearError: () => { setError(""); setNotice(""); } };
 }
 
-export function RoadAccount({ lang, account, reload, failed, suggestedName, openForGuest = false, initialMode = "register" }: {
-  lang: "ru" | "en"; account: ReturnType<typeof useRoadAccount>; reload: () => void; failed: boolean; suggestedName: string; openForGuest?: boolean; initialMode?: "register" | "login";
+export function RoadAccount({ lang, account, reload, failed, suggestedName, openForGuest = false, initialMode = "register", inProfile = false }: {
+  lang: "ru" | "en"; account: ReturnType<typeof useRoadAccount>; reload: () => void; failed: boolean; suggestedName: string; openForGuest?: boolean; initialMode?: "register" | "login"; inProfile?: boolean;
 }) {
   const ui = accountCopy[lang], { profile, pending, recovery } = account;
   const [mode, setMode] = useState<Exclude<Action, "logout">>(initialMode), [changing, setChanging] = useState(false);
@@ -58,7 +58,7 @@ export function RoadAccount({ lang, account, reload, failed, suggestedName, open
     const a = document.createElement("a"); a.href = url; a.download = "egg-culture-recovery.txt"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   return <details ref={details} className="egg-road-help egg-road-account">
-    <summary>{profile?.registered ? `${ui.player}: ${profile.name}` : ui.open}</summary>
+    <summary>{profile?.registered ? `${inProfile ? lang === "ru" ? "Аккаунт" : "Account" : ui.player}: ${profile.name}` : ui.open}</summary>
     {!profile ? <p role="status">{failed ? ui.unavailable : ui.loading} {failed && <button onClick={reload}>{ui.retry}</button>}</p> : <>
       {recovery ? <section className="egg-road-recovery" aria-label={ui.recoveryTitle}>
         <strong>{ui.recoveryTitle}</strong><p>{ui.recoveryNote}</p>
@@ -68,8 +68,8 @@ export function RoadAccount({ lang, account, reload, failed, suggestedName, open
         <button className="egg-road-account-submit" onClick={account.clearRecovery}>{ui.saved}</button>
       </section> : <>
         {profile.registered ? <>
-          <p className="egg-road-account-protected">{ui.protected} · {profile.name}</p>
-          <p><a href={`/${lang}/profile/`}>{lang === "ru" ? "Единый профиль и достижения →" : "Shared profile and achievements →"}</a></p>
+          {!inProfile && <><p className="egg-road-account-protected">{ui.protected} · {profile.name}</p>
+          <p><a href={`/${lang}/profile/`}>{lang === "ru" ? "Единый профиль и достижения →" : "Shared profile and achievements →"}</a></p></>}
           <div className="egg-road-account-actions"><button disabled={pending} onClick={() => { selectMode("change"); setChanging(true); }}>{ui.change}</button><button disabled={pending} onClick={() => { void account.send("logout").then(ok => { if (ok) { selectMode("register"); setChanging(false); nameEdited.current = false; } }); }}>{ui.logout}</button></div>
         </> : <>
           <p>{ui.intro}</p>

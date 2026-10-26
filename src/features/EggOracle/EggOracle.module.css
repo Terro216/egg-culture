@@ -53,32 +53,6 @@
   border-color: var(--color-yolk);
 }
 
-.button {
-  padding: 1rem;
-  background: var(--color-yolk);
-  color: var(--color-text);
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-sans-ui);
-  text-transform: uppercase;
-  font-weight: bold;
-  letter-spacing: 0.1em;
-  transition:
-    opacity 0.3s ease,
-    background-color 0.3s ease;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.button:hover:not(:disabled) {
-  background: var(--color-text);
-  color: var(--color-shell);
-}
-
-.button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
 
 .answer {
   margin-top: 1rem;
@@ -116,9 +90,7 @@
     padding: 0.75rem;
     font-size: 1rem;
   }
-  .button {
-    padding: 0.75rem;
-  }
+
   .answer {
     padding: 1rem;
     font-size: 1rem;

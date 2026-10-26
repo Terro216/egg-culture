@@ -2,6 +2,7 @@
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from "@app/layouts/Layout.astro";
 import { shopItems } from "../../../data/content";
+import ShopImage from '@shared/ui/ShopImage/ShopImage.astro';
 
 export function getStaticPaths() {
   const langs = ["ru", "en"];
@@ -35,12 +36,13 @@ const t = useTranslations(lang as Lang);
 
     <article class="shop-detail">
       <div class="shop-image-wrapper">
-        <img
+        <ShopImage
           src={item.image}
           alt={item.title[lang as "ru" | "en"]}
-          width="1024"
-          height="1024"
-          loading="eager"
+          lang={lang as string}
+          eager
+          priority
+          sizes="(max-width: 768px) min(30rem, calc(100vw - 2rem)), 480px"
         />
       </div>
       <header class="shop-header">
@@ -120,13 +122,6 @@ const t = useTranslations(lang as Lang);
     width: 100%;
     aspect-ratio: 1;
     background-color: rgba(0, 0, 0, 0.05);
-  }
-
-  .shop-image-wrapper img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
   }
 
   .shop-header {

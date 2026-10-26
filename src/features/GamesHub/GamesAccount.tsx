@@ -15,17 +15,17 @@ export default function GamesAccount({ lang }: { lang: "ru" | "en" }) {
   }, [registered, account.recovery, account.pending]);
 
   return <aside className="games-account" aria-label={ru ? "Сохранение прогресса" : "Save your progress"}>
-    {registered ? <a className="games-account-profile" href={`/${lang}/profile/`}>
+    {registered ? <a className="btn btn-link games-account-profile" href={`/${lang}/profile/`}>
       {state.account!.name} · {ru ? "Мой прогресс" : "My progress"} →
     </a> : <>
-      <button className="games-account-open" type="button" aria-expanded={open} aria-controls="games-account-panel" onClick={() => setOpen(value => !value)}>
+      <button className="btn btn-secondary games-account-open" type="button" aria-expanded={open} aria-controls="games-account-panel" onClick={() => setOpen(value => !value)}>
         {ru ? "Войти, чтобы сохранять прогресс" : "Sign in to save your progress"}
       </button>
       <p className="games-account-note">{ru ? "Один аккаунт для рекордов и достижений во всех играх." : "One account for scores and achievements across all games."}</p>
     </>}
-    {state.failed ? <p role="status">{ru ? "Не удалось проверить аккаунт. " : "Could not check your account. "}<button type="button" onClick={() => void refreshPortal()}>{ru ? "Повторить" : "Retry"}</button></p>
+    {state.failed ? <p role="status">{ru ? "Не удалось проверить аккаунт. " : "Could not check your account. "}<button className="btn btn-secondary" type="button" onClick={() => void refreshPortal()}>{ru ? "Повторить" : "Retry"}</button></p>
       : state.syncing ? <p role="status">{ru ? "Сохраняем прогресс…" : "Saving progress…"}</p>
-      : state.unsynced > 0 ? <button type="button" onClick={() => void flushPortal()}>{ru ? "Сохранить результаты" : "Save results"} ({state.unsynced})</button> : null}
+      : state.unsynced > 0 ? <button className="btn btn-secondary" type="button" onClick={() => void flushPortal()}>{ru ? "Сохранить результаты" : "Save results"} ({state.unsynced})</button> : null}
     {(open || account.recovery) && <div id="games-account-panel" className="games-account-panel">
       <RoadAccount lang={lang} account={account} reload={() => void refreshPortal()} failed={state.failed} suggestedName="" openForGuest initialMode="login" />
     </div>}

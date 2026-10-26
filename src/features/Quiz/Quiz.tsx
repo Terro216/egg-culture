@@ -480,9 +480,9 @@ export const Quiz: React.FC<QuizProps> = ({ lang }) => {
         <p className="quiz-correction-policy">{correctionAllowed ? s.correctionsReady : s.correctionsLocked}</p>
         <div className="quiz-actions">
           {correctionAllowed && (
-            <button className="quiz-btn" data-action="correct-mistakes" onClick={() => handleRetry(true)}>{s.correctMistakes}</button>
+            <button className="btn quiz-btn" data-action="correct-mistakes" onClick={() => handleRetry(true)}>{s.correctMistakes}</button>
           )}
-          <button className={`quiz-btn${correctionAllowed ? " quiz-btn-secondary" : ""}`} data-action="start-over" onClick={() => handleRetry()}>{s.retry}</button>
+          <button className={`btn quiz-btn${correctionAllowed ? " btn-secondary" : ""}`} data-action="start-over" onClick={() => handleRetry()}>{s.retry}</button>
         </div>
       </div>
     );
@@ -491,7 +491,7 @@ export const Quiz: React.FC<QuizProps> = ({ lang }) => {
   return (
     <div className="quiz-container" data-ready={Boolean(current)} data-correcting={correcting.length > 0}>
       {saveError && <p role="alert">{saveError}</p>}
-      {portal.failed && <p role="alert">{uiLang === "ru" ? "Не удалось проверить профиль. Ответы остаются на странице." : "Could not check your account. Your answers remain on this page."} <button type="button" onClick={() => void refreshPortal()}>{uiLang === "ru" ? "Повторить" : "Retry"}</button></p>}
+      {portal.failed && <p role="alert">{uiLang === "ru" ? "Не удалось проверить профиль. Ответы остаются на странице." : "Could not check your account. Your answers remain on this page."} <button type="button" className="btn btn-link" onClick={() => void refreshPortal()}>{uiLang === "ru" ? "Повторить" : "Retry"}</button></p>}
       <p className="quiz-instruction">{correcting.length > 0 ? s.correctionInstruction : s.instruction}</p>
       {questions.map((q, qIndex) => {
         const accepted = correcting.length > 0 && !correcting.includes(qIndex);
@@ -512,7 +512,7 @@ export const Quiz: React.FC<QuizProps> = ({ lang }) => {
           </div>
         );
       })}
-      <button className="quiz-btn" onClick={handleSubmit} disabled={saving || !current || portal.failed || !evaluateQuiz(answers)}>
+      <button className="btn quiz-btn" onClick={handleSubmit} aria-busy={saving} disabled={saving || !current || portal.failed || !evaluateQuiz(answers)}>
         {s.submit}
       </button>
     </div>

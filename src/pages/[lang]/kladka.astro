@@ -43,13 +43,6 @@ const description =
             : "The shared book of Adepts. One breakfast — one entry — one trace."
         }
       </p>
-      <p class="kladka-sub">
-        {
-          lang === "ru"
-            ? "Записи проходят через руки Хранителя Книги. До трех записей в день."
-            : "Entries pass through the hands of the Keeper of the Book. Up to three entries a day."
-        }
-      </p>
     </div>
 
     <KladkaForm client:load lang={lang} />
@@ -62,11 +55,6 @@ const description =
   .page-title {
     font-size: 3.5rem;
     color: var(--color-yolk-text);
-    margin: 0;
-  }
-
-  .kladka-sub {
-    opacity: 0.7;
     margin: 0;
   }
 

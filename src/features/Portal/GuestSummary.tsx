@@ -57,7 +57,7 @@ export default function GuestSummary({ lang, onCertificate }: { lang: "ru" | "en
       <article>
         <h3>{ru ? "Инициация" : "Initiation"}</h3>
         <p>{initiated === true ? (ru ? "Пройдена. Вы — адепт." : "Passed. You are an adept.") : initiated === false ? (ru ? "Пока не пройдена." : "Not passed yet.") : (ru ? "Не удалось прочитать результат в этом браузере." : "Could not read your result in this browser.")}</p>
-        {initiated ? <button type="button" onClick={onCertificate}>{ru ? "Открыть сертификат →" : "View certificate →"}</button> : <a href={`/${lang}/quiz/`}>{ru ? "Открыть Инициацию →" : "Open Initiation →"}</a>}
+        {initiated ? <button className="btn btn-link" type="button" onClick={onCertificate}>{ru ? "Открыть сертификат →" : "View certificate →"}</button> : <a href={`/${lang}/quiz/`}>{ru ? "Открыть Инициацию →" : "Open Initiation →"}</a>}
       </article>
       <article>
         <h3>{ru ? "Инкубатор" : "Incubator"}</h3>

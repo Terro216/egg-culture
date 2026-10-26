@@ -30,7 +30,7 @@ const t = useTranslations(lang as Lang);
           <a href={`/${lang}/tools#oracle`}>{t("home.askOracle")} →</a>
         </div>
         <div class="hero-games">
-          <a href={`/${lang}/games/`} class="hero-play">{t("home.playGames")} →</a>
+          <a href={`/${lang}/games/`} class="btn btn-secondary hero-play">{t("home.playGames")} →</a>
         </div>
       </div>
     </div>
@@ -90,14 +90,6 @@ const t = useTranslations(lang as Lang);
 
   .hero-games { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .75rem; margin-top: .25rem; }
 
-  .hero-play {
-    padding: .8rem 1.3rem;
-    border: 1px solid var(--color-yolk);
-    border-radius: 3px 16px 3px 16px;
-    font: .9rem var(--font-sans-ui);
-    background: #d4af3710;
-  }
-  .hero-play:hover { background: #d4af3728; }
 
   @media (max-width: 768px) {
     h1 {

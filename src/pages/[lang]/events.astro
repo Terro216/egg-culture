@@ -28,21 +28,21 @@ const t = useTranslations(lang as Lang);
     <div class="events-grid">
       {
         eventItems.map((event) => (
-          <div class="event-card">
+          <a href={`/${lang}/events/${event.slug}`} class="event-card" aria-labelledby={`event-${event.slug}`}>
             <div class="event-card-content">
               <span class="event-date">{event.date ?? (lang === "ru" ? "Дата будет объявлена" : "Date to be announced")}</span>
-              <h2 class="event-title">{event.title[lang as "ru" | "en"]}</h2>
+              <h2 class="event-title" id={`event-${event.slug}`}>{event.title[lang as "ru" | "en"]}</h2>
               <p class="event-location">
                 📍 {event.location[lang as "ru" | "en"]}
               </p>
               <p class="event-desc">
                 {event.shortDescription[lang as "ru" | "en"]}
               </p>
-              <a href={`/${lang}/events/${event.slug}`} class="btn-sm">
+              <span class="btn btn-link" aria-hidden="true">
                 {lang === "ru" ? "Подробнее" : "Details"}
-              </a>
+              </span>
             </div>
-          </div>
+          </a>
         ))
       }
     </div>
@@ -50,7 +50,7 @@ const t = useTranslations(lang as Lang);
     <EventSubscription lang={lang as Lang} />
 
     <p class="text-center">
-      <a href={`/${lang}/tasting-sheet`} class="btn-sm">
+      <a href={`/${lang}/tasting-sheet`} class="btn btn-link">
         {lang === "ru"
           ? "Печатный дегустационный лист для Слепых Встреч →"
           : "Printable tasting sheet for Blind Meetings →"}
@@ -74,6 +74,8 @@ const t = useTranslations(lang as Lang);
   }
 
   .event-card {
+    color: inherit;
+    text-decoration: none;
     border: 1px solid rgba(43, 43, 43, 0.1);
     background-color: rgba(255, 255, 255, 0.5);
     display: flex;
@@ -85,8 +87,14 @@ const t = useTranslations(lang as Lang);
   }
 
   .event-card:hover {
+    color: inherit;
     transform: translateY(-4px);
     border-color: var(--color-yolk);
+  }
+
+  .event-card:focus-visible {
+    outline: 2px solid var(--color-yolk-text);
+    outline-offset: 4px;
   }
 
   .event-card-content {
@@ -128,22 +136,4 @@ const t = useTranslations(lang as Lang);
     line-height: 1.6;
   }
 
-  .btn-sm {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-yolk);
-    color: var(--color-text);
-    font-family: var(--font-sans-ui);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    text-align: center;
-  }
-
-  .btn-sm:hover {
-    background-color: var(--color-yolk);
-    color: var(--color-text);
-  }
 </style>

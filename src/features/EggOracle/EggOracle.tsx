@@ -50,7 +50,8 @@ export default function EggOracle({ dict }: EggOracleProps) {
         <button
           onClick={handleAsk}
           disabled={isThinking || !question.trim()}
-          className={styles.button}
+          className="btn"
+          aria-busy={isThinking}
         >
           {isThinking ? dict.thinking : dict.ask}
         </button>

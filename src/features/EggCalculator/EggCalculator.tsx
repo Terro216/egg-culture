@@ -284,28 +284,6 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
     prevPhaseRef.current = phaseIndex;
   }, [phaseIndex, ceremony]);
 
-  const buttonStyle = (isActive: boolean) => ({
-    padding: "0.75rem 1.5rem",
-    fontSize: "1rem",
-    border: "1px solid var(--color-yolk, var(--accent-color, #d4af37))",
-    cursor: "pointer",
-    backgroundColor: isActive
-      ? "var(--color-yolk, var(--accent-color, #d4af37))"
-      : "transparent",
-    color: "var(--color-text, #2b2b2b)",
-    fontFamily: "var(--font-sans-ui, sans-serif)",
-    transition: "all 0.3s ease",
-  });
-
-  const actionButtonStyle: React.CSSProperties = {
-    ...buttonStyle(true),
-    flex: 1,
-  };
-  const ghostButtonStyle: React.CSSProperties = {
-    ...buttonStyle(false),
-    flex: 1,
-  };
-
   return (
     <>
       <style>{`
@@ -318,6 +296,14 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
           display: flex;
           flex-direction: column;
           gap: 2rem;
+        }
+        .calculator-choice-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+        @media (max-width: 480px) {
+          .calculator-choice-row { flex-direction: column; gap: 0.5rem; }
         }
         .egg-calculator-result {
           font-size: 3rem !important;
@@ -381,14 +367,14 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
             >
               <p style={{ margin: 0, fontWeight: 600 }}>{dict.caliber}</p>
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <div className="calculator-choice-row">
                 {(["S", "M", "L"] as Size[]).map((s) => (
                   <button
                     disabled={!ready}
                     key={s}
                     onClick={() => commitState({ ...stateRef.current, size: s })}
                     aria-pressed={size === s}
-                    style={{ ...buttonStyle(size === s), flex: 1 }}
+                    className="btn btn-secondary" style={{ flex: 1 }}
                   >
                     {s === "S" && dict.sizeS}
                     {s === "M" && dict.sizeM}
@@ -402,12 +388,12 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
             >
               <p style={{ margin: 0, fontWeight: 600 }}>{dict.temp}</p>
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <div className="calculator-choice-row">
                 <button
                   disabled={!ready}
                   onClick={() => commitState({ ...stateRef.current, temp: "fridge" })}
                   aria-pressed={temp === "fridge"}
-                  style={{ ...buttonStyle(temp === "fridge"), flex: 1 }}
+                  className="btn btn-secondary" style={{ flex: 1 }}
                 >
                   {dict.tempFridge}
                 </button>
@@ -415,7 +401,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   disabled={!ready}
                   onClick={() => commitState({ ...stateRef.current, temp: "room" })}
                   aria-pressed={temp === "room"}
-                  style={{ ...buttonStyle(temp === "room"), flex: 1 }}
+                  className="btn btn-secondary" style={{ flex: 1 }}
                 >
                   {dict.tempRoom}
                 </button>
@@ -433,7 +419,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   disabled={!ready}
                   onClick={() => commitState({ ...stateRef.current, doneness: "soft" })}
                   aria-pressed={doneness === "soft"}
-                  style={buttonStyle(doneness === "soft")}
+                  className="btn btn-secondary"
                 >
                   {dict.doneSoft}
                 </button>
@@ -441,7 +427,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   disabled={!ready}
                   onClick={() => commitState({ ...stateRef.current, doneness: "medium" })}
                   aria-pressed={doneness === "medium"}
-                  style={buttonStyle(doneness === "medium")}
+                  className="btn btn-secondary"
                 >
                   {dict.doneMedium}
                 </button>
@@ -449,7 +435,7 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   disabled={!ready}
                   onClick={() => commitState({ ...stateRef.current, doneness: "hard" })}
                   aria-pressed={doneness === "hard"}
-                  style={buttonStyle(doneness === "hard")}
+                  className="btn btn-secondary"
                 >
                   {dict.doneHard}
                 </button>
@@ -497,14 +483,14 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
                   ? `${totalSeconds % 60} ${dict.seconds}`
                   : ""}
               </p>
-              <button disabled={!ready} onClick={startCeremony} style={actionButtonStyle}>
+              <button disabled={!ready} onClick={startCeremony} className="btn" style={{ flex: 1 }}>
                 {dict.startCeremony}
               </button>
               <button
                 disabled={!ready}
                 onClick={toggleSound}
-                className="text-ui"
-                style={{ opacity: 0.6, fontSize: "0.8rem" }}
+                className="btn btn-link"
+                aria-pressed={soundOn}
               >
                 {soundLabel}
               </button>
@@ -542,25 +528,25 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               <p style={{ fontStyle: "italic", opacity: 0.85, margin: 0 }}>
                 {phase.text}
               </p>
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <div className="calculator-choice-row">
                 {ceremony === "running" ? (
-                  <button disabled={!ready} onClick={pauseCeremony} style={ghostButtonStyle}>
+                  <button disabled={!ready} onClick={pauseCeremony} className="btn btn-secondary" style={{ flex: 1 }}>
                     {dict.pause}
                   </button>
                 ) : (
-                  <button disabled={!ready} onClick={resumeCeremony} style={actionButtonStyle}>
+                  <button disabled={!ready} onClick={resumeCeremony} className="btn" style={{ flex: 1 }}>
                     {dict.resume}
                   </button>
                 )}
-                <button disabled={!ready} onClick={resetCeremony} style={ghostButtonStyle}>
+                <button disabled={!ready} onClick={resetCeremony} className="btn btn-secondary" style={{ flex: 1 }}>
                   {dict.reset}
                 </button>
               </div>
               <button
                 disabled={!ready}
                 onClick={toggleSound}
-                className="text-ui"
-                style={{ opacity: 0.6, fontSize: "0.8rem" }}
+                className="btn btn-link"
+                aria-pressed={soundOn}
               >
                 {soundLabel}
               </button>
@@ -594,11 +580,11 @@ export default function EggCalculator({ dict }: EggCalculatorProps) {
               <p style={{ fontStyle: "italic", opacity: 0.85, margin: 0 }}>
                 {dict.finishText}
               </p>
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                <button disabled={!ready} onClick={startCeremony} style={actionButtonStyle}>
+              <div className="calculator-choice-row">
+                <button disabled={!ready} onClick={startCeremony} className="btn" style={{ flex: 1 }}>
                   {dict.startCeremony}
                 </button>
-                <button disabled={!ready} onClick={resetCeremony} style={ghostButtonStyle}>
+                <button disabled={!ready} onClick={resetCeremony} className="btn btn-secondary" style={{ flex: 1 }}>
                   {dict.reset}
                 </button>
               </div>

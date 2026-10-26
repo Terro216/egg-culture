@@ -229,8 +229,8 @@ export const AdeptGames: React.FC<{ lang: MotionTrialLang; embedded?: boolean; p
       {publicHub && <footer className="games-hub-footer">
         <p>{ru ? "Манифест — первый шаг к Инициации." : "The Manifesto is the first step towards the Initiation."}</p>
         <nav aria-label={ru ? "Путь адепта" : "The Adept’s path"}>
-          <a className="btn" href={`/${lang}/quiz/`} onClick={() => rememberQuiz()}>{ru ? "Пройти Инициацию" : "Pass the Initiation"}</a>
           <a className="btn" href={`/${lang}/manifesto/`}>{ru ? "Читать Манифест" : "Read the Manifesto"}</a>
+          <a className="btn" href={`/${lang}/quiz/`} onClick={() => rememberQuiz()}>{ru ? "Пройти Инициацию" : "Pass the Initiation"}</a>
         </nav>
       </footer>}
     </div>

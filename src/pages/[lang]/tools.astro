@@ -12,6 +12,13 @@ export function getStaticPaths() {
 
 const { lang } = Astro.params;
 const t = useTranslations(lang as Lang);
+const toolLinks = [
+  { id: 'calculator', label: lang === 'ru' ? 'Расчёт варки' : 'Boiling time' },
+  { id: 'oracle', label: lang === 'ru' ? 'Оракул' : 'Oracle' },
+  { id: 'tasting-note', label: lang === 'ru' ? 'Дегустационная заметка' : 'Tasting note' },
+  { id: 'descriptors', label: lang === 'ru' ? 'Колесо дескрипторов' : 'Descriptor wheel' },
+  { id: 'egg-persona', label: lang === 'ru' ? 'Какое вы яйцо?' : 'Which egg are you?' },
+];
 ---
 
 <Layout
@@ -28,14 +35,21 @@ const t = useTranslations(lang as Lang);
       <p class="text-lead">{t("tools.subtitle")}</p>
     </div>
 
-    <div id="calculator" class="tool-anchor">
+    <details class="tools-menu" open>
+      <summary>{lang === 'ru' ? 'Выбрать инструмент' : 'Choose a tool'}</summary>
+      <nav aria-label={lang === 'ru' ? 'Инструменты' : 'Tools'}>
+        {toolLinks.map(tool => <a href={`#${tool.id}`}>{tool.label}</a>)}
+      </nav>
+    </details>
+
+    <div id="calculator" class="tool-anchor" tabindex="-1">
       <EggCalculator client:load dict={t("calculator")} />
     </div>
 
-    <div id="oracle" class="tool-anchor">
+    <div id="oracle" class="tool-anchor" tabindex="-1">
       <EggOracle client:load dict={t("oracle")} />
       <p class="text-center" style="margin-top: 1.5rem;">
-        <a href={`/${lang}/prophecy`} class="prophecy-link">
+        <a href={`/${lang}/prophecy`} class="btn btn-link">
           {lang === "ru"
             ? "Ежедневное пророчество желтка →"
             : "The daily prophecy of the yolk →"}
@@ -43,7 +57,7 @@ const t = useTranslations(lang as Lang);
       </p>
     </div>
 
-    <div>
+    <div id="tasting-note" class="tool-anchor" tabindex="-1">
       <div class="text-center flex-col gap-md" style="margin-bottom: 2rem;">
         <h2>{t("tools.noteGenTitle")}</h2>
         <p>{t("tools.noteGenDesc")}</p>
@@ -51,7 +65,7 @@ const t = useTranslations(lang as Lang);
       <TastingNoteGenerator client:visible lang={lang as Lang} />
     </div>
 
-    <div>
+    <div id="descriptors" class="tool-anchor" tabindex="-1">
       <div class="text-center flex-col gap-md" style="margin-bottom: 2rem;">
         <h2>{t("tools.wheelTitle")}</h2>
         <p>{t("tools.wheelDesc")}</p>
@@ -59,7 +73,7 @@ const t = useTranslations(lang as Lang);
       <DescriptorWheel client:load lang={lang} />
     </div>
 
-    <div class="text-center flex-col gap-md persona-teaser">
+    <div id="egg-persona" class="tool-anchor text-center flex-col gap-md persona-teaser" tabindex="-1">
       <h2>{t("tools.personaTitle")}</h2>
       <p>{t("tools.personaDesc")}</p>
       <p>
@@ -70,8 +84,24 @@ const t = useTranslations(lang as Lang);
 
 <script is:inline>
   (() => {
+    const menu = document.querySelector('.tools-menu');
+    if (!menu) return;
+    const mobile = window.matchMedia('(max-width: 768px)');
+    const setLayout = () => { menu.open = !mobile.matches; };
+    setLayout();
+    mobile.addEventListener('change', setLayout);
+    menu.querySelectorAll('a').forEach(link => link.addEventListener('click', event => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      if (mobile.matches) menu.open = false;
+    }));
+    menu.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && mobile.matches && menu.open) {
+        menu.open = false;
+        menu.querySelector('summary').focus();
+      }
+    });
     const hash = window.location.hash;
-    if (hash !== "#calculator" && hash !== "#oracle") return;
+    if (!['#calculator', '#oracle', '#tasting-note', '#descriptors', '#egg-persona'].includes(hash)) return;
     // History navigation owns its saved scroll position.
     if (performance.getEntriesByType("navigation")[0]?.type === "back_forward") return;
     const calculator = document.querySelector(".egg-calculator-container");
@@ -129,14 +159,18 @@ const t = useTranslations(lang as Lang);
     background: rgba(212, 175, 55, 0.06);
   }
 
-  .prophecy-link {
-    font-style: italic;
-    opacity: 0.75;
-    transition: opacity 0.3s ease;
+  .tools-menu {
+    border-block: 1px solid var(--color-gray-light);
   }
-
-  .prophecy-link:hover {
-    opacity: 1;
+  .tools-menu summary { display: none; min-height: 48px; padding: .75rem 0; font: 600 1rem/1.5 var(--font-sans-ui); color: var(--color-yolk-text); cursor: pointer; }
+  .tools-menu nav { display: flex; flex-wrap: wrap; justify-content: center; gap: .25rem 1.5rem; padding: .75rem 0; }
+  .tools-menu a { display: flex; align-items: center; min-height: 44px; font: 500 1rem/1.5 var(--font-sans-ui); color: var(--color-yolk-text); text-decoration: underline; text-underline-offset: .25em; }
+  .tools-menu :is(a, summary):focus-visible { outline: 2px solid var(--color-yolk-text); outline-offset: 4px; }
+  .tool-anchor:focus { outline: none; }
+  .tool-anchor:focus-visible { outline: 2px solid var(--color-yolk-text); outline-offset: 6px; }
+  @media (max-width: 768px) {
+    .tools-menu summary { display: list-item; }
+    .tools-menu nav { flex-direction: column; align-items: stretch; padding-top: 0; }
   }
 
   .tool-anchor {

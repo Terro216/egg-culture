@@ -2,6 +2,7 @@
 import { useTranslations, type Lang } from '@shared/i18n/utils';
 import Layout from '@app/layouts/Layout.astro';
 import { shopItems } from "../../data/content";
+import ShopImage from '@shared/ui/ShopImage/ShopImage.astro';
 
 export function getStaticPaths() {
   return [{ params: { lang: "ru" } }, { params: { lang: "en" } }];
@@ -26,15 +27,16 @@ const t = useTranslations(lang as Lang);
 
     <div class="shop-gallery">
       {
-        shopItems.map((item) => (
+        shopItems.map((item, index) => (
           <a href={`/${lang}/shop/${item.slug}`} class="shop-card">
             <div class="shop-image-wrapper">
-              <img
+              <ShopImage
                 src={item.image}
                 alt={item.title[lang as "ru" | "en"]}
-                width="1024"
-                height="1024"
-                loading="lazy"
+                lang={lang as string}
+                eager={index < 3}
+                priority={index === 0}
+                sizes="(max-width: 639px) calc(100vw - 2rem), (max-width: 991px) calc((100vw - 5rem) / 2), 350px"
               />
             </div>
             <div class="shop-info flex-col gap-sm">
@@ -93,16 +95,12 @@ const t = useTranslations(lang as Lang);
     background-color: rgba(0, 0, 0, 0.05);
   }
 
-  .shop-image-wrapper img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  .shop-image-wrapper :global(.shop-photo) {
     filter: grayscale(0.1) brightness(0.9);
     transition: filter 0.5s ease;
   }
 
-  .shop-card:hover .shop-image-wrapper img {
+  .shop-card:hover .shop-image-wrapper :global(.shop-photo) {
     filter: grayscale(0) brightness(1);
   }
 
@@ -136,7 +134,7 @@ const t = useTranslations(lang as Lang);
 
   @media (prefers-reduced-motion: reduce) {
     .shop-card,
-    .shop-image-wrapper img {
+    .shop-image-wrapper :global(.shop-photo) {
       transition: none;
     }
     .shop-card:hover {

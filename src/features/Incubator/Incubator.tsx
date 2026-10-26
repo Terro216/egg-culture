@@ -295,6 +295,12 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
           position: relative;
           width: min(300px, 70vw);
         }
+        .incubator-egg-wrap.is-empty {
+          width: 120px;
+        }
+        .incubator-egg-wrap.is-empty .incubator-egg {
+          touch-action: auto;
+        }
         .incubator-egg {
           width: 100%;
           height: auto;
@@ -356,6 +362,22 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
           margin: 0;
           opacity: 0.8;
         }
+        .incubator-account {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--color-gray-light);
+          font-size: 0.9rem;
+        }
+        .incubator-account a {
+          align-self: center;
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
+          text-decoration: underline;
+          text-underline-offset: 0.2em;
+        }
         .incubator-burn {
           border: 1px solid rgba(100, 140, 200, 0.5);
           background: rgba(120, 160, 220, 0.08);
@@ -372,9 +394,7 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
         }
       `}</style>
 
-      <p className="incubator-note">{owner ? (lang === "ru" ? `Яйцо связано с профилем ${owner} и доступно на всех ваших устройствах. Новый день начинается в 00:00 по Москве.` : `Your egg belongs to ${owner} and is available on all your devices. A new day starts at 00:00 Moscow time.`) : (lang === "ru" ? "Гостевое яйцо хранится в этом браузере. Войдите в профиль, чтобы перенести его в облако." : "Your guest egg is stored in this browser. Sign in to move it to the cloud.")}</p>
-      <a href={`/${lang}/profile/`}>{lang === "ru" ? (owner ? "Открыть профиль" : "Войти в профиль") : (owner ? "Open profile" : "Sign in")}</a>
-      {error && <p role="alert" className="incubator-note">{error} <button type="button" onClick={() => { void refreshPortal(); setRefresh(n => n + 1); }}>{lang === "ru" ? "Повторить" : "Retry"}</button></p>}
+      {error && <p role="alert" className="incubator-note">{error} <button type="button" className="btn btn-link" onClick={() => { void refreshPortal(); setRefresh(n => n + 1); }}>{lang === "ru" ? "Повторить" : "Retry"}</button></p>}
       {mode === "loading" ? <p role="status">{lang === "ru" ? "Открываем Инкубатор…" : "Opening the Incubator…"}</p> : mode === "lay" || mode === "void" ? (
         <>
           {isVoid && (
@@ -389,10 +409,12 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
               <p className="incubator-note">{s.layText}</p>
             </div>
           )}
-          <EggSvg qi={0} glow={0} speckleCount={0} aura={false} frosted={isVoid} empty />
-          <button className="btn" onClick={layEgg} disabled={pending}>
+          <button className="btn" onClick={layEgg} aria-busy={pending} disabled={pending}>
             {s.layBtn}
           </button>
+          <div className="incubator-egg-wrap is-empty" aria-hidden="true">
+            <EggSvg qi={0} glow={0} speckleCount={0} aura={false} frosted={isVoid} empty />
+          </div>
         </>
       ) : (
         <>
@@ -418,6 +440,7 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
           {canHold && (
             <button
               className="btn incubator-hold-btn"
+              aria-busy={pending}
               disabled={pending}
               onPointerDown={(e) => {
                 e.preventDefault();
@@ -489,6 +512,10 @@ export const Incubator: React.FC<IncubatorProps> = ({ lang }) => {
           )}
         </>
       )}
+      <div className="incubator-account">
+        <p className="incubator-note">{owner ? (lang === "ru" ? `Яйцо связано с профилем ${owner} и доступно на всех ваших устройствах. Новый день начинается в 00:00 по Москве.` : `Your egg belongs to ${owner} and is available on all your devices. A new day starts at 00:00 Moscow time.`) : (lang === "ru" ? "Гостевое яйцо хранится в этом браузере. Войдите в профиль, чтобы перенести его в облако." : "Your guest egg is stored in this browser. Sign in to move it to the cloud.")}</p>
+        <a href={`/${lang}/profile/`}>{lang === "ru" ? (owner ? "Открыть профиль" : "Войти в профиль") : (owner ? "Open profile" : "Sign in")}</a>
+      </div>
     </div>
   );
 };

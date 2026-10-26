@@ -18,7 +18,7 @@ const t = useTranslations(lang);
 <Layout title="The Dark Side of the Egg" description="For true Adepts only" lang={lang} noindex>
   <div class="dark-room">
     <canvas id="curtains-canvas"></canvas>
-    <a href={lang === 'ru' ? "/ru" : "/en"} class="escape-btn">
+    <a href={lang === 'ru' ? "/ru" : "/en"} class="btn btn-secondary escape-btn">
       {lang === 'ru' ? "Выйти на светлую сторону" : "Return to the light"}
     </a>
 
@@ -40,7 +40,7 @@ const t = useTranslations(lang);
                 ? "Только 12 яиц от кур породы Аям Цемани, выращенных на склонах спящего вулкана. Пепельно-чёрная скорлупа скрывает желток невероятной плотности. Участвуйте в слепой жеребьевке."
                 : "Only 12 eggs from Ayam Cemani hens raised on the slopes of a dormant volcano. An ash-black shell hides a yolk of incredible density. Enter the blind draw."}
             </p>
-            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Оставить след" : "Leave a trace"}</a>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="btn btn-secondary action-btn">{lang === 'ru' ? "Оставить след" : "Leave a trace"}</a>
           </article>
 
           <article class="secret-card">
@@ -50,7 +50,7 @@ const t = useTranslations(lang);
                 ? "В конце осени мы отправляемся в отдаленный монастырь во Французских Альпах, где монахи сохранили рецепт многодневной выдержки яиц в дубовой золе. Запись строго конфиденциальна."
                 : "In late autumn, we travel to a remote monastery in the French Alps, where monks have preserved the recipe for multi-day egg aging in oak ash. Registration is strictly confidential."}
             </p>
-            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Подать прошение" : "Submit a petition"}</a>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="btn btn-secondary action-btn">{lang === 'ru' ? "Подать прошение" : "Submit a petition"}</a>
           </article>
 
           <article class="secret-card">
@@ -60,7 +60,7 @@ const t = useTranslations(lang);
                 ? "Закрытая встреча Адептов в подземелье бывшей винодельни. Мы будем слушать Яй Ци редких белых яиц под аккомпанемент виолончели и исследовать минеральные послевкусия."
                 : "A closed meeting of Adepts in the cellar of a former winery. We will listen to the Egg Qi of rare white eggs accompanied by a cello and explore mineral aftertastes."}
             </p>
-            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="action-btn">{lang === 'ru' ? "Получить пароль" : "Receive the password"}</a>
+            <a href="https://t.me/eggculture" target="_blank" rel="noopener noreferrer" class="btn btn-secondary action-btn">{lang === 'ru' ? "Получить пароль" : "Receive the password"}</a>
           </article>
 
         </div>
@@ -237,6 +237,9 @@ const t = useTranslations(lang);
   }
 
   .dark-room {
+    --color-text: #f0ead6;
+    --button-outline: #ef9d96;
+    --button-secondary-hover: #3e2423;
     position: relative;
     min-height: 100vh;
     padding: 6rem 1rem 4rem;
@@ -255,30 +258,7 @@ const t = useTranslations(lang);
     z-index: 0;
   }
 
-  .escape-btn {
-    position: fixed;
-    top: 1.5rem;
-    right: 2rem;
-    z-index: 100;
-    background: rgba(139, 0, 0, 0.2);
-    border: 1px solid #8b0000;
-    color: #ff6b6b;
-    padding: 0.6rem 1.2rem;
-    font-family: var(--font-sans-ui, sans-serif);
-    text-transform: uppercase;
-    text-decoration: none;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-  }
-
-  .escape-btn:hover {
-    background: #8b0000;
-    color: #fff;
-    box-shadow: 0 0 15px rgba(139, 0, 0, 0.8);
-  }
+  .escape-btn { position: fixed; top: 1.5rem; right: 1rem; z-index: 100; max-width: calc(100% - 2rem); }
 
   .content-wrapper {
     position: relative;
@@ -363,27 +343,6 @@ const t = useTranslations(lang);
     line-height: 1.5;
     margin-bottom: 2rem;
     color: #d1b8b8;
-  }
-
-  .action-btn {
-    display: inline-block;
-    background: transparent;
-    border: 1px solid #8b0000;
-    color: #ff6b6b;
-    padding: 0.8rem 1.5rem;
-    font-family: var(--font-sans-ui, sans-serif);
-    text-transform: uppercase;
-    text-decoration: none;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .action-btn:hover {
-    background: #8b0000;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
   }
 
   .certificate-section {

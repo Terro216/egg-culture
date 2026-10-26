@@ -329,10 +329,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
         }
         .tasting-note-progress p { margin: 0.25rem 0 0; }
         .tasting-note-progress a { text-decoration: underline; text-underline-offset: 0.15em; }
-        .tasting-note-chip:focus-visible {
-          outline: 2px solid var(--color-text, #2b2b2b);
-          outline-offset: 3px;
-        }
+
         .tasting-note-category > p {
           margin: 0;
           font-weight: 600;
@@ -342,20 +339,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
           flex-wrap: wrap;
           gap: 0.5rem;
         }
-        .tasting-note-chip {
-          padding: 0.5rem 1rem;
-          font-size: 0.95rem;
-          font-family: var(--font-sans-ui, sans-serif);
-          border: 1px solid var(--color-yolk, #d4af37);
-          background: transparent;
-          color: var(--color-text, #2b2b2b);
-          cursor: pointer;
-          transition: all 0.25s ease;
-        }
-        .tasting-note-chip.is-active {
-          background: var(--color-yolk, #d4af37);
-          color: var(--color-text, #2b2b2b);
-        }
+
         .tasting-note-result {
           padding: 2rem;
           border: 1px dashed var(--color-yolk, #d4af37);
@@ -373,32 +357,14 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
         .tasting-note-result.is-empty {
           opacity: 0.75;
         }
-        .tasting-note-copy {
-          align-self: center;
-          padding: 0.75rem 2rem;
-          font-family: var(--font-sans-ui, sans-serif);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          border: 1px solid var(--color-yolk, #d4af37);
-          background: var(--color-yolk, #d4af37);
-          color: var(--color-text, #2b2b2b);
-          cursor: pointer;
-          transition: opacity 0.25s ease;
-        }
-        .tasting-note-copy:disabled {
-          opacity: 0.4;
-          cursor: default;
-        }
+
         .tasting-note-actions {
           display: flex;
           gap: 1rem;
           flex-wrap: wrap;
           justify-content: center;
         }
-        .tasting-note-copy.is-secondary {
-          background: transparent;
-          color: var(--color-text, #2b2b2b);
-        }
+
         .tasting-note-hint {
           margin: -0.5rem 0 0;
           text-align: center;
@@ -433,7 +399,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
                 key={option.id}
                 type="button"
                 aria-pressed={selection[category.id] === option.id}
-                className={`tasting-note-chip ${
+                className={`btn btn-secondary tasting-note-chip ${
                   selection[category.id] === option.id ? "is-active" : ""
                 }`}
                 onClick={() => select(category.id, option.id)}
@@ -452,7 +418,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
       <div className="tasting-note-actions">
         <button
           type="button"
-          className="tasting-note-copy"
+          className="btn tasting-note-copy"
           onClick={() => void copyNote()}
           disabled={!note}
         >
@@ -460,7 +426,7 @@ export const TastingNoteGenerator: React.FC<TastingNoteGeneratorProps> = ({
         </button>
         <button
           type="button"
-          className="tasting-note-copy is-secondary"
+          className="btn btn-secondary tasting-note-copy"
           onClick={leaveInBook}
           disabled={!note || !isAdept}
           title={!isAdept ? ui.leaveHint : undefined}

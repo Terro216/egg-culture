@@ -22,7 +22,8 @@ function formatPubDate(pubDate: string, lang: "ru" | "en"): string {
   const iso = pubDate.includes("T") ? pubDate : pubDate.replace(" ", "T") + "Z";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-US");
+  // The publication day must match during SSR and hydration in any viewer timezone.
+  return date.toLocaleDateString(lang === "ru" ? "ru-RU" : "en-US", { timeZone: "UTC" });
 }
 
 export default function WorldNewsList({ news, lang }: WorldNewsListProps) {
@@ -37,7 +38,7 @@ export default function WorldNewsList({ news, lang }: WorldNewsListProps) {
 
   if (news.length === 0) {
     return (
-      <p style={{ textAlign: "center", opacity: 0.6 }}>
+      <p style={{ textAlign: "center", color: "var(--color-text-muted)" }}>
         {lang === "ru"
           ? "Свежие новости пока недоступны. Загляните позже — а пока можно почитать наши статьи."
           : "Fresh news is currently unavailable. Check back later, or explore our articles in the meantime."}
@@ -83,7 +84,7 @@ export default function WorldNewsList({ news, lang }: WorldNewsListProps) {
 
       {hasMore && (
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <button className="load-more-btn" onClick={handleLoadMore}>
+          <button className="btn btn-secondary" onClick={handleLoadMore}>
             {lang === "ru" ? "Загрузить еще" : "Load more"}
           </button>
         </div>

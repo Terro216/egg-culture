@@ -482,9 +482,10 @@ export default function DescriptorWheel({ lang = "ru" }) {
       <p>{ru ? item.desc : item.descEn}</p>
     </> : <p>{ru ? "Выберите дескриптор, чтобы увидеть его описание и цвет." : "Select a descriptor to see its description and colour."}</p>}
   </div>;
-  return <div className="descriptor-container">
+  return <div className="descriptor-container" style={{ "--descriptor-tint": selected?.color ?? "var(--color-shell)" }}>
     <style>{`
-      .descriptor-container { display:grid; grid-template-columns:minmax(0,2fr) minmax(240px,1fr); gap:2rem; font-family:var(--font-sans-ui,system-ui,sans-serif); }
+      .descriptor-container { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,2fr) minmax(240px,1fr); gap:2rem; font-family:var(--font-sans-ui,system-ui,sans-serif); }
+      .descriptor-container::before { content:""; position:absolute; inset:-1.25rem; z-index:-1; border-radius:12px; background:color-mix(in srgb,var(--descriptor-tint) 30%,var(--color-shell)); transition:background-color .25s ease; pointer-events:none; }
       .descriptor-left { min-width:0; }
       .descriptor-toggles { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
       .descriptor-toggles button { min-height:44px; padding:.75rem 1rem; border:1px solid #bba85d; border-radius:8px; }
@@ -507,9 +508,11 @@ export default function DescriptorWheel({ lang = "ru" }) {
       .descriptor-info-inline { display:none; }
       @media(max-width:768px) {
         .descriptor-container { grid-template-columns:minmax(0,1fr); }
+        .descriptor-container::before { inset:-.75rem; }
         .descriptor-sidebar { display:none; }
         .descriptor-info-inline { display:block; flex-basis:100%; margin:.4rem 0; padding:1rem; }
       }
+      @media(prefers-reduced-motion:reduce) { .descriptor-container::before { transition:none; } }
     `}</style>
     <div className="descriptor-left">
       <div className="descriptor-toggles" role="group" aria-label={ru ? "Часть яйца" : "Part of the egg"}>

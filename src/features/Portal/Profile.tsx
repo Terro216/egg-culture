@@ -11,6 +11,7 @@ import { guestInitiated, recordInitiation, clearGuestInitiation } from "./adept.
 import { INITIATION_ANSWERS } from "./initiation.ts";
 import GuestSummary from "./GuestSummary.tsx";
 import GuestNestResults from "../EggUntangle/GuestNestResults.tsx";
+import ProfileIncubator from "./ProfileIncubator.tsx";
 
 export default function Profile({ lang }: { lang: "ru" | "en" }) {
   const state = usePortal(), ru = lang === "ru";
@@ -27,38 +28,34 @@ export default function Profile({ lang }: { lang: "ru" | "en" }) {
   useEffect(() => { setSlug(state.profile?.slug ?? ""); setSlugMessage(""); }, [state.profile?.slug, state.profile?.name]);
   return <div className="portal-profile">
     <nav className="portal-tabs" aria-label={ru ? "Разделы личного кабинета" : "Profile sections"}>
-        <button type="button" aria-current={tab === "profile" ? "page" : undefined} onClick={() => setTab("profile")}>{ru ? "Личное дело" : "Profile"}</button>
-        <button type="button" aria-current={tab === "certificate" ? "page" : undefined} onClick={() => setTab("certificate")}>{ru ? "Сертификат адепта" : "Adept certificate"}</button>
+        <button className="btn btn-secondary" type="button" aria-current={tab === "profile" ? "page" : undefined} onClick={() => setTab("profile")}>{ru ? "Личное дело" : "Profile"}</button>
+        <button className="btn btn-secondary" type="button" aria-current={tab === "certificate" ? "page" : undefined} onClick={() => setTab("certificate")}>{ru ? "Сертификат адепта" : "Adept certificate"}</button>
     </nav>
     {tab === "profile" ? <>
-      <RoadAccount lang={lang} account={account} reload={() => void refreshPortal()} failed={state.failed} suggestedName={state.account?.name ?? ""} openForGuest />
       <GuestNestResults lang={lang} />
+      <RoadAccount lang={lang} account={account} reload={() => void refreshPortal()} failed={state.failed} suggestedName={state.account?.name ?? ""} openForGuest inProfile />
       {state.account?.registered === false && !state.failed && portalIdentityReady(state) && <GuestSummary lang={lang} onCertificate={() => setTab("certificate")} />}
       {state.account?.registered && state.profile && <>
       <section className="portal-settings"><h2>{ru ? "Видимость профиля" : "Profile visibility"}</h2>
-        <p>{ru ? "Публичный профиль показывает имя, выбранный знак, лучшие результаты и достижения. Пароль, код восстановления, cookies и история входов никогда не публикуются. Профили создаются публичными; вы можете закрыть свой профиль в любой момент." : "A public profile shows your name, chosen symbol, best results and achievements. Passwords, recovery codes, cookies and sign-in history are never published. New profiles are public; you can make yours private at any time."}</p>
-        <fieldset disabled={saving}><legend>{ru ? "Знак адепта" : "Adept's symbol"}</legend><div className="portal-avatars">{AVATARS.map((symbol, i) => <button key={symbol} type="button" aria-pressed={avatar === i} aria-label={`${ru ? "Знак" : "Symbol"} ${i + 1}`} onClick={() => setAvatar(i)}>{symbol}</button>)}</div>
+        <p>{ru ? "В публичном профиле видны имя, выбранный знак, лучшие результаты и достижения." : "Your public profile shows your name, chosen symbol, best results and achievements."}</p>
+        <fieldset disabled={saving}><legend>{ru ? "Знак адепта" : "Adept's symbol"}</legend><div className="portal-avatars">{AVATARS.map((symbol, i) => <button className="btn btn-secondary" key={symbol} type="button" aria-pressed={avatar === i} aria-label={`${ru ? "Знак" : "Symbol"} ${i + 1}`} onClick={() => setAvatar(i)}>{symbol}</button>)}</div>
           <label className="portal-public-toggle"><input type="checkbox" checked={visible} onChange={e => setVisible(e.target.checked)} />{ru ? "Сделать профиль публичным" : "Make my profile public"}</label>
-          <button type="button" className="portal-button" onClick={async () => { setSaving(true); setMessage(""); try { await saveProfileSettings(visible, avatar); setMessage(ru ? "Настройки сохранены." : "Settings saved."); } catch { setMessage(ru ? "Не удалось сохранить. Повторите попытку." : "Could not save. Please retry."); } finally { setSaving(false); } }}>{saving ? ru ? "Сохраняем…" : "Saving…" : ru ? "Сохранить" : "Save"}</button>
+          <button className="btn portal-button" type="button" aria-busy={saving} onClick={async () => { setSaving(true); setMessage(""); try { await saveProfileSettings(visible, avatar); setMessage(ru ? "Настройки сохранены." : "Settings saved."); } catch { setMessage(ru ? "Не удалось сохранить. Повторите попытку." : "Could not save. Please retry."); } finally { setSaving(false); } }}>{saving ? ru ? "Сохраняем…" : "Saving…" : ru ? "Сохранить" : "Save"}</button>
         </fieldset>
-        {state.profile.public && <div className="portal-share"><a href={`/${lang}/adepts/${state.profile.id}/`}>{ru ? "Открыть публичный профиль ↗" : "View public profile ↗"}</a><button type="button" onClick={async () => { const url = new URL(`/${lang}/adepts/${state.profile!.id}/`, location.origin).href; try { await navigator.clipboard.writeText(url); setMessage(ru ? "Ссылка скопирована." : "Link copied."); } catch { setLink(url); } }}>{ru ? "Скопировать ссылку" : "Copy link"}</button>{link && <input aria-label={ru ? "Ссылка на профиль" : "Profile link"} readOnly value={link} onFocus={e => e.target.select()} />}</div>}
+        {state.profile.public && <div className="portal-share"><a href={`/${lang}/adepts/${state.profile.id}/`}>{ru ? "Открыть публичный профиль ↗" : "View public profile ↗"}</a><button className="btn btn-secondary" type="button" onClick={async () => { const url = new URL(`/${lang}/adepts/${state.profile!.id}/`, location.origin).href; try { await navigator.clipboard.writeText(url); setMessage(ru ? "Ссылка скопирована." : "Link copied."); } catch { setLink(url); } }}>{ru ? "Скопировать ссылку" : "Copy link"}</button>{link && <input aria-label={ru ? "Ссылка на профиль" : "Profile link"} readOnly value={link} onFocus={e => e.target.select()} />}</div>}
         <form className="portal-slug" onSubmit={async event => { event.preventDefault(); setSlugSaving(true); setSlugMessage(""); try { await saveProfileSlug(slug); setSlugMessage(ru ? "Адрес сохранён." : "Address saved."); } catch (error) { const code = error instanceof Error ? error.message : ""; setSlugMessage(code === "slug_taken" ? ru ? "Этот ID уже занят." : "This ID is taken." : code === "invalid_slug" ? ru ? "Используйте 3–32 латинских строчных букв, цифр или дефисов. Начните с буквы." : "Use 3–32 lowercase letters, digits or hyphens. Start with a letter." : ru ? "Не удалось сохранить адрес. Повторите попытку." : "Could not save the address. Please retry."); } finally { setSlugSaving(false); } }}>
           <label htmlFor="portal-slug">{ru ? "ID публичного профиля" : "Public profile ID"}</label>
-          <div className="portal-slug-entry"><span>/{lang}/adepts/</span><input id="portal-slug" value={slug} onChange={event => setSlug(event.target.value.toLowerCase())} minLength={3} maxLength={32} pattern="[a-z][a-z0-9-]{1,30}[a-z0-9]" placeholder="ilyamed" autoComplete="off" spellCheck={false} required disabled={slugSaving} /><span>/</span><button type="submit" disabled={slugSaving || slug === state.profile.slug}>{slugSaving ? ru ? "Сохраняем…" : "Saving…" : ru ? "Сохранить ID" : "Save ID"}</button></div>
+          <div className="portal-slug-entry"><span>/{lang}/adepts/</span><input id="portal-slug" value={slug} onChange={event => setSlug(event.target.value.toLowerCase())} minLength={3} maxLength={32} pattern="[a-z][a-z0-9-]{1,30}[a-z0-9]" placeholder="ilyamed" autoComplete="off" spellCheck={false} required disabled={slugSaving} /><span>/</span><button className="btn" type="submit" aria-busy={slugSaving} disabled={slugSaving || slug === state.profile.slug}>{slugSaving ? ru ? "Сохраняем…" : "Saving…" : ru ? "Сохранить ID" : "Save ID"}</button></div>
           {slugMessage && <p role="status">{slugMessage}</p>}
         </form>
         {message && <p role="status">{message}</p>}
-        <p className="portal-note">{ru ? "Закрытие профиля не удаляет результаты, которые вы отдельно публиковали в таблицах дорог." : "Making your profile private does not remove results you separately published on road leaderboards."}</p>
       </section>
-      <section className="portal-settings"><h2>{ru ? "Мой Инкубатор" : "My Incubator"}</h2>
-        <p>{state.profile.incubator ? (ru ? `Яй Ци: ${state.profile.incubator.qi}. Серия тепла: ${state.profile.incubator.streak}. Последний прогрев: ${state.profile.incubator.lastWarm}.` : `Egg Qi: ${state.profile.incubator.qi}. Warmth streak: ${state.profile.incubator.streak}. Last warmed: ${state.profile.incubator.lastWarm}.`) : (ru ? "Вы ещё не заложили яйцо в этом профиле." : "You haven't laid an egg in this account yet.")}</p>
-        <a href={`/${lang}/incubator/`}>{ru ? "Открыть Инкубатор →" : "Open Incubator →"}</a>
-      </section>
+      <ProfileIncubator state={state.profile.incubator ?? null} lang={lang} />
       <ProfileCard profile={state.profile} lang={lang} />
       </>}
     </> : <section className="portal-certificate" aria-label={ru ? "Сертификат адепта" : "Adept certificate"}>
         <h2>{ru ? "Сертификат Истинного Адепта" : "Certificate of the True Adept"}</h2>
-        {!adept && guestAdept && state.account?.registered && <p><button type="button" disabled={saving} onClick={async () => {
+        {!adept && guestAdept && state.account?.registered && <p><button className="btn btn-secondary" type="button" disabled={saving} onClick={async () => {
           setSaving(true); setMessage("");
           try { await recordInitiation([...INITIATION_ANSWERS]); clearGuestInitiation(); setGuestAdept(false); }
           catch { setMessage(ru ? "Не удалось перенести результат. Повторите попытку." : "Could not transfer your result. Please retry."); }

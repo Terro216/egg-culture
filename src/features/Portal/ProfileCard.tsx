@@ -2,6 +2,7 @@ import { ACHIEVEMENTS, AVATARS, GAME_NAMES, isAchievement } from "./model.ts";
 import type { PortalGame, PublicProfile } from "./model.ts";
 import { compactCount } from "../EggFry/rules.ts";
 import "./Profile.css";
+import { achievementFrequency } from "./achievementFrequency.ts";
 
 export default function ProfileCard({ profile, lang }: { profile: PublicProfile; lang: "ru" | "en" }) {
   const ru = lang === "ru";
@@ -15,14 +16,13 @@ export default function ProfileCard({ profile, lang }: { profile: PublicProfile;
         {(stat.legacyCompletedLevels ?? 0) > 0 && <small>{ru ? "Первый свиток" : "First scroll"}: {stat.legacyCompletedLevels} / 24</small>}
         <small>{ru ? "Кладок дня" : "Daily clutches"}: {stat.dailySolved ?? 0} · {ru ? "Серия дней" : "Day streak"}: {stat.dailyStreak ?? 0}</small>
       </>}</article>;
-      return <article key={game}><h3>{GAME_NAMES[lang][game]}{stat?.roadRules === 2 ? " · II" : ""}</h3><strong>{stat ? compactCount(BigInt(stat.best), lang) : "—"}</strong><small>{game === "fry" ? ru ? "яиц доставлено" : "eggs delivered" : ru ? "очков" : "points"}</small>{game === "road" && profile.classicRoadBest && <small>{ru ? "Классическая дорога" : "Classic road"}: {compactCount(BigInt(profile.classicRoadBest), lang)}</small>}</article>;
+      return <article key={game}><h3>{GAME_NAMES[lang][game]}{stat?.roadRules === 2 ? " · II" : ""}</h3><strong>{stat ? compactCount(BigInt(stat.best), lang) : "—"}</strong><small>{game === "fry" ? ru ? "яиц приготовлено" : "eggs cooked" : ru ? "очков" : "points"}</small>{game === "road" && profile.classicRoadBest && <small>{ru ? "Классическая дорога" : "Classic road"}: {compactCount(BigInt(profile.classicRoadBest), lang)}</small>}</article>;
     })}</div>
     <h3 className="portal-achievement-heading">{ru ? "Ачивки" : "Achievements"} <span>{profile.achievements.filter(isAchievement).length} / {Object.keys(ACHIEVEMENTS).length}</span></h3>
     <div className="portal-badges">{Object.entries(ACHIEVEMENTS).map(([id, item]) => {
       const earned = profile.achievements.includes(id);
-      const rarity = profile.achievementRarity?.[id] ?? 0;
-      const percent = rarity > 0 && rarity < 1 ? "<1" : String(Math.round(rarity));
-      return <article key={id} className={earned ? "is-earned" : "is-locked"}><span aria-hidden="true">{earned ? item[4] : "·"}</span><div><strong>{item[ru ? 0 : 1]}</strong><p>{item[ru ? 2 : 3]}</p><small>{earned ? ru ? `Получено · Вы в топ ${percent}% адептов` : `Unlocked · Top ${percent}% of adepts` : ru ? `Не получено · Есть у ${percent}% адептов` : `Locked · Earned by ${percent}% of adepts`}</small></div></article>;
+      const frequency = achievementFrequency(profile, id, lang);
+      return <article key={id} className={earned ? "is-earned" : "is-locked"}><span aria-hidden="true">{earned ? item[4] : "·"}</span><div><strong>{item[ru ? 0 : 1]}</strong><p>{item[ru ? 2 : 3]}</p><small>{earned ? ru ? "Получено" : "Unlocked" : ru ? "Не получено" : "Locked"}{frequency && ` · ${frequency}`}</small></div></article>;
     })}</div>
   </section>;
 }

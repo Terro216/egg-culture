@@ -316,9 +316,7 @@ export const QiCompass: React.FC<QiCompassProps> = ({ lang }) => {
                 aria-label={point[lang].name}
                 aria-pressed={isActive}
                 onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setActiveId(point.id); } }}
-                onClick={() =>
-                  setActiveId((prev) => (prev === point.id ? null : point.id))
-                }
+                onClick={() => setActiveId(point.id)}
                 onMouseEnter={() => setActiveId(point.id)}
               />
               <text

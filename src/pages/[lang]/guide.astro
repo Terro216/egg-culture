@@ -189,6 +189,11 @@ const compassSection = {
 }[lang as "ru" | "en"];
 
 const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+const contentsLabel = lang === "ru" ? "Содержание справочника" : "Guide contents";
+const contents = [
+  ...content.sections.map(section => ({ title: section.title, id: getSlug(section.title) })),
+  { title: compassSection.title, id: "qi-compass" },
+];
 ---
 
 <Layout
@@ -197,19 +202,16 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
   lang={lang as string}
 >
   <div class="guide-layout">
-    <nav class="guide-toc">
+    <nav class="guide-toc" aria-label={contentsLabel}>
       <div class="toc-sticky">
         <ul class="toc-list">
           {
-            content.sections.map((section) => (
+            contents.map((section) => (
               <li>
-                <a href={`#${getSlug(section.title)}`}>{section.title}</a>
+                <a href={`#${section.id}`}>{section.title}</a>
               </li>
             ))
           }
-          <li>
-            <a href="#qi-compass">{compassSection.title}</a>
-          </li>
         </ul>
       </div>
     </nav>
@@ -217,18 +219,29 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
       class="container guide-container"
       style="padding-top: 3rem; padding-bottom: 4rem;"
     >
-    <header class="text-center flex-col gap-sm" style="padding-bottom: 4rem;">
+    <header class="guide-header text-center flex-col gap-sm">
       <h1 class="page-title">{content.title}</h1>
       <p class="text-lead" style="max-width: 800px; margin: 0 auto; line-height: 1.6;">
         {content.intro}
       </p>
     </header>
 
+    <details class="guide-mobile-toc">
+      <summary>{contentsLabel}</summary>
+      <nav aria-label={contentsLabel}>
+        <ul class="toc-list">
+          {contents.map(section => (
+            <li><a href={`#${section.id}`}>{section.title}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </details>
+
     <article class="guide-content">
       {
         content.sections.map((section) => (
           <>
-            <h2 id={getSlug(section.title)}>
+            <h2 id={getSlug(section.title)} tabindex="-1">
               <a href={`#${getSlug(section.title)}`} class="heading-anchor">#</a>
               {section.title}
             </h2>
@@ -246,7 +259,7 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
         ))
       }
 
-      <h2 id="qi-compass">
+      <h2 id="qi-compass" tabindex="-1">
         <a href="#qi-compass" class="heading-anchor">#</a>
         {compassSection.title}
       </h2>
@@ -258,7 +271,7 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
       </div>
 
       <p class="text-center" style="padding-bottom: 4rem;">
-        <a href={`/${lang}/vintages`} class="btn">
+        <a href={`/${lang}/vintages`} class="btn btn-link">
           {lang === "ru" ? "Сезонность Партий: Винтажи →" : "Seasonality of Batches: Vintages →"}
         </a>
       </p>
@@ -278,8 +291,10 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
           const id = entry.target.id;
           document.querySelectorAll('.toc-list a').forEach(link => {
             link.classList.remove('active');
+            link.removeAttribute('aria-current');
             if (link.getAttribute('href') === `#${id}`) {
               link.classList.add('active');
+              link.setAttribute('aria-current', 'location');
             }
           });
         }
@@ -309,7 +324,47 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
     display: none;
   }
 
+  .guide-header {
+    padding-bottom: 4rem;
+  }
+
+  .guide-mobile-toc {
+    margin-bottom: 2rem;
+    border-top: 1px solid var(--color-gray-light);
+    border-bottom: 1px solid var(--color-gray-light);
+  }
+
+  .guide-mobile-toc summary {
+    min-height: 48px;
+    padding: 0.75rem 0;
+    color: var(--color-yolk-text);
+    font-family: var(--font-sans-ui);
+    cursor: pointer;
+  }
+
+  .guide-mobile-toc .toc-list {
+    gap: 0;
+    padding-bottom: 0.75rem;
+  }
+
+  .guide-mobile-toc .toc-list a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.625rem 0;
+  }
+
+  .guide-mobile-toc summary:focus-visible,
+  .toc-list a:focus-visible {
+    outline: 2px solid var(--color-yolk-text);
+    outline-offset: 4px;
+  }
+
   @media (min-width: 1024px) {
+    .guide-mobile-toc {
+      display: none;
+    }
+
     .guide-toc {
       display: block;
       width: 250px;
@@ -333,18 +388,16 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
   }
 
   .toc-list a {
-    color: var(--color-text);
+    color: var(--color-text-muted);
     text-decoration: none;
     font-size: 0.95rem;
-    opacity: 0.6;
-    transition: all 0.2s;
+    transition: color 0.2s;
     line-height: 1.4;
     display: block;
   }
 
   .toc-list a:hover,
   .toc-list a.active {
-    opacity: 1;
     color: var(--color-yolk-text);
   }
 
@@ -362,7 +415,8 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
     transition: opacity 0.2s;
   }
 
-  h2:hover .heading-anchor {
+  h2:hover .heading-anchor,
+  .heading-anchor:focus-visible {
     opacity: 1;
   }
 
@@ -385,8 +439,28 @@ const getSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9а-яё]/g
 
   .guide-container {
     max-width: 800px;
+    min-width: 0;
     margin: 0;
     flex-grow: 1;
+  }
+
+  @media (max-width: 1023px) {
+    .guide-container {
+      padding-inline: 0;
+    }
+
+    .guide-header {
+      padding-bottom: 2rem;
+    }
+
+    .guide-header .page-title {
+      padding-bottom: 1rem;
+    }
+
+    .guide-header .text-lead {
+      font-size: 1.125rem;
+      font-weight: 400;
+    }
   }
 
   .guide-content h2 {

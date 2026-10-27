@@ -8,7 +8,7 @@ export const prerender = false;
 const accessWord =
   process.env.FONIN_ACCESS_WORD ??
   import.meta.env?.FONIN_ACCESS_WORD ??
-  "Яй Ци";
+  "";
 
 const normalize = (value: string) =>
   value
@@ -16,7 +16,8 @@ const normalize = (value: string) =>
     .toLowerCase()
     .replace(/ё/g, "е")
     .replace(/[«»"'.!,?:;()\-—–]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .trim();
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -28,6 +29,7 @@ const json = (body: unknown, status = 200) =>
   });
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
+  if (!normalize(accessWord)) return json({ message: "Доступ к дарам не настроен." }, 503);
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || clientAddress;
   if (!allowRequestAttempt(`fonin:${ip}`, 30, 15 * 60000)) return json({ error: "rate_limit", message: "Подождите перед следующей попыткой." }, 429);
   let body: { accessWord?: unknown };

@@ -10,7 +10,7 @@ export const prerender = false;
 const accessWord =
   process.env.FONIN_ACCESS_WORD ??
   import.meta.env?.FONIN_ACCESS_WORD ??
-  "Яй Ци";
+  "";
 const tokenSecret =
   process.env.FONIN_GIFT_TOKEN_SECRET ??
   import.meta.env?.FONIN_GIFT_TOKEN_SECRET ??
@@ -35,6 +35,7 @@ const text = (message: string, status: number) =>
   });
 
 export const GET: APIRoute = async ({ url }) => {
+  if (!accessWord.trim() || !tokenSecret.trim()) return text("Доступ к дарам не настроен.", 503);
   const giftId = url.searchParams.get("id") ?? "";
   const token = url.searchParams.get("token") ?? "";
   const giftFile = Object.hasOwn(giftFiles, giftId) ? giftFiles[giftId] : null;

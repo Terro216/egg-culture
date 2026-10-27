@@ -16,7 +16,7 @@ type GiftSecret = {
 const accessWord =
   process.env.FONIN_ACCESS_WORD ??
   import.meta.env?.FONIN_ACCESS_WORD ??
-  "Яй Ци";
+  "";
 const tokenSecret =
   process.env.FONIN_GIFT_TOKEN_SECRET ??
   import.meta.env?.FONIN_GIFT_TOKEN_SECRET ??
@@ -47,7 +47,8 @@ const normalize = (value: string) =>
     .toLowerCase()
     .replace(/ё/g, "е")
     .replace(/[«»"'.!,?:;()\-—–]/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .trim();
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -59,6 +60,7 @@ const json = (body: unknown, status = 200) =>
   });
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
+  if (!normalize(accessWord) || !tokenSecret.trim()) return json({ message: "Доступ к дарам не настроен." }, 503);
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || clientAddress;
   if (!allowRequestAttempt(`fonin:${ip}`, 30, 15 * 60000)) return json({ error: "rate_limit", message: "Подождите перед следующей попыткой." }, 429);
   let body: {

@@ -35,6 +35,7 @@ services:
 
   telegram-egress:
     image: ${EGG_TUNNEL_IMAGE:-egg-culture-tunnel:local}
+    pull_policy: never
     build: ./deploy/tunnel
     container_name: egg-culture-tunnel
     restart: unless-stopped

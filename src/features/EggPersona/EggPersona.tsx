@@ -5,6 +5,7 @@ import {
   resolvePersona,
   type Persona,
 } from "./personaData";
+import { personaResultPath } from "./sharing";
 
 // Тест «Какое вы яйцо?»: ответы сдвигают точку по осям Компаса Яй Ци
 // (минеральность ↔ животность, легкость ↔ плотность), результат —
@@ -13,6 +14,7 @@ import {
 
 interface EggPersonaProps {
   lang: "ru" | "en";
+  initialResultId?: string;
 }
 
 type Delta = { x: number; y: number };
@@ -289,24 +291,18 @@ function drawCard(
 
 // ————— Компонент —————
 
-export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
+export const EggPersona: React.FC<EggPersonaProps> = ({ lang, initialResultId }) => {
   const s = STRINGS[lang];
   const [answers, setAnswers] = useState<number[]>([]);
-  const [preset, setPreset] = useState<Persona | null>(null);
+  const [preset, setPreset] = useState<Persona | null>(() =>
+    initialResultId ? getPersonaById(initialResultId) ?? null : null,
+  );
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cardReady, setCardReady] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const step = answers.length;
   const finished = step >= QUESTIONS.length;
-
-  // Заход по шерённой ссылке (?result=id) сразу показывает результат.
-  useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("result");
-    if (!id) return;
-    const persona = getPersonaById(id);
-    if (persona) setPreset(persona);
-  }, []);
 
   const result = useMemo(() => {
     if (preset) {
@@ -383,7 +379,7 @@ export const EggPersona: React.FC<EggPersonaProps> = ({ lang }) => {
   // серверной og-карточкой (/api/persona-og). Файл — через «Сохранить».
   const share = async () => {
     if (!result) return;
-    const url = window.location.href;
+    const url = new URL(personaResultPath(lang, result.persona.id), window.location.origin).href;
     const content = result.persona[lang];
     const text = `${s.shareText} ${content.name}. ${content.epithet}.`;
     if (navigator.share) {

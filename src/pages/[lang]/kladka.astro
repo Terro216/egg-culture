@@ -2,8 +2,8 @@
 import Layout from '@app/layouts/Layout.astro';
 import KladkaForm from '@features/KladkaBook/KladkaForm';
 import KladkaFeed from '@features/KladkaBook/KladkaFeed';
-import { getApprovedPosts, visibleKladkaEntries } from '@shared/utils/kladkaStore';
-import { isKladkaAdept, KLADKA_PRIVATE_HEADERS } from '../../server/kladkaAccess';
+import { kladkaFeed } from '../../server/kladkaFeed';
+import { KLADKA_PRIVATE_HEADERS } from '../../server/kladkaAccess';
 import { type Lang } from '@shared/i18n/utils';
 
 // SSR: лента читается из файлового хранилища при каждом запросе.
@@ -16,7 +16,7 @@ if (langParam !== "ru" && langParam !== "en") {
 const lang = langParam as Lang;
 
 for (const [key, value] of Object.entries(KLADKA_PRIVATE_HEADERS)) Astro.response.headers.set(key, value);
-const posts = visibleKladkaEntries(await getApprovedPosts(100), isKladkaAdept(Astro));
+const { posts, reactions } = await kladkaFeed(Astro);
 
 const title =
   lang === "ru" ? "Книга Кладки | Яичная Культура" : "Book of the Clutch | Egg Culture";
@@ -47,7 +47,7 @@ const description =
 
     <KladkaForm client:load lang={lang} />
 
-    <KladkaFeed client:load lang={lang} initialPosts={posts} />
+    <KladkaFeed client:load lang={lang} initialPosts={posts} initialReactions={reactions} />
   </div>
 </Layout>
 

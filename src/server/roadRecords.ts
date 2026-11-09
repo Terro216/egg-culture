@@ -1,4 +1,5 @@
 import { createAccountProgress } from "./accountProgress.ts";
+import { createKladkaReactions } from "./kladkaReactions.ts";
 import { createAchievementRarity } from "./achievementRarity.ts";
 import { createRoadLeaderboards } from "./roadLeaderboards.ts";
 import { DatabaseSync } from "node:sqlite";
@@ -196,6 +197,7 @@ export function createRoadRecordStore(directory: string) {
     db.prepare("INSERT INTO portal_profiles(player, public_id) VALUES (?, ?) ON CONFLICT(player) DO NOTHING").run(player, randomBytes(12).toString("hex"));
   };
   const progress = createAccountProgress(db, registered, transaction, () => rarity.invalidate());
+  const reactions = createKladkaReactions(db, transaction);
   const untangleProgress = (player: string): UntangleProgress => {
     const campaigns = db.prepare("SELECT seed, level FROM untangle_puzzles WHERE player = ? AND mode = 'campaign' ORDER BY level").all(player);
     const levels = (versions: readonly string[]) => [...new Set(campaigns.filter(row => versions.includes(parseSeed(String(row.seed))?.version ?? "")).map(row => Number(row.level)))].sort((a, b) => a - b);
@@ -268,6 +270,7 @@ export function createRoadRecordStore(directory: string) {
   };
   return {
     ...progress,
+    ...reactions,
     registered,
     ownProfile(player: string) { ensureProfile(player); return profileView(player)!; },
     publicProfile(id: string): PublicProfile | null {

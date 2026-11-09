@@ -21,7 +21,7 @@ def fixture(root):
     (source / "images").mkdir()
     with sqlite3.connect(source / backup.DB) as db:
         # Read the application's real DDL, independent of REQUIRED_TABLES.
-        for file in ("roadRecords.ts", "accountProgress.ts"):
+        for file in ("roadRecords.ts", "accountProgress.ts", "kladkaReactions.ts"):
             code = (REPO / "src/server" / file).read_text()
             for ddl in re.findall(r"CREATE TABLE IF NOT EXISTS [a-z_]+ \(.*?\) STRICT;", code, re.S):
                 db.execute(ddl)
@@ -34,6 +34,12 @@ def fixture(root):
         db.execute("INSERT INTO portal_stats VALUES ('p1', 'fry', '{\"score\":123}', 4)")
         db.execute("INSERT INTO portal_achievements VALUES ('p1', 'untangle.first')")
         db.execute("INSERT INTO untangle_puzzles VALUES ('p1', 'NEST1-test', 1, 'campaign', NULL, 3, 5, 0, 1, 100)")
+        db.execute("INSERT INTO kladka_reactions VALUES ('00000000-0000-4000-8000-000000000001', 'p1', 'shell')")
+        db.execute("INSERT INTO kladka_reaction_extras VALUES ('00000000-0000-4000-8000-000000000001', 'p1', 'yolk')")
+        db.execute("INSERT INTO kladka_reaction_extras VALUES ('00000000-0000-4000-8000-000000000001', 'p1', 'hatch')")
+        db.execute("INSERT INTO kladka_reaction_limits VALUES ('account-day:p1', 9999999999, 3)")
+        db.execute("INSERT INTO kladka_reaction_networks VALUES ('00000000-0000-4000-8000-000000000001', 'synthetic-hmac', 'p1', 9999999999)")
+        db.execute("INSERT INTO kladka_reaction_settings VALUES ('network-key', 'synthetic-backup-key')")
     posts = []
     for i, status in enumerate(("pending", "approved", "rejected")):
         identifier = f"00000000-0000-4000-8000-{i:012d}"

@@ -1,7 +1,16 @@
 #!/bin/sh
 set -eu
-host=$(jq -er '.host // .DE_PUBLIC_IPV4' /config/de-endpoint.json)
+host=$(jq -er '.DE_HOSTNAME // .host // .DE_PUBLIC_IPV4' /config/de-endpoint.json)
 port=$(jq -er '.port // .DE_SSH_PORT' /config/de-endpoint.json)
+TUNNEL_HOST=$host
+# Accept only a literal hostname/address, never SSH syntax or shell fragments.
+[ "${#TUNNEL_HOST}" -le 253 ] || exit 64
+case "$TUNNEL_HOST" in ''|*[!A-Za-z0-9.-]*|.*|*.) exit 64;; esac
+old_ifs=$IFS; IFS=.; set -- $TUNNEL_HOST; IFS=$old_ifs
+for label do
+    [ "${#label}" -le 63 ] || exit 64
+    case "$label" in ''|-*|*-) exit 64;; esac
+done
 user=${EGG_TUNNEL_USER:-tunnel}
 test -r /keys/tunnel_key || { echo 'tunnel: key is not readable' >&2; exit 1; }
 test -r /keys/known_hosts || { echo 'tunnel: pinned known_hosts is not readable' >&2; exit 1; }
@@ -11,6 +20,7 @@ install -m 600 /keys/tunnel_key /tmp/ssh/key
 install -m 600 /keys/known_hosts /tmp/ssh/known_hosts
 exec ssh -N -T -i /tmp/ssh/key -p "$port" \
   -L 0.0.0.0:3128:127.0.0.1:3128 \
+    -o HostKeyAlias=s2 -o CheckHostIP=no -o UpdateHostKeys=no -o HostKeyAlgorithms=ssh-ed25519 \
   -o GatewayPorts=yes -o ExitOnForwardFailure=yes -o BatchMode=yes \
   -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
   -o UserKnownHostsFile=/tmp/ssh/known_hosts \

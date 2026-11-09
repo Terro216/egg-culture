@@ -44,6 +44,7 @@ const t = useTranslations(lang as Lang);
               <p class="shop-subtitle">
                 {item.shortDescription[lang as "ru" | "en"]}
               </p>
+              <p class="shop-price">{item.price}</p>
             </div>
           </a>
         ))
@@ -121,6 +122,16 @@ const t = useTranslations(lang as Lang);
     font-size: 1.1rem;
     opacity: 0.8;
     margin: 0;
+  }
+
+  .shop-price {
+    margin: 0;
+    padding-top: 0.25rem;
+    font-family: var(--font-sans-ui);
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
   }
 
   @media (max-width: 768px) {

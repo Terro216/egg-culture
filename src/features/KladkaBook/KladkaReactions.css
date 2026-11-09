@@ -1,0 +1,34 @@
+.kladka-reactions { font: .8125rem/1.5 var(--font-sans-ui); color: var(--color-text); }
+.kladka-reaction-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
+.kladka-reaction-chip, .kladka-reaction-trigger, .kladka-reaction-choice {
+  display: inline-flex; justify-content: center; align-items: center; gap: .375rem;
+  min-height: 44px; padding: .375rem .625rem; border: 1px solid var(--color-gray-light);
+  border-radius: 24px; color: var(--color-text); background: transparent;
+  touch-action: manipulation; transition: background-color .18s ease-out, border-color .18s ease-out;
+}
+.kladka-reaction-chip { min-width: 56px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kladka-reaction-trigger { border-color: transparent; color: var(--color-yolk-text); }
+.kladka-reaction-emoji { font: 1.375rem/1.3 "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+.kladka-reaction-chip[aria-pressed="true"], .kladka-reaction-choice[aria-pressed="true"] {
+  border-color: var(--color-yolk-text); background: var(--color-yolk); color: var(--color-text);
+}
+@media (hover: hover) {
+  .kladka-reactions button:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--button-secondary-hover); border-color: var(--color-yolk-text); }
+}
+.kladka-reactions button:active:not(:disabled):not([aria-disabled="true"]) { background: var(--color-yolk); }
+.kladka-reactions button:focus-visible, .kladka-reactions a:focus-visible { outline: 2px solid var(--color-yolk-text); outline-offset: 3px; }
+.kladka-reactions button:disabled, .kladka-reactions button[aria-disabled="true"] { color: var(--color-text-muted); cursor: default; }
+.kladka-reaction-bar[aria-busy="true"] button { cursor: progress; }
+.kladka-reaction-picker { margin-top: .625rem; padding-top: .75rem; border-top: 1px solid var(--color-gray-light); }
+.kladka-reaction-options { display: flex; gap: .375rem; }
+.kladka-reaction-choice { flex: 0 1 52px; min-width: 44px; min-height: 48px; padding: .375rem; border-color: transparent; }
+.kladka-reaction-choice .kladka-reaction-emoji { font-size: 1.75rem; }
+.kladka-reaction-choice[aria-disabled="true"]:not([aria-pressed="true"]) .kladka-reaction-emoji { opacity: .5; }
+.kladka-reaction-picker p { margin: .75rem 0 0; color: var(--color-text-muted); }
+.kladka-reaction-hint strong { display: block; color: var(--color-text); font-weight: 600; margin-bottom: .125rem; }
+.kladka-reaction-picker .kladka-reaction-gate { margin: 0; }
+.kladka-reaction-gate a, .kladka-reaction-error button { color: var(--color-yolk-text); text-decoration: underline; text-underline-offset: .2em; }
+.kladka-reaction-error { margin-top: .5rem; }
+.kladka-reaction-error button { margin-left: .5rem; min-height: 44px; }
+.kladka-reaction-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .kladka-reactions button { transition: none; } }

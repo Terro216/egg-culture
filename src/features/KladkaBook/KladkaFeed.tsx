@@ -3,6 +3,8 @@ import { useAdept } from "../Portal/useAdept.ts";
 import { usePortal } from "../Portal/PortalPresence.tsx";
 import { portalIdentityReady } from "../Portal/client.ts";
 import type { KladkaEntry } from "../../shared/utils/kladkaStore.ts";
+import type { KladkaReactionFeed } from "../../shared/kladkaReactions.ts";
+import KladkaReactions from "./KladkaReactions.tsx";
 import "./KladkaFeed.css";
 
 function linkedText(text: string) {
@@ -11,9 +13,11 @@ function linkedText(text: string) {
     : part);
 }
 
-export default function KladkaFeed({ lang, initialPosts }: { lang: "ru" | "en"; initialPosts: KladkaEntry[] }) {
+export default function KladkaFeed({ lang, initialPosts, initialReactions }: { lang: "ru" | "en"; initialPosts: KladkaEntry[]; initialReactions: KladkaReactionFeed }) {
   const ru = lang === "ru", portal = usePortal(), adept = useAdept();
   const [posts, setPosts] = useState(initialPosts);
+  const [reactions, setReactions] = useState(initialReactions);
+  const [loaded, setLoaded] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -21,6 +25,7 @@ export default function KladkaFeed({ lang, initialPosts }: { lang: "ru" | "en"; 
 
   useEffect(() => { setHydrated(true); }, []);
   useEffect(() => {
+    setLoaded(false);
     if (!ready || portal.failed) return;
     // Existing guests may have only the persistent local flag after a browser
     // restart. Mirror it to the existing guest cookie before the server read.
@@ -34,8 +39,8 @@ export default function KladkaFeed({ lang, initialPosts }: { lang: "ru" | "en"; 
     void fetch("/api/kladka-feed", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
       .then(async response => {
         if (!response.ok) throw new Error("unavailable");
-        const data = await response.json() as { posts: KladkaEntry[] };
-        if (active) setPosts(data.posts);
+        const data = await response.json() as { posts: KladkaEntry[]; reactions: KladkaReactionFeed };
+        if (active) { setPosts(data.posts); setReactions(data.reactions); setLoaded(true); }
       })
       .catch(() => { if (active) setFailed(true); })
       .finally(() => window.clearTimeout(timeout));
@@ -75,6 +80,9 @@ export default function KladkaFeed({ lang, initialPosts }: { lang: "ru" | "en"; 
         </div> : !post.locked && <>
           {post.image && <img className="kladka-post-image" src={`/api/kladka-image?id=${encodeURIComponent(post.id)}&v=2`} alt="" loading="lazy" />}
           {post.text && <p className="kladka-post-text">{linkedText(post.text)}</p>}
+          <KladkaReactions key={`${post.id}:${registered ? name : "guest"}`} lang={lang} post={post.id}
+            initial={reactions.entries[post.id] ?? { counts: {}, mine: null, selected: [] }} access={reactions.access}
+            account={reactions.account} ready={loaded && ready && !portal.failed && reactions.account === (registered ? name : null)} />
         </>}
       </article>;
     })}

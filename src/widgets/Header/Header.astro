@@ -103,8 +103,8 @@ const languageUrl = (next: string) => Astro.url.pathname.replace(/^\/(ru|en)(?=\
         if (event.detail > 0 && group.open && group.dataset.hoverOpen && !mobile.matches) event.preventDefault();
       });
     });
-    header.addEventListener('keydown', event => {
-      if (event.key !== 'Escape') return;
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
       if (mobile.matches && toggle.getAttribute('aria-expanded') === 'true') { closeMenu(); toggle.focus(); }
       else {
         const open = groups.find(group => group.open);

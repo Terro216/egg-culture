@@ -1,4 +1,4 @@
-import React, { useId, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 
 const wheelData = [
   {
@@ -472,6 +472,20 @@ export default function DescriptorWheel({ lang = "ru" }) {
   const id = useId();
   const [mode, setMode] = useState("white");
   const [selected, setSelected] = useState(null);
+  useEffect(() => {
+    if (!selected) return;
+    const body = document.body;
+    const previousTint = body.style.getPropertyValue("--descriptor-page-tint");
+    const previousActive = body.getAttribute("data-descriptor-active");
+    body.style.setProperty("--descriptor-page-tint", selected.color);
+    body.setAttribute("data-descriptor-active", "true");
+    return () => {
+      if (previousTint) body.style.setProperty("--descriptor-page-tint", previousTint);
+      else body.style.removeProperty("--descriptor-page-tint");
+      if (previousActive === null) body.removeAttribute("data-descriptor-active");
+      else body.setAttribute("data-descriptor-active", previousActive);
+    };
+  }, [selected]);
   const activeCategories = wheelData.filter(category => category.modes.includes(mode));
   const changeMode = next => { setMode(next); setSelected(null); };
   const details = (item, inline = false) => <div className={inline ? "descriptor-info descriptor-info-inline" : "descriptor-info"} id={`${id}-${inline ? item.name.replace(/[^a-z0-9]/gi, "-") : "panel"}`} aria-live="polite">
@@ -482,10 +496,11 @@ export default function DescriptorWheel({ lang = "ru" }) {
       <p>{ru ? item.desc : item.descEn}</p>
     </> : <p>{ru ? "Выберите дескриптор, чтобы увидеть его описание и цвет." : "Select a descriptor to see its description and colour."}</p>}
   </div>;
-  return <div className="descriptor-container" style={{ "--descriptor-tint": selected?.color ?? "var(--color-shell)" }}>
+  return <div className="descriptor-container">
     <style>{`
+      body:has(.descriptor-container) { background-color:color-mix(in srgb,var(--descriptor-page-tint,var(--color-shell)) 24%,var(--color-shell)); transition:background-color .4s ease; }
+      body[data-descriptor-active] { --color-yolk-text:#553e0d; --color-text-muted:#514c40; }
       .descriptor-container { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,2fr) minmax(240px,1fr); gap:2rem; font-family:var(--font-sans-ui,system-ui,sans-serif); }
-      .descriptor-container::before { content:""; position:absolute; inset:-1.25rem; z-index:-1; border-radius:12px; background:color-mix(in srgb,var(--descriptor-tint) 30%,var(--color-shell)); transition:background-color .25s ease; pointer-events:none; }
       .descriptor-left { min-width:0; }
       .descriptor-toggles { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
       .descriptor-toggles button { min-height:44px; padding:.75rem 1rem; border:1px solid #bba85d; border-radius:8px; }
@@ -508,11 +523,10 @@ export default function DescriptorWheel({ lang = "ru" }) {
       .descriptor-info-inline { display:none; }
       @media(max-width:768px) {
         .descriptor-container { grid-template-columns:minmax(0,1fr); }
-        .descriptor-container::before { inset:-.75rem; }
         .descriptor-sidebar { display:none; }
         .descriptor-info-inline { display:block; flex-basis:100%; margin:.4rem 0; padding:1rem; }
       }
-      @media(prefers-reduced-motion:reduce) { .descriptor-container::before { transition:none; } }
+      @media(prefers-reduced-motion:reduce) { body:has(.descriptor-container) { transition:none; } }
     `}</style>
     <div className="descriptor-left">
       <div className="descriptor-toggles" role="group" aria-label={ru ? "Часть яйца" : "Part of the egg"}>

@@ -375,7 +375,14 @@ const contents = [
 
   .toc-sticky {
     position: sticky;
-    top: 6rem;
+    top: 1.5rem;
+    max-height: calc(100dvh - 3rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-yolk-text) transparent;
+    padding: 4px;
+    margin: -4px;
   }
 
   .toc-list {

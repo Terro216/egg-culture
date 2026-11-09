@@ -1,3 +1,5 @@
 ---
-return Astro.redirect("/ru/");
+// A prerendered redirect becomes an HTML meta refresh with a two-second delay.
+export const prerender = false;
+return Astro.redirect("/ru/", 302);
 ---
